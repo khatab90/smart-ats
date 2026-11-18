@@ -1,20 +1,26 @@
 import { House, LoaderCircle, X } from "lucide-react";
-import { SOURCE_META, SOURCE_ORDER } from "../data/meta";
+import { SOURCE_META } from "../data/meta";
 import type { DeviceStatus, SourceId } from "../data/types";
 import { cn } from "../lib/cn";
+import { installedSources } from "../domain/sources";
 import { fmtKw } from "../lib/format";
 import { SOURCE_ICON } from "./ui";
 
 const VW = 320;
 const VH = 132;
-const SRC_Y: Record<SourceId, number> = { grid: 22, solar: 66, generator: 110 };
 const SRC_X = 290;
 const ATS = { x: 160, y: 66 };
 const HOME = { x: 34, y: 66 };
 const pct = (x: number, y: number) => ({ left: `${(x / VW) * 100}%`, top: `${(y / VH) * 100}%` });
 
 /** Live only: when the board is offline or silent nothing is animated. */
+/** Vertical slots for 1–3 installed sources, centred on the ATS line. */
+const SLOTS: Record<number, number[]> = { 1: [66], 2: [40, 92], 3: [22, 66, 110] };
+
 export function PowerFlow({ status, live }: { status: DeviceStatus | null; live: boolean }) {
+  const shown = installedSources(status);
+  const slots = SLOTS[shown.length] ?? SLOTS[3];
+  const SRC_Y = Object.fromEntries(shown.map((id, i) => [id, slots[i]])) as Record<SourceId, number>;
   const active =
     live && status?.system_state !== "no_source" ? (status?.active_source ?? null) : null;
   const transferring = live && status?.system_state === "transferring";
@@ -25,7 +31,7 @@ export function PowerFlow({ status, live }: { status: DeviceStatus | null; live:
         preserveAspectRatio="none"
         className="absolute inset-0 size-full"
       >
-        {SOURCE_ORDER.map((id) => {
+        {shown.map((id) => {
           const y = SRC_Y[id];
           const on = active === id;
           return (
@@ -54,7 +60,7 @@ export function PowerFlow({ status, live }: { status: DeviceStatus | null; live:
         />
       </svg>
 
-      {SOURCE_ORDER.map((id) => {
+      {shown.map((id) => {
         const Icon = SOURCE_ICON[id];
         const report = status?.sources?.[id];
         const on = active === id;

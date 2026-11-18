@@ -7,7 +7,7 @@ import type { SourceId, SystemMode } from "../../data/types";
 import { useCommand } from "../../hooks/useCommand";
 import { cn } from "../../lib/cn";
 import { fmtNum } from "../../lib/format";
-import { isSelectable, predictSmartTarget } from "../../domain/sources";
+import { installedSources, isSelectable, predictSmartTarget } from "../../domain/sources";
 import { useActiveDevice } from "../../store/devices";
 import { sourceBadge } from "../../components/status";
 import { PrioritySection } from "./PrioritySection";
@@ -61,8 +61,11 @@ export function ModeCard() {
       {mode !== "manual" ? (
         <PrioritySection priority={priority} applied={settingsApplied} editable={isAdmin} />
       ) : (
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {SOURCE_ORDER.map((id) => {
+        <div
+          className="mt-4 grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${Math.max(1, installedSources(status).length)}, minmax(0, 1fr))` }}
+        >
+          {installedSources(status).map((id) => {
             const r = status?.sources?.[id];
             const isActive = status?.active_source === id && status?.system_state !== "no_source";
             const usable = isSelectable(r);

@@ -62,6 +62,8 @@ export const TRANSFER_REASON: Record<string, string> = {
   mode_change: "تغيير الوضع",
   failed_to_start: "فشل تشغيل المصدر",
   protection: "تدخل الحماية",
+  target_lost: "خرج المصدر الهدف عن الحدود قبل التوصيل",
+  close_failed: "لم يتأكد إغلاق الكونتاكتور",
 };
 
 export const ALARM_LABEL: Record<string, string> = {
@@ -71,46 +73,47 @@ export const ALARM_LABEL: Record<string, string> = {
   over_temperature: "ارتفاع حرارة البورد",
   inverter_fault: "عطل الإنفرتر",
   generator_alarm: "إنذار المولد العام",
+  settings_incomplete: "الجهد والتردد الاسميان غير محددين (يعمل البورد بقيم المصنع 230V / 50Hz)",
 };
 
 export const NOTIF_META: Record<
   NotificationType,
-  { label: string; text: string; bg: string; locked: boolean; desc: string }
+  { label: string; text: string; bg: string; critical: boolean; desc: string }
 > = {
   source_outage: {
     label: "انقطاع المصدر الحالي",
     desc: "عند انقطاع المصدر الذي يغذي الأحمال أو عدم توفر أي مصدر",
     text: "text-danger",
     bg: "bg-danger-soft",
-    locked: true,
+    critical: true,
   },
   transfer: {
     label: "التحويل بين المصادر",
     desc: "عند حدوث تحويل، مع المصدر السابق والجديد",
     text: "text-brand-600",
     bg: "bg-brand-100",
-    locked: false,
+    critical: false,
   },
   electrical_fault: {
     label: "الخلل الكهربائي",
     desc: "انخفاض أو ارتفاع الجهد، أو خروج التردد عن الحدود",
     text: "text-warn",
     bg: "bg-warn-soft",
-    locked: false,
+    critical: false,
   },
   connection_lost: {
     label: "انقطاع الاتصال بالبورد",
     desc: "عند توقف وصول البيانات من وحدة ESP32",
     text: "text-ink-2",
     bg: "bg-line",
-    locked: false,
+    critical: false,
   },
   transfer_failed: {
     label: "فشل عملية التحويل",
     desc: "عند تعذر الانتقال إلى المصدر البديل أو عطل القفل المتبادل",
     text: "text-danger",
     bg: "bg-danger-soft",
-    locked: true,
+    critical: true,
   },
 };
 

@@ -5,6 +5,7 @@ import { Card, Chips, EmptyState, ErrorState, Segmented, Skeleton } from "../com
 import { SOURCE_META } from "../data/meta";
 import type { DeviceSettings, SourceId, TelemetryRow } from "../data/types";
 import { useTelemetryWindow } from "../hooks/data";
+import { installedSources, isFeeding } from "../domain/sources";
 import { cn } from "../lib/cn";
 import { fmtNum, fmtReading, fmtTimeSec } from "../lib/format";
 import { seriesStats, splitSegments, yDomain, type Sample } from "../lib/series";
@@ -28,10 +29,7 @@ const METRIC: Record<Metric, { label: string; unit: string; digits: number }> = 
   f: { label: "التردد", unit: "Hz", digits: 2 },
 };
 
-/**
- * A source's current and power are measured on the load side, so they are
- * only attributed to a source while it is the one feeding the load.
- */
+/** One reading from a telemetry row; source current/power use the shared feeding rule. */
 function readRow(r: TelemetryRow, ch: Channel, m: Metric): number | null {
   if (ch === "load") {
     if (m === "v") return r.load_voltage;
@@ -41,9 +39,7 @@ function readRow(r: TelemetryRow, ch: Channel, m: Metric): number | null {
   }
   if (m === "v") return r[`${ch}_voltage`];
   if (m === "f") return r[`${ch}_frequency`];
-  const feeding =
-    r.active_source === ch && r.system_state !== "no_source" && r.system_state !== "transferring";
-  if (!feeding) return null;
+  if (!isFeeding(ch, r.active_source, r.system_state)) return null;
   if (m === "a") return r.load_current;
   return r.load_power_w === null ? null : r.load_power_w / 1000;
 }
@@ -61,6 +57,7 @@ export function Live() {
   const [channel, setChannel] = useState<Channel>("load");
   const [metric, setMetric] = useState<Metric>("v");
   const telemetry = useTelemetryWindow(device?.id ?? null, WINDOW_MS);
+  if (channel !== "load" && !installedSources(status).includes(channel)) setChannel("load");
   useNow(2000);
   const live = link === "live" || link === "stale";
   const color = CHANNEL_COLOR[channel];
@@ -80,7 +77,7 @@ export function Live() {
       };
     }
     const r = status.sources?.[channel];
-    const feeding = status.active_source === channel && status.system_state === "normal";
+    const feeding = isFeeding(channel, status.active_source, status.system_state);
     return {
       v: r?.v ?? null,
       f: r?.f ?? null,
@@ -160,10 +157,8 @@ export function Live() {
         value={channel}
         onChange={setChannel}
         options={[
-          { value: "load", label: "الخرج (الحمل)" },
-          { value: "grid", label: "الشبكة" },
-          { value: "solar", label: "الشمسية" },
-          { value: "generator", label: "المولد" },
+          { value: "load" as Channel, label: "الخرج (الحمل)" },
+          ...installedSources(status).map((id) => ({ value: id as Channel, label: SOURCE_META[id].short })),
         ]}
       />
 

@@ -125,7 +125,7 @@ test("device ingestion: auth, status, telemetry, energy, events", async () => {
   let r = (await ingest({ ...base, seq: 1, ts: iso(t0) })).r;
   assert.equal(r.ok, true);
   assert.equal(r.settings_version, 2); // claim stored the owner's timezone
-  r = (
+  const second = (
     await ingest({
       ...base,
       seq: 2,
@@ -143,6 +143,7 @@ test("device ingestion: auth, status, telemetry, energy, events", async () => {
       ],
     })
   ).r;
+  assert.equal(second.ok, true);
   // replay of the same buffered event must not duplicate
   await ingest({
     ...base,

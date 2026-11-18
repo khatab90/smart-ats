@@ -104,6 +104,22 @@ export function ConnectionCard() {
             </p>
           </div>
         </div>
+        {live && status?.clock_invalid && (
+          <p className="mt-3 rounded-2xl bg-warn-soft px-3 py-2 text-[11px] leading-5 text-warn-strong">
+            ساعة البورد غير مضبوطة، فيستخدم الخادم وقته لتسجيل القراءات والأحداث. تأكد من وصول البورد إلى
+            خدمة الوقت (NTP).
+          </p>
+        )}
+        {(status?.skipped_events ?? 0) > 0 && (
+          <p className="mt-2 text-[11px] leading-5 text-muted">
+            تجاهل الخادم {status?.skipped_events} حدثاً غير صالح من البورد. باقي البيانات حُفظت بشكل طبيعي.
+          </p>
+        )}
+        {(status?.controller?.dropped_events ?? 0) > 0 && (
+          <p className="mt-2 text-[11px] leading-5 text-muted">
+            امتلأت ذاكرة البورد أثناء انقطاع الاتصال، وفُقد {status?.controller?.dropped_events} حدثاً قديماً.
+          </p>
+        )}
       </Card>
     </div>
   );

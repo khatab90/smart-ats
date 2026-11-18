@@ -20,6 +20,28 @@ export default tseslint.config(
     },
   },
   {
+    // Architecture boundary: only src/api talks to Supabase.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/api/**"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@supabase/supabase-js",
+              message: "Use the typed functions in src/api instead of calling Supabase directly.",
+              allowTypeImports: true,
+            },
+          ],
+          patterns: [
+            { group: ["**/api/client"], message: "Import a domain module from src/api, not the raw client." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.{js,mjs}"],
     extends: [js.configs.recommended],
     languageOptions: { ecmaVersion: 2022, globals: globals.node },

@@ -1,11 +1,11 @@
 // Pure app logic. Run: node --experimental-strip-types --test tests/*.test.ts
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { classifyLink } from "../src/lib/link.ts";
-import { seriesStats, splitSegments, yDomain } from "../src/lib/series.ts";
-import { movePriority, predictSmartTarget } from "../src/domain/sources.ts";
-import { buildTimeline, durationsBy, stateAfter } from "../src/lib/timeline.ts";
-import { addDaysInTz, startOfDayInTz } from "../src/lib/tz.ts";
+import { classifyLink } from "../../src/lib/link.ts";
+import { seriesStats, splitSegments, yDomain } from "../../src/lib/series.ts";
+import { movePriority, predictSmartTarget } from "../../src/domain/sources.ts";
+import { buildTimeline, durationsBy, stateAfter } from "../../src/lib/timeline.ts";
+import { addDaysInTz, startOfDayInTz } from "../../src/lib/tz.ts";
 
 const T = Date.parse("2026-11-16T12:00:00Z");
 

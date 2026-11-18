@@ -22,6 +22,7 @@ import {
 import { cn } from "../lib/cn";
 import { fmtDateTime } from "../lib/format";
 import { updateSettings } from "../api/settings";
+import { installedSources } from "../domain/sources";
 import { useActiveDevice } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useToast } from "../store/toast";
@@ -154,6 +155,7 @@ export function Settings() {
               <p className="mb-3 text-[15px] font-bold text-ink">أولوية المصادر (الوضع الذكي)</p>
               <PriorityList
                 value={draft.priority}
+                installed={installedSources(status)}
                 onChange={(p: SourceId[]) => set("priority", p)}
                 disabled={readOnly}
               />

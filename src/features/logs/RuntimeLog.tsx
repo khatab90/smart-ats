@@ -10,6 +10,7 @@ import { useCommand } from "../../hooks/useCommand";
 import { fmtClock, fmtDate, fmtDayLabel, fmtDuration, fmtFullDate, fmtHours, fmtNum, fmtShortDay, fmtTime, fmtWeekday } from "../../lib/format";
 import { buildTimeline, durationsBy, stateAfter, type FeedState, type TimelineEvent } from "../../lib/timeline";
 import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
+import { installedSources } from "../../domain/sources";
 import { useActiveDevice, useNow } from "../../store/devices";
 
 export const TIMELINE_TYPES = [
@@ -82,6 +83,7 @@ export function RuntimeLog() {
   const activeSince = status?.active_since ? Date.parse(status.active_since) : null;
   const current = live && status?.system_state === "normal" ? status.active_source : null;
   const runtime = status?.runtime ?? null;
+  const installed = installedSources(status);
   const canReset = isAdmin && link === "live" && !busy;
 
   return (
@@ -127,7 +129,7 @@ export function RuntimeLog() {
                 variant="secondary"
                 icon={RotateCcw}
                 disabled={!canReset}
-                onClick={() => setConfirm([...SOURCE_ORDER])}
+                onClick={() => setConfirm([...installed])}
               >
                 تصفير الكل
               </Button>
@@ -140,7 +142,7 @@ export function RuntimeLog() {
           </p>
         ) : (
           <div className="space-y-3">
-            {SOURCE_ORDER.map((id) => {
+            {installed.map((id) => {
               const r = runtime[id];
               return (
                 <div
@@ -240,7 +242,7 @@ export function RuntimeLog() {
               </div>
               <DayStrip timeline={timeline} from={selDay} to={addDaysInTz(selDay, 1, tz)} />
               <div className="mt-3 grid grid-cols-2 gap-2">
-                {SOURCE_ORDER.map((id) => (
+                {installed.map((id) => (
                   <div
                     key={id}
                     className="rounded-2xl p-3"

@@ -13,7 +13,7 @@ import { SOURCE_META } from "../data/meta";
 import type { SourceId } from "../data/types";
 import { PHASE_LABEL, type CommandState } from "../hooks/useCommand";
 import { cn } from "../lib/cn";
-import { movePriority } from "../domain/sources";
+import { ALL_SOURCES, mergePriority, movePriority, visiblePriority } from "../domain/sources";
 import { SourceIcon } from "./ui";
 
 /** Inline lifecycle of the last command (A8). */
@@ -75,17 +75,22 @@ export function CommandProgress({
 
 /**
  * Drag-and-drop priority list (pointer events work for mouse and touch),
- * with arrow buttons as an accessible alternative.
+ * with arrow buttons as an accessible alternative. Only installed sources
+ * are shown; the full order (all three, as stored) is passed to onChange.
  */
 export function PriorityList({
-  value,
-  onChange,
+  value: full,
+  installed = ALL_SOURCES,
+  onChange: onFullChange,
   disabled,
 }: {
   value: SourceId[];
+  installed?: readonly SourceId[];
   onChange: (next: SourceId[]) => void;
   disabled?: boolean;
 }) {
+  const value = visiblePriority(full, installed);
+  const onChange = (next: SourceId[]) => onFullChange(mergePriority(next, full));
   const listRef = useRef<HTMLOListElement>(null);
   const [drag, setDrag] = useState<{ index: number; over: number } | null>(null);
 

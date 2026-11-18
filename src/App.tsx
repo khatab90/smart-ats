@@ -192,9 +192,9 @@ function SetupRequired() {
       </span>
       <h1 className="mt-4 text-lg font-bold text-ink">قاعدة البيانات غير مهيأة</h1>
       <p className="mt-2 text-[13px] leading-6 text-muted">
-        لم يتم العثور على جداول Smart ATS في Supabase. يجب تشغيل ملف الترحيل
+        لم يتم العثور على جداول Smart ATS في Supabase. لمشروع جديد شغّل الملف
         <span className="mx-1 font-mono text-[11px]" dir="ltr">
-          supabase/migrations/20261116000000_smart_ats_schema.sql
+          supabase/dist/full_install.sql
         </span>
         مرة واحدة من SQL Editor.
       </p>

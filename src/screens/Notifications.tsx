@@ -2,7 +2,7 @@ import {
   BellOff,
   CheckCheck,
   CircleAlert,
-  Lock,
+  TriangleAlert,
   Settings2,
   Trash2,
   WifiOff,
@@ -29,6 +29,7 @@ import { startOfDayInTz } from "../lib/tz";
 import { useDevices, useNow } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
+import { notificationText } from "../domain/notifications";
 
 const ICON: Record<NotificationType, LucideIcon> = {
   source_outage: ZapOff,
@@ -150,14 +151,14 @@ export function Notifications() {
                             <span className="min-w-0 flex-1">
                               <span className="flex items-center gap-2">
                                 <span className="truncate text-[13px] font-bold text-ink">
-                                  {n.title}
+                                  {notificationText(n).title}
                                 </span>
                                 {!n.read_at && (
                                   <span className="size-2 shrink-0 rounded-full bg-brand-500" />
                                 )}
                               </span>
                               <span className="mt-0.5 block text-[12px] leading-5 text-muted">
-                                {n.body}
+                                {notificationText(n).body}
                               </span>
                               <span className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[11px] text-faint">
                                 <span className={cn("font-semibold", meta.text)}>{meta.label}</span>
@@ -203,18 +204,17 @@ export function NotificationSettings({ open, onClose }: { open: boolean; onClose
               <div className="flex-1">
                 <p className="text-[13px] font-semibold text-ink">{meta.label}</p>
                 <p className="text-[11px] leading-5 text-muted">{meta.desc}</p>
+                {meta.critical && !prefs[key] && (
+                  <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-danger-strong">
+                    <TriangleAlert className="size-3" /> إنذار حرج موقوف: لن تعرف بانقطاع الكهرباء أو فشل التحويل.
+                  </p>
+                )}
               </div>
-              {meta.locked ? (
-                <span className="flex items-center gap-1 rounded-full bg-canvas px-2.5 py-1 text-[11px] font-semibold text-ink-2">
-                  <Lock className="size-3" /> دائماً
-                </span>
-              ) : (
-                <Toggle
-                  checked={Boolean(prefs[key])}
-                  onChange={(v) => void savePrefs({ [key]: v })}
-                  label={meta.label}
-                />
-              )}
+              <Toggle
+                checked={Boolean(prefs[key])}
+                onChange={(v) => void savePrefs({ [key]: v })}
+                label={meta.label}
+              />
             </div>
           );
         })}
@@ -233,7 +233,7 @@ export function NotificationSettings({ open, onClose }: { open: boolean; onClose
         </div>
       </div>
       <p className="mt-3 text-[11px] leading-5 text-muted">
-        «انقطاع المصدر الحالي» و«فشل عملية التحويل» إنذاران حرجان لا يمكن إيقافهما. إيقاف أي نوع آخر
+        «انقطاع المصدر الحالي» و«فشل عملية التحويل» إنذاران حرجان، ويُنصح بإبقائهما مفعّلين. إيقاف أي نوع
         يوقف التنبيه فقط، ويبقى الحدث مسجلاً في سجل أحداث الجهاز.
       </p>
     </Sheet>

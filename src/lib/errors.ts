@@ -23,6 +23,9 @@ const CODES: Record<string, string> = {
   INVITATION_EXPIRED: "انتهت صلاحية الدعوة. اطلب من المسؤول إعادة إرسالها.",
   INVITATION_EMAIL_MISMATCH: "هذه الدعوة مرسلة إلى بريد إلكتروني آخر. سجّل الدخول بالبريد المدعو.",
   NOT_AUTHENTICATED: "يجب تسجيل الدخول أولاً.",
+  NOT_MEMBER: "لا تملك وصولاً إلى هذا الجهاز.",
+  INVALID_COMMAND: "هذا الأمر غير مدعوم.",
+  COMMAND_ID_CONFLICT: "تعارض في معرّف الأمر. أعد المحاولة.",
 };
 
 const AUTH: [RegExp, string][] = [
