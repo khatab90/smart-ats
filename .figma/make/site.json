@@ -1,0 +1,12 @@
+{
+  "description": "Smart ATS — مراقبة وإدارة نظام التحويل التلقائي للطاقة بين الشبكة الوطنية والطاقة الشمسية والمولد.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  },
+  "title": "Smart ATS",
+  "language": "ar"
+}
