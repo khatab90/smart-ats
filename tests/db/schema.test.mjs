@@ -1,70 +1,29 @@
-// Runs the real migration on PGlite (PostgreSQL in WASM) with minimal
-// Supabase stubs, then checks RLS, device ingestion, notifications,
-// commands, settings and invitations. Usage: pnpm test:db
-import { PGlite } from "@electric-sql/pglite";
+// Full migration chain on PGlite (PostgreSQL in WASM) with minimal Supabase
+// stubs: RLS, device ingestion, notifications, commands, settings,
+// invitations and roles. Behaviour added by later migrations has its own
+// files next to this one.
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "vitest";
+import { createDb, iso, migrationFiles, U1, U2, U3 } from "./harness.mjs";
 
-const migration = readFileSync(
-  new URL("../../supabase/migrations/20261116000000_smart_ats_schema.sql", import.meta.url),
-  "utf8",
-);
-
-const SUPABASE_STUBS = `
-  create role anon nologin; create role authenticated nologin; create role service_role nologin;
-  create schema auth;
-  grant usage on schema auth to anon, authenticated;
-  grant usage on schema public to anon, authenticated;
-  create table auth.users (id uuid primary key, email text, phone text, raw_user_meta_data jsonb default '{}');
-  create function auth.uid() returns uuid language sql stable as
-    $$ select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid $$;
-  create function auth.jwt() returns jsonb language sql stable as
-    $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
-  grant execute on all functions in schema auth to anon, authenticated;
-`;
-
-const U1 = "11111111-1111-1111-1111-111111111111";
-const U2 = "22222222-2222-2222-2222-222222222222";
-const U3 = "33333333-3333-3333-3333-333333333333";
-
-let db;
-async function as(user, email) {
-  await db.exec("reset role");
-  if (user === "anon") {
-    await db.exec("select set_config('request.jwt.claims', '', false); set role anon;");
-  } else if (user) {
-    await db.query("select set_config('request.jwt.claims', $1, false)", [
-      JSON.stringify({ sub: user, email }),
-    ]);
-    await db.exec("set role authenticated");
-  } else {
-    await db.exec("select set_config('request.jwt.claims', '', false)");
-  }
-}
-const one = async (sql, params) => (await db.query(sql, params)).rows[0];
-const rows = async (sql, params) => (await db.query(sql, params)).rows;
-async function rejects(sql, params, pattern) {
-  await assert.rejects(db.query(sql, params), (e) => {
-    assert.match(e.message, pattern);
-    return true;
-  });
-}
-
+let h;
 let device;
+const as = (...a) => h.as(...a);
+const one = (...a) => h.one(...a);
+const rows = (...a) => h.rows(...a);
+const rejects = (...a) => h.rejects(...a);
 const ingest = (payload) =>
   one("select public.device_ingest($1, $2, $3::jsonb) as r", [
     device.device_id,
     device.token,
     JSON.stringify(payload),
   ]);
-const iso = (ms) => new Date(ms).toISOString();
 
-test("migration applies twice on a Supabase-like database", async () => {
-  db = new PGlite();
-  await db.exec(SUPABASE_STUBS);
-  await db.exec(migration);
-  await db.exec(migration); // idempotent re-run
+test("migration chain applies; the latest migration can be re-run", async () => {
+  h = await createDb();
+  // Migrations run once, in order. The newest file must also survive a
+  // second run (someone pasting it twice in the SQL editor).
+  await h.db.exec(migrationFiles().at(-1).sql);
   const t = await rows("select tablename from pg_tables where schemaname='public' order by 1");
   assert.ok(t.length >= 13);
   const noRls = await rows(
@@ -75,7 +34,7 @@ test("migration applies twice on a Supabase-like database", async () => {
 
 test("factory registration and claim with PIN", async () => {
   await as(null);
-  await db.query(
+  await h.db.query(
     "insert into auth.users (id, email, raw_user_meta_data) values ($1,'owner@x.io','{\"full_name\":\"Owner\"}'),($2,'other@x.io','{}'),($3,'invitee@x.io','{}')",
     [U1, U2, U3],
   );
@@ -201,18 +160,25 @@ test("device ingestion: auth, status, telemetry, energy, events", async () => {
       },
     ],
   });
-  await rejects(
-    'select public.device_ingest(\'ATS-T00001\', $1, \'{"v":1,"events":[{"type":"hack"}]}\'::jsonb)',
-    [device.token],
-    /INVALID_EVENT_TYPE/,
-  );
+  // An unknown event type is skipped; the rest of the message is still stored.
+  r = (
+    await ingest({
+      ...base,
+      seq: 4,
+      ts: iso(t0 + 6000),
+      energy_wh: { grid: 1350, solar: 0, generator: 0 },
+      events: [{ seq: 99, type: "hack" }],
+    })
+  ).r;
+  assert.equal(r.ok, true);
+  assert.equal(r.skipped_events, 1);
 
   await as(U1, "owner@x.io");
   const st = await one(
     "select online, active_source, mode, (load->>'w')::int w from public.device_status",
   );
   assert.deepEqual(st, { online: true, active_source: "grid", mode: "smart", w: 2210 });
-  assert.equal((await one("select count(*)::int c from public.telemetry")).c, 3);
+  assert.equal((await one("select count(*)::int c from public.telemetry")).c, 4);
   assert.equal(
     (await one("select sum(wh)::int s from public.energy_hourly where source='grid'")).s,
     350,
@@ -227,9 +193,9 @@ test("device ingestion: auth, status, telemetry, energy, events", async () => {
   assert.match(n[0].body, /انخفاض الجهد في الشبكة الوطنية: 182 V/);
 });
 
-test("notifications: critical always delivered, preferences and dedupe respected", async () => {
+test("notifications: preferences and dedupe respected", async () => {
   await as(U1, "owner@x.io");
-  await db.query(
+  await h.db.query(
     "insert into public.notification_preferences (user_id, transfer) values ($1, false)",
     [U1],
   );
@@ -275,7 +241,7 @@ test("notifications: critical always delivered, preferences and dedupe respected
   );
   assert.deepEqual(types, ["electrical_fault", "source_outage"]); // transfer muted, outage deduped
   await rejects("update public.notifications set title = 'x'", [], /permission denied/);
-  await db.exec("update public.notifications set read_at = now()");
+  await h.db.exec("update public.notifications set read_at = now()");
   assert.equal(
     (await one("select count(*)::int c from public.notifications where read_at is null")).c,
     0,
@@ -284,7 +250,7 @@ test("notifications: critical always delivered, preferences and dedupe respected
 
 test("heartbeat watchdog marks offline and notifies", async () => {
   await as(null);
-  await db.exec("update public.device_status set last_seen_at = now() - interval '45 seconds'");
+  await h.db.exec("update public.device_status set last_seen_at = now() - interval '45 seconds'");
   assert.equal((await one("select public.check_device_heartbeats() c")).c, 1);
   await as(U1, "owner@x.io");
   assert.equal((await one("select online from public.device_status")).online, false);
@@ -374,7 +340,7 @@ test("command lifecycle with idempotency and device ack", async () => {
 
 test("settings: admin update bumps version and is audited; invalid values rejected", async () => {
   await as(U1, "owner@x.io");
-  await db.exec(
+  await h.db.exec(
     "update public.device_settings set nominal_voltage = 230, nominal_frequency = 60, priority = array['solar','grid','generator']",
   );
   const s = await one("select version, updated_by from public.device_settings");
@@ -436,32 +402,37 @@ test("invitations: one-time, email-bound, expiring, revocable", async () => {
     [],
     /NOT_ADMIN/,
   );
-  await db.exec("update public.device_settings set return_delay_s = 300");
+  await h.db.exec("update public.device_settings set return_delay_s = 300");
   await as(U1, "owner@x.io");
   assert.equal(
     (await one("select return_delay_s from public.device_settings")).return_delay_s,
     120,
   );
-  const names = (await rows("select email from public.profiles order by email")).map(
-    (x) => x.email,
+  // Profiles are private; co-members are listed through a checked function.
+  assert.deepEqual(
+    (await rows("select email from public.profiles")).map((x) => x.email),
+    ["owner@x.io"],
   );
-  assert.deepEqual(names, ["invitee@x.io", "owner@x.io"]);
+  const members = (
+    await rows("select email from public.list_device_members('ATS-T00001') order by email")
+  ).map((x) => x.email);
+  assert.deepEqual(members, ["invitee@x.io", "owner@x.io"]);
 
   const inv2 = (await one("select public.create_invitation('ATS-T00001', 'late@x.io', 'admin') r"))
     .r;
   await as(null);
-  await db.query(
+  await h.db.query(
     "update public.invitations set expires_at = now() - interval '1 minute' where id = $1",
     [inv2.id],
   );
-  await db.query(
+  await h.db.query(
     "insert into auth.users (id, email) values ('44444444-4444-4444-4444-444444444444','late@x.io')",
   );
   await as("44444444-4444-4444-4444-444444444444", "late@x.io");
   await rejects("select public.accept_invitation($1)", [inv2.token], /INVITATION_EXPIRED/);
   await as(U1, "owner@x.io");
   const re = (await one("select public.resend_invitation($1) r", [inv2.id])).r;
-  await db.query("select public.revoke_invitation($1)", [inv2.id]);
+  await h.db.query("select public.revoke_invitation($1)", [inv2.id]);
   await as("44444444-4444-4444-4444-444444444444", "late@x.io");
   await rejects("select public.accept_invitation($1)", [re.token], /INVITATION_CLOSED/);
 });
@@ -474,17 +445,17 @@ test("roles, ownership transfer and release", async () => {
     /CANNOT_CHANGE_OWNER/,
   );
   await rejects("select public.transfer_ownership('ATS-T00001', $1)", [U3], /TARGET_NOT_ADMIN/);
-  await db.query("select public.set_member_role('ATS-T00001', $1, 'admin')", [U3]);
-  await db.query("select public.transfer_ownership('ATS-T00001', $1)", [U3]);
+  await h.db.query("select public.set_member_role('ATS-T00001', $1, 'admin')", [U3]);
+  await h.db.query("select public.transfer_ownership('ATS-T00001', $1)", [U3]);
   await rejects("select public.release_device('ATS-T00001')", [], /NOT_OWNER/);
   await as(U3, "invitee@x.io");
   await rejects("select public.remove_member('ATS-T00001', $1)", [U3], /CANNOT_REMOVE_OWNER/);
-  await db.query("select public.remove_member('ATS-T00001', $1)", [U1]);
-  await db.query("select public.release_device('ATS-T00001')");
+  await h.db.query("select public.remove_member('ATS-T00001', $1)", [U1]);
+  await h.db.query("select public.release_device('ATS-T00001')");
   assert.equal((await rows("select * from public.devices")).length, 0);
   await as(null);
   const left = await one(
-    "select (select count(*) from public.events)::int e, (select count(*) from public.telemetry)::int t, (select owner_id from public.devices) o",
+    "select (select count(*) from public.events)::int e, (select count(*) from public.telemetry)::int t, (select owner_id from public.devices) o, (select active_source from public.device_status) a, (select runtime from public.device_status) rt",
   );
-  assert.deepEqual(left, { e: 0, t: 0, o: null });
+  assert.deepEqual(left, { e: 0, t: 0, o: null, a: null, rt: null });
 });
