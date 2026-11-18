@@ -9,7 +9,7 @@ import { cn } from "../lib/cn";
 import { fmtNum, fmtReading, fmtTimeSec } from "../lib/format";
 import { seriesStats, splitSegments, yDomain, type Sample } from "../lib/series";
 import { useActiveDevice, useNow } from "../store/devices";
-import { LinkBadge } from "./Dashboard";
+import { LinkBadge } from "../components/status";
 
 type Channel = "load" | SourceId;
 type Metric = "v" | "a" | "kw" | "f";

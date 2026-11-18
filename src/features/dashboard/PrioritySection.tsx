@@ -1,0 +1,73 @@
+import { useState } from "react";
+import { PriorityList } from "../../components/control";
+import { Button } from "../../components/ui";
+import type { SourceId } from "../../data/types";
+import { cn } from "../../lib/cn";
+import { errorMessage } from "../../lib/errors";
+import { supabase } from "../../lib/supabase";
+import { useActiveDevice } from "../../store/devices";
+import { useToast } from "../../store/toast";
+
+export function PrioritySection({
+  priority,
+  applied,
+  editable,
+}: {
+  priority: SourceId[];
+  applied: boolean;
+  editable: boolean;
+}) {
+  const { device, link } = useActiveDevice();
+  const { pushToast } = useToast();
+  const [draft, setDraft] = useState<SourceId[] | null>(null);
+  const [saving, setSaving] = useState(false);
+  const value = draft ?? priority;
+  const dirty = draft !== null && draft.join() !== priority.join();
+
+  const save = async () => {
+    if (!device || !draft) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("device_settings")
+      .update({ priority: draft })
+      .eq("device_id", device.id);
+    setSaving(false);
+    if (error)
+      return pushToast({ kind: "error", title: "تعذر حفظ الترتيب", body: errorMessage(error) });
+    setDraft(null);
+    pushToast({ kind: "info", title: "تم حفظ ترتيب الأولوية", body: "سيُطبَّق بعد تأكيد البورد." });
+  };
+
+  return (
+    <div className="mt-4">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-[13px] font-bold text-ink">ترتيب أولوية المصادر</p>
+        {!dirty && link !== "never" && (
+          <span
+            className={cn(
+              "text-[11px] font-semibold",
+              applied ? "text-ok-strong" : "text-warn-strong",
+            )}
+          >
+            {applied ? "مطبَّق على البورد" : "بانتظار تأكيد البورد"}
+          </span>
+        )}
+      </div>
+      <PriorityList value={value} onChange={setDraft} disabled={!editable || saving} />
+      <p className="mt-2 text-[11px] leading-5 text-muted">
+        {editable ? "اسحب المصادر لإعادة ترتيبها. " : ""}يعتمد البورد على المصدر الأول إذا كان مستوفياً
+        لشروط التشغيل، وإلا ينتقل إلى التالي، ويعود إلى الأعلى أولوية بعد استقراره.
+      </p>
+      {dirty && (
+        <div className="mt-3 flex gap-2">
+          <Button size="sm" className="flex-1" loading={saving} onClick={save}>
+            حفظ الترتيب
+          </Button>
+          <Button size="sm" variant="secondary" className="flex-1" onClick={() => setDraft(null)}>
+            تراجع
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,89 @@
+import { type LucideIcon } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { cn } from "../../lib/cn";
+
+export function ProgressBar({
+  value,
+  color,
+  className,
+}: {
+  value: number;
+  color: string;
+  className?: string;
+}) {
+  return (
+    <div className={cn("h-1.5 overflow-hidden rounded-full bg-[#e9eef6]", className)}>
+      <div
+        className="h-full rounded-full transition-[width] duration-700"
+        style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }}
+      />
+    </div>
+  );
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  body,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  body: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center px-6 py-12 text-center">
+      <span className="mb-4 flex size-16 items-center justify-center rounded-3xl bg-brand-50 text-brand-600">
+        <Icon className="size-7" strokeWidth={1.7} />
+      </span>
+      <h3 className="text-base font-bold text-ink">{title}</h3>
+      <p className="mt-1.5 max-w-[260px] text-[13px] leading-6 text-muted">{body}</p>
+      {action && <div className="mt-5">{action}</div>}
+    </div>
+  );
+}
+
+export function Skeleton({ className }: { className?: string }) {
+  return <span className={cn("block animate-pulse rounded-xl bg-[#e6ebf3]", className)} />;
+}
+
+export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  return (
+    <div className="rounded-2xl border border-danger/20 bg-danger-soft px-4 py-3">
+      <p className="text-[13px] font-semibold text-danger-strong">{message}</p>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-1.5 text-[12px] font-bold text-danger-strong underline"
+        >
+          إعادة المحاولة
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Small "؟" toggle that reveals how a metric is defined (C5). */
+export function InfoHint({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        aria-label="تعريف المقياس"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="flex size-5 items-center justify-center rounded-full bg-canvas text-[11px] font-bold text-muted hover:text-ink"
+      >
+        ؟
+      </button>
+      {open && (
+        <span className="absolute top-6 right-0 z-10 w-52 rounded-xl border border-line bg-white p-2.5 text-[11px] leading-5 font-normal text-ink-2 shadow-lg">
+          {text}
+        </span>
+      )}
+    </span>
+  );
+}
