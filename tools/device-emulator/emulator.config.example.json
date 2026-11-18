@@ -1,0 +1,8 @@
+{
+  "supabaseUrl": "https://YOUR-PROJECT-ID.supabase.co",
+  "anonKey": "YOUR-ANON-PUBLIC-KEY",
+  "deviceId": "ATS-TEST01",
+  "token": "TOKEN-FROM-register_device",
+  "intervalMs": 2000,
+  "timeScale": 10
+}

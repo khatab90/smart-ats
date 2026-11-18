@@ -1,0 +1,136 @@
+{
+  "$comment": "Reference test vectors for the ATS decision logic (protocol v1). The JS emulator (tools/device-emulator/logic.mjs) and the ESP32 firmware must both pass every case. Times are in ms, thresholds in % of nominal.",
+  "version": 1,
+  "settings": {
+    "nominal_voltage": 230,
+    "nominal_frequency": 60,
+    "uv_trip_pct": 17,
+    "uv_recover_pct": 13,
+    "uv_delay_ms": 2000,
+    "ov_trip_pct": 10,
+    "ov_recover_pct": 8,
+    "ov_delay_ms": 500,
+    "uf_trip_pct": 4,
+    "of_trip_pct": 4,
+    "f_recover_pct": 2,
+    "f_delay_ms": 1000,
+    "return_delay_s": 120,
+    "min_dwell_s": 60,
+    "rate_limit_count": 3,
+    "rate_limit_window_min": 10
+  },
+  "classify": [
+    { "name": "healthy", "reading": { "v": 229, "f": 60 }, "expect": { "ok": true, "kind": null, "recovered": true } },
+    { "name": "undervoltage below 190.9 V", "reading": { "v": 185, "f": 60 }, "expect": { "ok": false, "kind": "undervoltage" } },
+    { "name": "overvoltage above 253 V", "reading": { "v": 255, "f": 60 }, "expect": { "ok": false, "kind": "overvoltage" } },
+    { "name": "underfrequency below 57.6 Hz", "reading": { "v": 229, "f": 57 }, "expect": { "ok": false, "kind": "underfrequency" } },
+    { "name": "overfrequency above 62.4 Hz", "reading": { "v": 229, "f": 63 }, "expect": { "ok": false, "kind": "overfrequency" } },
+    { "name": "no voltage under 20 V", "reading": { "v": 0, "f": 0 }, "expect": { "ok": false, "kind": "no_voltage" } },
+    { "name": "missing reading is no voltage", "reading": { "v": null, "f": null }, "expect": { "ok": false, "kind": "no_voltage" } },
+    { "name": "inside trip band but outside recover band", "reading": { "v": 198, "f": 60 }, "expect": { "ok": true, "kind": null, "recovered": false } },
+    { "name": "frequency missing is judged on voltage only", "reading": { "v": 230, "f": null }, "expect": { "ok": true, "recovered": true } }
+  ],
+  "qualification": [
+    {
+      "name": "undervoltage trips only after its delay",
+      "start": { "qualified": true },
+      "isActive": true,
+      "steps": [
+        { "t": 0, "reading": { "v": 180, "f": 60 }, "expect": { "qualified": true, "tripped": false } },
+        { "t": 1999, "reading": { "v": 180, "f": 60 }, "expect": { "qualified": true, "tripped": false } },
+        { "t": 2000, "reading": { "v": 180, "f": 60 }, "expect": { "qualified": false, "tripped": true, "kind": "undervoltage" } }
+      ]
+    },
+    {
+      "name": "loss of voltage trips immediately",
+      "start": { "qualified": true },
+      "isActive": true,
+      "steps": [{ "t": 0, "reading": { "v": 0, "f": 0 }, "expect": { "qualified": false, "tripped": true, "kind": "no_voltage" } }]
+    },
+    {
+      "name": "a short overvoltage spike under its delay does not trip",
+      "start": { "qualified": true },
+      "isActive": true,
+      "steps": [
+        { "t": 0, "reading": { "v": 260, "f": 60 }, "expect": { "qualified": true } },
+        { "t": 400, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": true } },
+        { "t": 600, "reading": { "v": 260, "f": 60 }, "expect": { "qualified": true } },
+        { "t": 1100, "reading": { "v": 260, "f": 60 }, "expect": { "qualified": false, "tripped": true, "kind": "overvoltage" } }
+      ]
+    },
+    {
+      "name": "a returning source must be stable for the whole return delay; a blip restarts the timer",
+      "start": { "qualified": false },
+      "isActive": false,
+      "steps": [
+        { "t": 0, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
+        { "t": 60000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
+        { "t": 61000, "reading": { "v": 0, "f": 0 }, "expect": { "qualified": false } },
+        { "t": 62000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
+        { "t": 181000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
+        { "t": 182000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": true } }
+      ]
+    },
+    {
+      "name": "the active source at boot qualifies immediately",
+      "start": { "qualified": false },
+      "isActive": true,
+      "steps": [{ "t": 0, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": true } }]
+    },
+    {
+      "name": "a reading inside the trip band but outside the recover band never requalifies",
+      "start": { "qualified": false },
+      "isActive": false,
+      "steps": [
+        { "t": 0, "reading": { "v": 198, "f": 60 }, "expect": { "qualified": false } },
+        { "t": 300000, "reading": { "v": 198, "f": 60 }, "expect": { "qualified": false } }
+      ]
+    }
+  ],
+  "smartTarget": [
+    {
+      "name": "first qualified source in the user priority",
+      "priority": ["generator", "solar", "grid"],
+      "qualified": { "grid": true, "solar": true, "generator": false },
+      "expect": "solar"
+    },
+    {
+      "name": "nothing qualified",
+      "priority": ["grid", "solar", "generator"],
+      "qualified": { "grid": false, "solar": false, "generator": false },
+      "expect": null
+    }
+  ],
+  "mayTransfer": [
+    {
+      "name": "dwell blocks a voluntary return",
+      "input": { "active": "solar", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 30000, "recentTransfersAgoMs": [] },
+      "expect": { "ok": false, "reason": "dwell" }
+    },
+    {
+      "name": "leaving a failed source ignores dwell and the rate limit",
+      "input": { "active": "solar", "activeQualified": false, "target": "grid", "activeSinceAgoMs": 1000, "recentTransfersAgoMs": [10000, 20000, 30000] },
+      "expect": { "ok": true }
+    },
+    {
+      "name": "rate limit blocks a voluntary transfer",
+      "input": { "active": "solar", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 120000, "recentTransfersAgoMs": [60000, 120000, 180000] },
+      "expect": { "ok": false, "reason": "rate_limit" }
+    },
+    {
+      "name": "transfers older than the window do not count",
+      "input": { "active": "solar", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 120000, "recentTransfersAgoMs": [601000, 700000, 800000] },
+      "expect": { "ok": true }
+    },
+    {
+      "name": "no change",
+      "input": { "active": "grid", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 0, "recentTransfersAgoMs": [] },
+      "expect": { "ok": false, "reason": "no_change" }
+    },
+    {
+      "name": "from no source, any target is allowed",
+      "input": { "active": null, "activeQualified": false, "target": "generator", "activeSinceAgoMs": 0, "recentTransfersAgoMs": [1, 2, 3, 4] },
+      "expect": { "ok": true }
+    }
+  ]
+}
