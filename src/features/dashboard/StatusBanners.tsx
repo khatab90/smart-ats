@@ -79,7 +79,8 @@ export function StatusBanners() {
             ? `المصدر المختار (${SOURCE_META[status.override.requested].name}) `
             : "المصدر المختار "}
           خرج عن حدود التشغيل، فنقل البورد الحمل إلى{" "}
-          {status.active_source ? SOURCE_META[status.active_source].name : "المصدر المتاح"}.
+          {status.active_source ? SOURCE_META[status.active_source].name : "المصدر المتاح"}. لن يعود البورد
+          إليه تلقائياً في الوضع اليدوي؛ اختره من جديد بعد استقراره.
         </Banner>,
       );
     }
