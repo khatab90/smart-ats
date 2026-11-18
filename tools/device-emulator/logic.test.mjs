@@ -5,7 +5,9 @@ import { readFileSync } from "node:fs";
 import { describe, test } from "vitest";
 import { classify, mayTransfer, smartTarget, stepQualification } from "./logic.mjs";
 
-const V = JSON.parse(readFileSync(new URL("../../protocol/logic-vectors.json", import.meta.url), "utf8"));
+const V = JSON.parse(
+  readFileSync(new URL("../../protocol/logic-vectors.json", import.meta.url), "utf8"),
+);
 const S = V.settings;
 const pick = (obj, keys) => Object.fromEntries(keys.map((k) => [k, obj[k]]));
 
@@ -35,7 +37,9 @@ describe("stepQualification", () => {
 describe("smartTarget", () => {
   for (const c of V.smartTarget) {
     test(c.name, () => {
-      const qual = Object.fromEntries(Object.entries(c.qualified).map(([k, v]) => [k, { qualified: v }]));
+      const qual = Object.fromEntries(
+        Object.entries(c.qualified).map(([k, v]) => [k, { qualified: v }]),
+      );
       assert.equal(smartTarget(c.priority, qual), c.expect);
     });
   }

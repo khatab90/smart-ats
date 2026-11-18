@@ -18,21 +18,35 @@ describe("installed sources", () => {
     assert.deepEqual(installedSources(null), ["grid", "solar", "generator"]);
   });
   test("not_installed sources are hidden everywhere", () => {
-    const s = status({ grid: { v: 230, f: 50 }, solar: { v: null, f: null, reason: "not_installed" }, generator: { v: 0, f: 0 } });
+    const s = status({
+      grid: { v: 230, f: 50 },
+      solar: { v: null, f: null, reason: "not_installed" },
+      generator: { v: 0, f: 0 },
+    });
     assert.deepEqual(installedSources(s), ["grid", "generator"]);
   });
 });
 
 describe("priority with hidden sources", () => {
   test("only installed sources are listed, in saved order", () => {
-    assert.deepEqual(visiblePriority(["solar", "generator", "grid"], ["grid", "generator"]), ["generator", "grid"]);
+    assert.deepEqual(visiblePriority(["solar", "generator", "grid"], ["grid", "generator"]), [
+      "generator",
+      "grid",
+    ]);
   });
   test("reordering the visible list keeps hidden sources at the end", () => {
-    assert.deepEqual(mergePriority(["grid", "generator"], ["solar", "generator", "grid"]), ["grid", "generator", "solar"]);
+    assert.deepEqual(mergePriority(["grid", "generator"], ["solar", "generator", "grid"]), [
+      "grid",
+      "generator",
+      "solar",
+    ]);
   });
   test("generator-first is judged on the visible order", () => {
     assert.equal(generatorFirst(["solar", "generator", "grid"], ["grid", "generator"]), true);
-    assert.equal(generatorFirst(["grid", "generator", "solar"], ["grid", "generator", "solar"]), false);
+    assert.equal(
+      generatorFirst(["grid", "generator", "solar"], ["grid", "generator", "solar"]),
+      false,
+    );
   });
 });
 
@@ -55,7 +69,11 @@ describe("notification text from params", () => {
     });
   });
   test("a failed transfer explains why", () => {
-    assert.match(n({ event: "transfer_failed", to: "generator", reason: "failed_to_start" }, "transfer_failed").body, /فشل تشغيل المولد/);
+    assert.match(
+      n({ event: "transfer_failed", to: "generator", reason: "failed_to_start" }, "transfer_failed")
+        .body,
+      /فشل تشغيل المولد/,
+    );
   });
   test("old rows without params fall back to the stored text", () => {
     assert.deepEqual(n({}), { title: "fallback", body: "fallback body" });
@@ -67,13 +85,27 @@ describe("settings cross-field rules", () => {
     priority: ["grid", "solar", "generator"],
     nominal_voltage: 230,
     nominal_frequency: 50,
-    uv_trip_pct: 17, uv_recover_pct: 13, uv_delay_ms: 2000,
-    ov_trip_pct: 10, ov_recover_pct: 8, ov_delay_ms: 500,
-    uf_trip_pct: 4, of_trip_pct: 4, f_recover_pct: 2, f_delay_ms: 1000,
-    return_delay_s: 120, min_dwell_s: 60, rate_limit_count: 6, rate_limit_window_min: 10,
-    neutral_delay_ms: 1000, transfer_timeout_ms: 5000,
-    gen_crank_attempts: 3, gen_warmup_s: 30, gen_cooldown_s: 180,
-    manual_revert_min: null, timezone: "Asia/Baghdad",
+    uv_trip_pct: 17,
+    uv_recover_pct: 13,
+    uv_delay_ms: 2000,
+    ov_trip_pct: 10,
+    ov_recover_pct: 8,
+    ov_delay_ms: 500,
+    uf_trip_pct: 4,
+    of_trip_pct: 4,
+    f_recover_pct: 2,
+    f_delay_ms: 1000,
+    return_delay_s: 120,
+    min_dwell_s: 60,
+    rate_limit_count: 6,
+    rate_limit_window_min: 10,
+    neutral_delay_ms: 1000,
+    transfer_timeout_ms: 5000,
+    gen_crank_attempts: 3,
+    gen_warmup_s: 30,
+    gen_cooldown_s: 180,
+    manual_revert_min: null,
+    timezone: "Asia/Baghdad",
   } as Parameters<typeof validateSettings>[0];
   test("defaults are valid", () => assert.equal(validateSettings(base), null));
   test("recover band must be inside the trip band", () => {

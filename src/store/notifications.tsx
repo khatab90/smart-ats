@@ -115,7 +115,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const markRead = useCallback(async (id: number) => {
     const at = new Date().toISOString();
     const { error: err } = await api.markRead(id, at);
-    if (err === null) setItems((p) => p.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? at } : n)));
+    if (err === null)
+      setItems((p) => p.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? at } : n)));
   }, []);
 
   const markAllRead = useCallback(async () => {

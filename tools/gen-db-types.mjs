@@ -84,7 +84,11 @@ const fks = await q(`
 
 function colType(table, c) {
   const key = `${table}.${c.column_name}`;
-  let t = enumOf[key] ? lit(enumOf[key]) : arrayEnums[key] ? `(${lit(arrayEnums[key])})[]` : tsType(c.udt_name);
+  let t = enumOf[key]
+    ? lit(enumOf[key])
+    : arrayEnums[key]
+      ? `(${lit(arrayEnums[key])})[]`
+      : tsType(c.udt_name);
   if (c.nullable) t += " | null";
   return t;
 }
@@ -93,7 +97,10 @@ const tableBlocks = tables.map((t) => {
   const cols = columns.filter((c) => c.table_name === t);
   const row = cols.map((c) => `          ${c.column_name}: ${colType(t, c)};`).join("\n");
   const ins = cols
-    .map((c) => `          ${c.column_name}${c.nullable || c.has_default ? "?" : ""}: ${colType(t, c)};`)
+    .map(
+      (c) =>
+        `          ${c.column_name}${c.nullable || c.has_default ? "?" : ""}: ${colType(t, c)};`,
+    )
     .join("\n");
   const upd = cols.map((c) => `          ${c.column_name}?: ${colType(t, c)};`).join("\n");
   const rels = fks
@@ -190,5 +197,7 @@ export type FunctionArgs<F extends keyof PublicSchema["Functions"]> = PublicSche
 export type FunctionReturns<F extends keyof PublicSchema["Functions"]> = PublicSchema["Functions"][F]["Returns"];
 `;
 writeFileSync(OUT, out);
-console.log(`src/data/database.types.ts ← ${tables.length} tables, ${fns.length} functions, ${Object.keys(enumOf).length} enum columns`);
+console.log(
+  `src/data/database.types.ts ← ${tables.length} tables, ${fns.length} functions, ${Object.keys(enumOf).length} enum columns`,
+);
 await db.close();

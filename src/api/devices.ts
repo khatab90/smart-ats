@@ -6,7 +6,9 @@ export const listMemberships = (userId: string) =>
   run(
     supabase
       .from("device_members")
-      .select("role, device:devices!inner(id, environment, name, location, owner_id, claimed_at, firmware)")
+      .select(
+        "role, device:devices!inner(id, environment, name, location, owner_id, claimed_at, firmware)",
+      )
       .eq("user_id", userId),
     (rows) => rows.map((r) => ({ role: r.role as Role, device: asRow<Device>(r.device) })),
   );
@@ -34,8 +36,10 @@ export const claimDevice = (args: {
 export const renameDevice = (id: string, name: string, location: string | null) =>
   run(supabase.from("devices").update({ name, location }).eq("id", id), () => null);
 
-export const releaseDevice = (id: string) => run(supabase.rpc("release_device", { p_device_id: id }), () => null);
-export const leaveDevice = (id: string) => run(supabase.rpc("leave_device", { p_device_id: id }), () => null);
+export const releaseDevice = (id: string) =>
+  run(supabase.rpc("release_device", { p_device_id: id }), () => null);
+export const leaveDevice = (id: string) =>
+  run(supabase.rpc("leave_device", { p_device_id: id }), () => null);
 
 export const fetchStatus = (id: string) =>
   run(supabase.from("device_status").select("*").eq("device_id", id).maybeSingle(), (d) =>
@@ -47,11 +51,15 @@ export const fetchSettings = (id: string) =>
     d ? asRow<DeviceSettings>(d) : null,
   );
 
-export const serverNow = () => run(supabase.rpc("server_now"), (d) => (d ? Date.parse(d) : Date.now()));
+export const serverNow = () =>
+  run(supabase.rpc("server_now"), (d) => (d ? Date.parse(d) : Date.now()));
 
 /** Connection summary for several devices (device picker). */
 export const fetchLinkSummaries = (ids: string[]) =>
   run(
-    supabase.from("device_status").select("device_id, online, last_seen_at, interval_ms").in("device_id", ids),
+    supabase
+      .from("device_status")
+      .select("device_id, online, last_seen_at, interval_ms")
+      .in("device_id", ids),
     (rows) => rows,
   );

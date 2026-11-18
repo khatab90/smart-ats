@@ -10,7 +10,8 @@ import { useCommand } from "../../hooks/useCommand";
 import { fmtReading } from "../../lib/format";
 import { useActiveDevice } from "../../store/devices";
 
-export const fmtVf = (r: SourceReport | undefined) => `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
+export const fmtVf = (r: SourceReport | undefined) =>
+  `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
 
 /**
  * Sources worth showing right now: everything when no source feeds the
@@ -48,7 +49,9 @@ export function SourcesCard() {
       <Card className="divide-y divide-line">
         {!live ? (
           <p className="p-4 text-center text-[13px] text-muted">
-            {link === "never" ? "لا توجد بيانات حالياً." : "حالة المصادر غير معروفة أثناء انقطاع الاتصال بالبورد."}
+            {link === "never"
+              ? "لا توجد بيانات حالياً."
+              : "حالة المصادر غير معروفة أثناء انقطاع الاتصال بالبورد."}
           </p>
         ) : visible.length === 0 ? (
           <p className="p-4 text-center text-[13px] text-muted">لا توجد مصادر متاحة حالياً.</p>
@@ -64,7 +67,11 @@ export function SourcesCard() {
                   <SourceIcon source={id} muted={!isActive && !r?.qualified} />
                   <div className="min-w-0 flex-1">
                     <p className="text-[14px] font-semibold text-ink">{SOURCE_META[id].name}</p>
-                    <p className="num text-[12px] text-muted" dir="ltr" style={{ textAlign: "right" }}>
+                    <p
+                      className="num text-[12px] text-muted"
+                      dir="ltr"
+                      style={{ textAlign: "right" }}
+                    >
                       {fmtVf(r)}
                     </p>
                   </div>
@@ -75,8 +82,8 @@ export function SourcesCard() {
                 {genLocked && (
                   <div className="mt-3 rounded-2xl bg-danger-soft p-3">
                     <p className="text-[12px] leading-5 text-danger-strong">
-                      فشلت كل محاولات تشغيل المولد، فأوقف البورد استخدامه. افحص المولد (الوقود، البطارية، المفتاح)
-                      ثم أعد المحاولة.
+                      فشلت كل محاولات تشغيل المولد، فأوقف البورد استخدامه. افحص المولد (الوقود،
+                      البطارية، المفتاح) ثم أعد المحاولة.
                     </p>
                     {isAdmin && (
                       <Button
@@ -109,7 +116,8 @@ export function SourcesCard() {
         }}
       >
         <p className="text-[13px] leading-6 text-ink-2">
-          سيسمح البورد باستخدام المولد من جديد. إذا احتاجه النظام سيحاول تشغيله بعدد المحاولات المضبوط في الإعدادات.
+          سيسمح البورد باستخدام المولد من جديد. إذا احتاجه النظام سيحاول تشغيله بعدد المحاولات
+          المضبوط في الإعدادات.
         </p>
       </ConfirmSheet>
     </div>

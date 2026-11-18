@@ -1,5 +1,3 @@
-
-
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const PHONE_RE = /^\+[1-9]\d{7,14}$/;

@@ -15,7 +15,10 @@ interface Result<T> {
 }
 
 /** Sliding window of raw board readings, appended in realtime. */
-export function useTelemetryWindow(deviceId: string | null, windowMs: number): Result<TelemetryRow[]> {
+export function useTelemetryWindow(
+  deviceId: string | null,
+  windowMs: number,
+): Result<TelemetryRow[]> {
   const { serverNow } = useDeviceMeta();
   const [rows, setRows] = useState<TelemetryRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +75,11 @@ export function useTelemetryWindow(deviceId: string | null, windowMs: number): R
 }
 
 /** Events of the given types since `sinceMs`, newest first, live-appended. */
-export function useEvents(deviceId: string | null, types: string[], sinceMs: number): Result<EventRow[]> {
+export function useEvents(
+  deviceId: string | null,
+  types: string[],
+  sinceMs: number,
+): Result<EventRow[]> {
   const { onEvent } = useDeviceMeta();
   const [rows, setRows] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,14 +128,21 @@ export async function lastEventBefore(deviceId: string, types: string[], beforeM
 }
 
 /** Hourly energy buckets aggregated on the server from the board's counters. */
-export function useEnergy(deviceId: string | null, fromMs: number, refreshMs = 60_000): Result<history.EnergyRow[]> {
+export function useEnergy(
+  deviceId: string | null,
+  fromMs: number,
+  refreshMs = 60_000,
+): Result<history.EnergyRow[]> {
   const [rows, setRows] = useState<history.EnergyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     if (!deviceId) return;
-    const { data, error: err } = await history.fetchEnergy(deviceId, new Date(fromMs).toISOString());
+    const { data, error: err } = await history.fetchEnergy(
+      deviceId,
+      new Date(fromMs).toISOString(),
+    );
     if (err !== null) setError(err);
     else {
       setRows(data);

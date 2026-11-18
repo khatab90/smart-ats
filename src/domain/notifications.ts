@@ -31,9 +31,15 @@ export function notificationText(n: Pick<NotificationRow, "type" | "title" | "bo
   const where = p.device ? ` في «${p.device}»` : "";
   switch (p.event) {
     case "source_lost":
-      return { title: "انقطاع المصدر الحالي", body: `انقطع ${src(p.source)} الذي يغذي الأحمال${where}.` };
+      return {
+        title: "انقطاع المصدر الحالي",
+        body: `انقطع ${src(p.source)} الذي يغذي الأحمال${where}.`,
+      };
     case "no_source":
-      return { title: "لا يوجد مصدر متاح", body: `الأحمال${where} بدون كهرباء: لا يوجد أي مصدر صالح للتشغيل.` };
+      return {
+        title: "لا يوجد مصدر متاح",
+        body: `الأحمال${where} بدون كهرباء: لا يوجد أي مصدر صالح للتشغيل.`,
+      };
     case "transfer":
       return {
         title: "تحويل بين المصادر",
@@ -43,10 +49,16 @@ export function notificationText(n: Pick<NotificationRow, "type" | "title" | "bo
     case "transfer_lockout": {
       const what = FAULT[p.kind ?? ""] ?? "خروج عن حدود التشغيل";
       const on = p.source ? src(p.source) : "النظام";
-      return { title: "خلل كهربائي", body: `${what} في ${on}${p.value ? `: ${p.value}` : ""}${where}.` };
+      return {
+        title: "خلل كهربائي",
+        body: `${what} في ${on}${p.value ? `: ${p.value}` : ""}${where}.`,
+      };
     }
     case "connection_lost":
-      return { title: "انقطاع الاتصال بالبورد", body: `لم تصل بيانات من الجهاز${where} منذ أكثر من 30 ثانية.` };
+      return {
+        title: "انقطاع الاتصال بالبورد",
+        body: `لم تصل بيانات من الجهاز${where} منذ أكثر من 30 ثانية.`,
+      };
     case "transfer_failed": {
       const why = FAIL_REASON[p.reason ?? ""];
       return {

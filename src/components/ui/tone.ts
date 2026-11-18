@@ -1,5 +1,3 @@
-
-
 export type Tone = "ok" | "warn" | "danger" | "info" | "neutral" | "brand";
 
 export const TONE: Record<Tone, { text: string; bg: string; dot: string }> = {

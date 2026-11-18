@@ -63,7 +63,9 @@ export function ModeCard() {
       ) : (
         <div
           className="mt-4 grid gap-2"
-          style={{ gridTemplateColumns: `repeat(${Math.max(1, installedSources(status).length)}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateColumns: `repeat(${Math.max(1, installedSources(status).length)}, minmax(0, 1fr))`,
+          }}
         >
           {installedSources(status).map((id) => {
             const r = status?.sources?.[id];

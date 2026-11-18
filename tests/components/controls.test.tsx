@@ -11,7 +11,13 @@ afterEach(cleanup);
 describe("PriorityList", () => {
   test("shows installed sources only and saves the full order", () => {
     const onChange = vi.fn<(next: SourceId[]) => void>();
-    render(<PriorityList value={["solar", "grid", "generator"]} installed={["grid", "generator"]} onChange={onChange} />);
+    render(
+      <PriorityList
+        value={["solar", "grid", "generator"]}
+        installed={["grid", "generator"]}
+        onChange={onChange}
+      />,
+    );
     const items = screen.getAllByRole("listitem").map((li) => li.textContent);
     assert.equal(items.length, 2);
     assert.match(items[0] ?? "", /الشبكة الوطنية/);
@@ -23,7 +29,8 @@ describe("PriorityList", () => {
   test("is read-only when disabled", () => {
     const onChange = vi.fn();
     render(<PriorityList value={["grid", "solar", "generator"]} onChange={onChange} disabled />);
-    for (const b of screen.getAllByRole("button")) assert.equal((b as HTMLButtonElement).disabled, true);
+    for (const b of screen.getAllByRole("button"))
+      assert.equal((b as HTMLButtonElement).disabled, true);
   });
 });
 
@@ -42,11 +49,22 @@ describe("LinkBadge", () => {
 describe("CommandProgress", () => {
   test("never reports success before the board confirms", () => {
     const { rerender } = render(
-      <CommandProgress state={{ id: "1", type: "set_mode", phase: "delivered", message: null }} onDismiss={() => {}} />,
+      <CommandProgress
+        state={{ id: "1", type: "set_mode", phase: "delivered", message: null }}
+        onDismiss={() => {}}
+      />,
     );
     assert.ok(screen.getByText(/وصل الأمر إلى البورد/));
     rerender(
-      <CommandProgress state={{ id: "1", type: "set_mode", phase: "rejected", message: "النظام ليس في الوضع اليدوي" }} onDismiss={() => {}} />,
+      <CommandProgress
+        state={{
+          id: "1",
+          type: "set_mode",
+          phase: "rejected",
+          message: "النظام ليس في الوضع اليدوي",
+        }}
+        onDismiss={() => {}}
+      />,
     );
     assert.ok(screen.getByText(/رفض البورد الأمر/));
     assert.ok(screen.getByText(/النظام ليس في الوضع اليدوي/));

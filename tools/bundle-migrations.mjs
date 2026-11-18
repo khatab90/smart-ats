@@ -6,7 +6,9 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const dir = new URL("../supabase/migrations/", import.meta.url);
 const out = new URL("../supabase/dist/", import.meta.url);
-const files = readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
+const files = readdirSync(dir)
+  .filter((f) => f.endsWith(".sql"))
+  .sort();
 
 const parts = [
   "-- =====================================================================",

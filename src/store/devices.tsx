@@ -95,7 +95,15 @@ export function DevicesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ memberships, loading, error, activeId: validActiveId, setActiveId, refresh, clockOffsetMs }),
+    () => ({
+      memberships,
+      loading,
+      error,
+      activeId: validActiveId,
+      setActiveId,
+      refresh,
+      clockOffsetMs,
+    }),
     [memberships, loading, error, validActiveId, setActiveId, refresh, clockOffsetMs],
   );
   return <DevicesContext.Provider value={value}>{children}</DevicesContext.Provider>;
@@ -171,7 +179,10 @@ export function ActiveDeviceProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     if (!deviceId) return;
-    const [s, cfg] = await Promise.all([devicesApi.fetchStatus(deviceId), devicesApi.fetchSettings(deviceId)]);
+    const [s, cfg] = await Promise.all([
+      devicesApi.fetchStatus(deviceId),
+      devicesApi.fetchSettings(deviceId),
+    ]);
     if (s.error !== null || cfg.error !== null) {
       setError(s.error ?? cfg.error);
       return;
@@ -248,7 +259,9 @@ export function ActiveDeviceProvider({ children }: { children: ReactNode }) {
     () => ({
       status,
       link,
-      settingsApplied: Boolean(settings && configVersion !== null && configVersion >= settings.version),
+      settingsApplied: Boolean(
+        settings && configVersion !== null && configVersion >= settings.version,
+      ),
     }),
     [status, link, settings, configVersion],
   );

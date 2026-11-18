@@ -1,4 +1,16 @@
-import { CircleAlert, Clock3, Hand, LoaderCircle, Lock, Settings2, ShieldAlert, Wifi, WifiOff, type Zap, ZapOff } from "lucide-react";
+import {
+  CircleAlert,
+  Clock3,
+  Hand,
+  LoaderCircle,
+  Lock,
+  Settings2,
+  ShieldAlert,
+  Wifi,
+  WifiOff,
+  type Zap,
+  ZapOff,
+} from "lucide-react";
 import { ALARM_LABEL, SOURCE_META, SOURCE_ORDER, UNAVAILABLE_REASON } from "../../data/meta";
 import { cn } from "../../lib/cn";
 import { fmtAgo, fmtTime } from "../../lib/format";
@@ -79,8 +91,8 @@ export function StatusBanners() {
             ? `المصدر المختار (${SOURCE_META[status.override.requested].name}) `
             : "المصدر المختار "}
           خرج عن حدود التشغيل، فنقل البورد الحمل إلى{" "}
-          {status.active_source ? SOURCE_META[status.active_source].name : "المصدر المتاح"}. لن يعود البورد
-          إليه تلقائياً في الوضع اليدوي؛ اختره من جديد بعد استقراره.
+          {status.active_source ? SOURCE_META[status.active_source].name : "المصدر المتاح"}. لن يعود
+          البورد إليه تلقائياً في الوضع اليدوي؛ اختره من جديد بعد استقراره.
         </Banner>,
       );
     }

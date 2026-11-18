@@ -2,13 +2,40 @@ import { ChevronLeft, ChevronRight, History, RotateCcw, Timer } from "lucide-rea
 import { useEffect, useMemo, useState } from "react";
 import { BarChart, type Bar } from "../../components/charts";
 import { CommandProgress } from "../../components/control";
-import { Badge, Button, Card, ConfirmSheet, EmptyState, ErrorState, SectionTitle, Skeleton, SourceIcon } from "../../components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmSheet,
+  EmptyState,
+  ErrorState,
+  SectionTitle,
+  Skeleton,
+  SourceIcon,
+} from "../../components/ui";
 import { SOURCE_META, SOURCE_ORDER } from "../../data/meta";
 import type { SourceId } from "../../data/types";
 import { lastEventBefore, useEvents } from "../../hooks/data";
 import { useCommand } from "../../hooks/useCommand";
-import { fmtClock, fmtDate, fmtDayLabel, fmtDuration, fmtFullDate, fmtHours, fmtNum, fmtShortDay, fmtTime, fmtWeekday } from "../../lib/format";
-import { buildTimeline, durationsBy, stateAfter, type FeedState, type TimelineEvent } from "../../lib/timeline";
+import {
+  fmtClock,
+  fmtDate,
+  fmtDayLabel,
+  fmtDuration,
+  fmtFullDate,
+  fmtHours,
+  fmtNum,
+  fmtShortDay,
+  fmtTime,
+  fmtWeekday,
+} from "../../lib/format";
+import {
+  buildTimeline,
+  durationsBy,
+  stateAfter,
+  type FeedState,
+  type TimelineEvent,
+} from "../../lib/timeline";
 import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
 import { installedSources } from "../../domain/sources";
 import { useActiveDevice, useNow } from "../../store/devices";

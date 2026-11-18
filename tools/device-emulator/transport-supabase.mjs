@@ -17,7 +17,8 @@ export function supabaseTransport({ supabaseUrl, anonKey, deviceId, token, fetch
     return body;
   }
   return {
-    ingest: (payload) => rpc("device_ingest", { p_device_id: deviceId, p_token: token, p_payload: payload }),
+    ingest: (payload) =>
+      rpc("device_ingest", { p_device_id: deviceId, p_token: token, p_payload: payload }),
     getSettings: () => rpc("device_get_settings", { p_device_id: deviceId, p_token: token }),
     ack: (id, status, result) =>
       rpc("device_ack_command", {

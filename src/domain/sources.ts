@@ -17,7 +17,9 @@ export function isSelectable(r: SourceReport | undefined) {
  * unless the board explicitly reports `not_installed`; before the first
  * report every source is shown.
  */
-export function installedSources(status: Pick<DeviceStatus, "sources"> | null | undefined): SourceId[] {
+export function installedSources(
+  status: Pick<DeviceStatus, "sources"> | null | undefined,
+): SourceId[] {
   return ALL_SOURCES.filter((id) => status?.sources?.[id]?.reason !== "not_installed");
 }
 
@@ -58,7 +60,10 @@ export function movePriority(priority: SourceId[], from: number, to: number): So
 }
 
 /** The priority list as shown: installed sources only, in saved order. */
-export function visiblePriority(priority: readonly SourceId[], installed: readonly SourceId[]): SourceId[] {
+export function visiblePriority(
+  priority: readonly SourceId[],
+  installed: readonly SourceId[],
+): SourceId[] {
   return priority.filter((id) => installed.includes(id));
 }
 
@@ -67,7 +72,10 @@ export function visiblePriority(priority: readonly SourceId[], installed: readon
  * the database always stores all three, hidden ones keep their place at
  * the end so they never jump ahead of an installed source.
  */
-export function mergePriority(visibleOrder: readonly SourceId[], full: readonly SourceId[]): SourceId[] {
+export function mergePriority(
+  visibleOrder: readonly SourceId[],
+  full: readonly SourceId[],
+): SourceId[] {
   const hidden = full.filter((id) => !visibleOrder.includes(id));
   return [...visibleOrder, ...hidden];
 }

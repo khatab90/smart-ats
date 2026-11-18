@@ -3,7 +3,11 @@ import { test } from "vitest";
 import { parseHash, toHash } from "../../src/store/nav";
 
 test("navigation state round-trips through the URL hash", () => {
-  const s = { tab: "more" as const, view: undefined, stack: ["devices" as const, "addDevice" as const] };
+  const s = {
+    tab: "more" as const,
+    view: undefined,
+    stack: ["devices" as const, "addDevice" as const],
+  };
   assert.equal(toHash(s), "#/more/devices/addDevice");
   assert.deepEqual(parseHash(toHash(s)), s);
   assert.deepEqual(parseHash("#/logs:runtime"), { tab: "logs", view: "runtime", stack: [] });

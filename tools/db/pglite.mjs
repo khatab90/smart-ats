@@ -26,7 +26,6 @@ const SUPABASE_STUBS = `
   grant execute on all functions in schema auth to anon, authenticated;
 `;
 
-
 /** A fresh database with every migration applied (`upTo` limits the set). */
 export async function bootDatabase({ upTo } = {}) {
   const db = new PGlite();

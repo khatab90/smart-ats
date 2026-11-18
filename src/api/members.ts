@@ -7,17 +7,15 @@ import { run } from "./result";
 /** Members with phones visible to admins only (enforced in SQL). */
 export const listMembers = (deviceId: string) =>
   run(supabase.rpc("list_device_members", { p_device_id: deviceId }), (rows) =>
-    rows.map(
-      (r): MemberRow => ({
-        user_id: r.user_id ?? "",
-        role: (r.role ?? "viewer") as Role,
-        added_at: r.added_at ?? "",
-        is_owner: Boolean(r.is_owner),
-        full_name: r.full_name ?? "",
-        email: r.email,
-        phone: r.phone,
-      }),
-    ),
+    rows.map((r): MemberRow => ({
+      user_id: r.user_id ?? "",
+      role: (r.role ?? "viewer") as Role,
+      added_at: r.added_at ?? "",
+      is_owner: Boolean(r.is_owner),
+      full_name: r.full_name ?? "",
+      email: r.email,
+      phone: r.phone,
+    })),
   );
 
 export const listPendingInvitations = (deviceId: string) =>
@@ -33,7 +31,10 @@ export const listPendingInvitations = (deviceId: string) =>
   );
 
 export const setRole = (deviceId: string, userId: string, role: Role) =>
-  run(supabase.rpc("set_member_role", { p_device_id: deviceId, p_user_id: userId, p_role: role }), () => null);
+  run(
+    supabase.rpc("set_member_role", { p_device_id: deviceId, p_user_id: userId, p_role: role }),
+    () => null,
+  );
 
 export const removeMember = (deviceId: string, userId: string) =>
   run(supabase.rpc("remove_member", { p_device_id: deviceId, p_user_id: userId }), () => null);
@@ -42,13 +43,15 @@ export const transferOwnership = (deviceId: string, userId: string) =>
   run(supabase.rpc("transfer_ownership", { p_device_id: deviceId, p_user_id: userId }), () => null);
 
 export const createInvitation = (deviceId: string, email: string, role: Role) =>
-  run(supabase.rpc("create_invitation", { p_device_id: deviceId, p_email: email, p_role: role }), (d) =>
-    d as { id: string; token: string; expires_at: string },
+  run(
+    supabase.rpc("create_invitation", { p_device_id: deviceId, p_email: email, p_role: role }),
+    (d) => d as { id: string; token: string; expires_at: string },
   );
 
 export const resendInvitation = (id: string) =>
-  run(supabase.rpc("resend_invitation", { p_invitation_id: id }), (d) =>
-    d as { id: string; email: string; token: string; expires_at: string },
+  run(
+    supabase.rpc("resend_invitation", { p_invitation_id: id }),
+    (d) => d as { id: string; email: string; token: string; expires_at: string },
   );
 
 export const revokeInvitation = (id: string) =>
@@ -69,7 +72,10 @@ export const getInvitation = (token: string) =>
   run(supabase.rpc("get_invitation", { p_token: token }), (d) => d as unknown as InvitationInfo);
 
 export const acceptInvitation = (token: string) =>
-  run(supabase.rpc("accept_invitation", { p_token: token }), (d) => d as { device_id: string; role: Role });
+  run(
+    supabase.rpc("accept_invitation", { p_token: token }),
+    (d) => d as { device_id: string; role: Role },
+  );
 
 // Isolated, non-persistent client used only to email invitation links, so it
 // can never touch the signed-in admin's session storage.
@@ -88,7 +94,10 @@ export const sendInvitationEmail = (email: string, token: string) =>
   run(
     inviteMailer.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${appBaseUrl()}?invite=${encodeURIComponent(token)}`, shouldCreateUser: true },
+      options: {
+        emailRedirectTo: `${appBaseUrl()}?invite=${encodeURIComponent(token)}`,
+        shouldCreateUser: true,
+      },
     }),
     () => null,
   );

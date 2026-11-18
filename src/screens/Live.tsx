@@ -158,7 +158,10 @@ export function Live() {
         onChange={setChannel}
         options={[
           { value: "load" as Channel, label: "الخرج (الحمل)" },
-          ...installedSources(status).map((id) => ({ value: id as Channel, label: SOURCE_META[id].short })),
+          ...installedSources(status).map((id) => ({
+            value: id as Channel,
+            label: SOURCE_META[id].short,
+          })),
         ]}
       />
 

@@ -16,7 +16,10 @@ import { supabaseTransport } from "./transport-supabase.mjs";
 
 function loadConfig() {
   const here = dirname(fileURLToPath(import.meta.url));
-  const file = [join(process.cwd(), "emulator.config.json"), join(here, "emulator.config.json")].find(existsSync);
+  const file = [
+    join(process.cwd(), "emulator.config.json"),
+    join(here, "emulator.config.json"),
+  ].find(existsSync);
   const json = file ? JSON.parse(readFileSync(file, "utf8")) : {};
   const env = process.env;
   return {

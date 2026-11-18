@@ -1,4 +1,10 @@
-import type { CommandRow, DeviceSettings, DeviceStatus, EventRow, TelemetryRow } from "../data/types";
+import type {
+  CommandRow,
+  DeviceSettings,
+  DeviceStatus,
+  EventRow,
+  TelemetryRow,
+} from "../data/types";
 import { supabase, type RealtimeUnsubscribe } from "./client";
 import { asRow } from "./result";
 
@@ -18,21 +24,34 @@ export function subscribeDevice(
   const filter = `device_id=eq.${deviceId}`;
   const channel = supabase
     .channel(`device:${deviceId}`)
-    .on("postgres_changes", { event: "*", schema: "public", table: "device_status", filter }, (p) => {
-      if (p.new && "device_id" in p.new) handlers.status(asRow<DeviceStatus>(p.new));
-    })
-    .on("postgres_changes", { event: "*", schema: "public", table: "device_settings", filter }, (p) => {
-      if (p.new && "device_id" in p.new) handlers.settings(asRow<DeviceSettings>(p.new));
-    })
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "device_status", filter },
+      (p) => {
+        if (p.new && "device_id" in p.new) handlers.status(asRow<DeviceStatus>(p.new));
+      },
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "device_settings", filter },
+      (p) => {
+        if (p.new && "device_id" in p.new) handlers.settings(asRow<DeviceSettings>(p.new));
+      },
+    )
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "events", filter }, (p) =>
       handlers.event(asRow<EventRow>(p.new)),
     )
-    .on("postgres_changes", { event: "*", schema: "public", table: "device_commands", filter }, (p) => {
-      if (p.new && "id" in p.new) handlers.command(asRow<CommandRow>(p.new));
-    })
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "device_commands", filter },
+      (p) => {
+        if (p.new && "id" in p.new) handlers.command(asRow<CommandRow>(p.new));
+      },
+    )
     .subscribe((state) => {
       if (state === "SUBSCRIBED") handlers.state("live");
-      else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED") handlers.state("polling");
+      else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED")
+        handlers.state("polling");
     });
   return () => void supabase.removeChannel(channel);
 }

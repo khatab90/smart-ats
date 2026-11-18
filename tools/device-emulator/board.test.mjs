@@ -31,14 +31,25 @@ const SETTINGS = {
 };
 
 function setup({ settings = {}, world = {} } = {}) {
-  const clock = { t: 1_000_000, now() { return this.t; } };
+  const clock = {
+    t: 1_000_000,
+    now() {
+      return this.t;
+    },
+  };
   const sent = [];
   const acks = [];
   const pending = [];
   const transport = {
     async ingest(p) {
       sent.push(p);
-      return { ok: true, server_time: new Date(clock.t).toISOString(), clock_invalid: false, settings_version: 2, commands: pending.splice(0) };
+      return {
+        ok: true,
+        server_time: new Date(clock.t).toISOString(),
+        clock_invalid: false,
+        settings_version: 2,
+        commands: pending.splice(0),
+      };
     },
     async getSettings() {
       return { ...SETTINGS, ...settings };
@@ -103,7 +114,10 @@ describe("ATS-1: protection keeps working while the generator starts", () => {
 
 describe("ATS-3: a contactor that does not close is detected", () => {
   test("transfer fails with close_failed, the source is benched and the next one is used", () => {
-    const s = setup({ settings: { priority: ["grid", "solar", "generator"] }, world: { stuckOpen: new Set(["solar"]) } });
+    const s = setup({
+      settings: { priority: ["grid", "solar", "generator"] },
+      world: { stuckOpen: new Set(["solar"]) },
+    });
     s.board.world.grid = "off";
     s.run(1_500 + 2_000 + 200); // neutral + feedback timeout
     const failed = s.allEvents().find((e) => e.type === "transfer_failed");
@@ -135,7 +149,15 @@ describe("ATS-5: interlock lockout is latched and cleared on site", () => {
 
 describe("ATS-6: transfer_lockout is reported once per episode", () => {
   test("rate limiting does not emit an event on every control step", () => {
-    const s = setup({ settings: { priority: ["grid", "solar", "generator"], rate_limit_count: 2, min_dwell_s: 0, return_delay_s: 30 }, world: { genFailStart: true } });
+    const s = setup({
+      settings: {
+        priority: ["grid", "solar", "generator"],
+        rate_limit_count: 2,
+        min_dwell_s: 0,
+        return_delay_s: 30,
+      },
+      world: { genFailStart: true },
+    });
     // Flap the grid so Smart mode keeps returning to it.
     for (let i = 0; i < 4; i++) {
       s.board.world.grid = "off";
@@ -166,11 +188,18 @@ describe("Commands", () => {
   });
 
   test("reset_generator clears a failed-to-start lock (ATS-2)", async () => {
-    const s = setup({ settings: { priority: ["grid", "generator", "solar"] }, world: { solar: "off", genFailStart: true } });
+    const s = setup({
+      settings: { priority: ["grid", "generator", "solar"] },
+      world: { solar: "off", genFailStart: true },
+    });
     s.board.world.grid = "off";
     s.run(20_000);
     assert.equal(s.board.gen.locked, true);
-    assert.ok(s.allEvents().some((e) => e.type === "transfer_failed" && e.data.reason === "failed_to_start"));
+    assert.ok(
+      s
+        .allEvents()
+        .some((e) => e.type === "transfer_failed" && e.data.reason === "failed_to_start"),
+    );
     assert.ok(s.allEvents().some((e) => e.type === "no_source_started"));
     s.board.world.genFailStart = false;
     s.pending.push({ id: "c-2", type: "reset_generator", payload: {} });
@@ -213,7 +242,12 @@ describe("DB-2 / DB-3 on the board side", () => {
     s.board.world.clockSkewMs = -s.clock.t; // 1970
     s.board.transport.ingest = async (p) => {
       s.sent.push(p);
-      return { ok: true, server_time: new Date(s.clock.t).toISOString(), clock_invalid: true, commands: [] };
+      return {
+        ok: true,
+        server_time: new Date(s.clock.t).toISOString(),
+        clock_invalid: true,
+        commands: [],
+      };
     };
     await s.board.report(s.clock.t);
     assert.ok(Date.parse(s.sent.at(-1).ts) < 1e9);

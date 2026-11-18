@@ -25,7 +25,14 @@ export class EmulatedBoard {
    * @param {number} [o.timeScale] divides human-scale timers (warm-up, return delay…) for demos
    * @param {(line: string) => void} [o.log]
    */
-  constructor({ transport, clock, intervalMs = 2000, timeScale = 1, bootSource = "grid", log = () => {} }) {
+  constructor({
+    transport,
+    clock,
+    intervalMs = 2000,
+    timeScale = 1,
+    bootSource = "grid",
+    log = () => {},
+  }) {
     this.transport = transport;
     this.clock = clock;
     this.intervalMs = intervalMs;
@@ -81,7 +88,10 @@ export class EmulatedBoard {
     this.closeFailedUntil = { grid: 0, solar: 0, generator: 0 };
     this.handled = new Map(); // command id → last ack, for de-duplication
     this.qual = Object.fromEntries(
-      SOURCES.map((s) => [s, { qualified: s === this.active, badSince: null, goodSince: null, kind: null }]),
+      SOURCES.map((s) => [
+        s,
+        { qualified: s === this.active, badSince: null, goodSince: null, kind: null },
+      ]),
     );
     this.contactors = Object.fromEntries(
       SOURCES.map((s) => [s, { cmd: s === this.active, fb: s === this.active }]),
@@ -137,7 +147,9 @@ export class EmulatedBoard {
       this.droppedEvents++;
     }
     this.buffer.push({ seq: ++this.eventSeq, ts: this.iso(), type, severity: "info", ...extra });
-    this.log(`  ↳ event ${type} ${extra.source ?? extra.to ?? ""} ${extra.data?.reason ?? extra.data?.kind ?? ""}`.trimEnd());
+    this.log(
+      `  ↳ event ${type} ${extra.source ?? extra.to ?? ""} ${extra.data?.reason ?? extra.data?.kind ?? ""}`.trimEnd(),
+    );
   }
 
   /** Voltage and frequency each source presents right now. */
@@ -212,7 +224,12 @@ export class EmulatedBoard {
     }
 
     // Generator cool-down after it stopped feeding the load.
-    if (this.gen.running && this.active !== "generator" && this.gen.stopAt && now > this.gen.stopAt) {
+    if (
+      this.gen.running &&
+      this.active !== "generator" &&
+      this.gen.stopAt &&
+      now > this.gen.stopAt
+    ) {
       if (this.transfer?.to !== "generator") {
         this.gen.running = false;
         this.gen.stopAt = 0;
@@ -220,7 +237,11 @@ export class EmulatedBoard {
       }
     }
 
-    if (this.mode === "manual" && this.settings?.manual_revert_min && now - this.modeSince > this.settings.manual_revert_min * 60_000) {
+    if (
+      this.mode === "manual" &&
+      this.settings?.manual_revert_min &&
+      now - this.modeSince > this.settings.manual_revert_min * 60_000
+    ) {
       this.mode = "smart";
       this.modeSince = now;
       this.override = null;
@@ -229,7 +250,11 @@ export class EmulatedBoard {
 
     // PROTECTION FIRST: a source outside its limits is disconnected at once,
     // whatever else is going on (generator cranking / warming up included).
-    if (this.active && !this.qual[this.active].qualified && (!this.transfer || this.transfer.phase === "prepare")) {
+    if (
+      this.active &&
+      !this.qual[this.active].qualified &&
+      (!this.transfer || this.transfer.phase === "prepare")
+    ) {
       this.protectiveOpen(now);
       if (this.lockout) return;
     }
@@ -254,7 +279,12 @@ export class EmulatedBoard {
     this.active = null;
     if (this.transfer) this.transfer.from = from;
     if (this.mode === "manual") {
-      this.override = { active: true, at: this.iso(), reason: this.qual[from].kind ?? "no_voltage", requested: this.manualChoice ?? from };
+      this.override = {
+        active: true,
+        at: this.iso(),
+        reason: this.qual[from].kind ?? "no_voltage",
+        requested: this.manualChoice ?? from,
+      };
       this.emit("protection_override", { severity: "warning", data: this.override });
     }
   }
@@ -262,7 +292,8 @@ export class EmulatedBoard {
   enterLockout(source) {
     this.lockout = { reason: "interlock_mismatch", source };
     this.state = "lockout";
-    if (this.transfer?.cmdId) void this.ackCommand(this.transfer.cmdId, "failed", { reason: "عطل القفل المتبادل" });
+    if (this.transfer?.cmdId)
+      void this.ackCommand(this.transfer.cmdId, "failed", { reason: "عطل القفل المتبادل" });
     this.transfer = null;
     this.emit("interlock_fault", { severity: "critical", source, data: { contactor: source } });
   }
@@ -301,7 +332,7 @@ export class EmulatedBoard {
     }
     this.rateLimited = false;
     const reason = !activeOk
-      ? (this.openedFor?.from ? this.qual[this.openedFor.from].kind : null) ?? "source_lost"
+      ? ((this.openedFor?.from ? this.qual[this.openedFor.from].kind : null) ?? "source_lost")
       : "priority_return";
     this.startTransfer(target, reason, now);
   }
@@ -331,7 +362,11 @@ export class EmulatedBoard {
       attempt: 0,
       timings: {},
     };
-    this.emit("transfer_started", { from: this.transfer.from, to, data: { reason, mode: this.mode } });
+    this.emit("transfer_started", {
+      from: this.transfer.from,
+      to,
+      data: { reason, mode: this.mode },
+    });
     if (needsGen) this.crank(now);
   }
 
@@ -345,7 +380,12 @@ export class EmulatedBoard {
 
   failTransfer(reason, now) {
     const t = this.transfer;
-    this.emit("transfer_failed", { severity: "critical", from: t.from, to: t.to, data: { reason, mode: this.mode } });
+    this.emit("transfer_failed", {
+      severity: "critical",
+      from: t.from,
+      to: t.to,
+      data: { reason, mode: this.mode },
+    });
     if (t.cmdId) void this.ackCommand(t.cmdId, "failed", { reason: FAIL_TEXT[reason] ?? reason });
     this.transfer = null;
     if (!this.active) {
@@ -419,7 +459,10 @@ export class EmulatedBoard {
     }
 
     if (t.phase === "neutral") {
-      if (!this.candidates(now)[t.to]?.qualified && !(t.to === "generator" && this.gen.running && this.qual.generator.qualified)) {
+      if (
+        !this.candidates(now)[t.to]?.qualified &&
+        !(t.to === "generator" && this.gen.running && this.qual.generator.qualified)
+      ) {
         this.failTransfer("target_lost", now);
         return;
       }
@@ -472,7 +515,8 @@ export class EmulatedBoard {
 
   updateState() {
     if (this.lockout) this.state = "lockout";
-    else if (this.transfer && (this.transfer.phase !== "prepare" || !this.active)) this.state = "transferring";
+    else if (this.transfer && (this.transfer.phase !== "prepare" || !this.active))
+      this.state = "transferring";
     else if (!this.active) this.state = "no_source";
     else this.state = "normal";
   }
@@ -493,7 +537,8 @@ export class EmulatedBoard {
     const c = this.cfg();
     const alarms = [];
     if (this.lockout) alarms.push("interlock_mismatch");
-    if (!this.settings?.nominal_voltage || !this.settings?.nominal_frequency) alarms.push("settings_incomplete");
+    if (!this.settings?.nominal_voltage || !this.settings?.nominal_frequency)
+      alarms.push("settings_incomplete");
     return {
       v: 1,
       boot_id: this.bootId,
@@ -505,7 +550,9 @@ export class EmulatedBoard {
       mode_since: this.iso(this.modeSince + this.world.clockSkewMs + this.clockOffsetMs),
       state: this.state,
       active: this.state === "no_source" ? null : this.active,
-      active_since: this.active ? this.iso(this.activeSince + this.world.clockSkewMs + this.clockOffsetMs) : null,
+      active_since: this.active
+        ? this.iso(this.activeSince + this.world.clockSkewMs + this.clockOffsetMs)
+        : null,
       sources: Object.fromEntries(
         SOURCES.map((s) => {
           const rd = this.reading(s);
@@ -527,16 +574,32 @@ export class EmulatedBoard {
         }),
       ),
       load: feeding
-        ? { v: +r.v.toFixed(1), a: +(this.world.loadW / r.v).toFixed(2), w: Math.round(this.world.loadW), f: +r.f.toFixed(2) }
+        ? {
+            v: +r.v.toFixed(1),
+            a: +(this.world.loadW / r.v).toFixed(2),
+            w: Math.round(this.world.loadW),
+            f: +r.f.toFixed(2),
+          }
         : { v: 0, a: 0, w: 0, f: null },
       contactors: structuredClone(this.contactors),
       alarms,
       override: this.override,
       config_version: this.configVersion,
-      controller: { uptime_s: Math.round((now - (this.bootAt ?? now)) / 1000), reset_reason: "power_on", temp_c: 41, supply_v: 5.02, dropped_events: this.droppedEvents },
+      controller: {
+        uptime_s: Math.round((now - (this.bootAt ?? now)) / 1000),
+        reset_reason: "power_on",
+        temp_c: 41,
+        supply_v: 5.02,
+        dropped_events: this.droppedEvents,
+      },
       rssi: -58,
       energy_wh: Object.fromEntries(SOURCES.map((s) => [s, Math.round(this.nvs.energyWh[s])])),
-      runtime: Object.fromEntries(SOURCES.map((s) => [s, { s: Math.round(this.nvs.runtime[s].s), since: this.nvs.runtime[s].since }])),
+      runtime: Object.fromEntries(
+        SOURCES.map((s) => [
+          s,
+          { s: Math.round(this.nvs.runtime[s].s), since: this.nvs.runtime[s].since },
+        ]),
+      ),
       events: [...this.buffer],
     };
   }
@@ -544,7 +607,10 @@ export class EmulatedBoard {
   /** One device_ingest round-trip. Returns false while "offline" or on error. */
   async report(now = this.clock.now()) {
     if (now < this.world.offlineUntil) return false; // events stay buffered
-    this.world.loadW = Math.max(300, Math.min(9000, this.world.loadW + (Math.random() - 0.5) * 120));
+    this.world.loadW = Math.max(
+      300,
+      Math.min(9000, this.world.loadW + (Math.random() - 0.5) * 120),
+    );
     const body = this.payload(now);
     let res;
     try {
@@ -557,7 +623,8 @@ export class EmulatedBoard {
     this.buffer = this.buffer.filter((e) => !sent.has(e));
     if (res.clock_invalid && res.server_time) {
       // NTP unavailable: adopt the server clock.
-      this.clockOffsetMs = Date.parse(res.server_time) - (this.clock.now() + this.world.clockSkewMs);
+      this.clockOffsetMs =
+        Date.parse(res.server_time) - (this.clock.now() + this.world.clockSkewMs);
       this.log("  ⏱ clock corrected from server_time");
     }
     await this.syncSettings(res.settings_version);
@@ -597,7 +664,8 @@ export class EmulatedBoard {
     const now = this.clock.now();
     if (cmd.type === "set_mode") {
       const mode = cmd.payload?.mode;
-      if (mode !== "smart" && mode !== "manual") return this.ackCommand(cmd.id, "rejected", { reason: "وضع غير معروف" });
+      if (mode !== "smart" && mode !== "manual")
+        return this.ackCommand(cmd.id, "rejected", { reason: "وضع غير معروف" });
       await this.ackCommand(cmd.id, "accepted");
       this.mode = mode;
       this.modeSince = now;
@@ -608,13 +676,20 @@ export class EmulatedBoard {
     }
     if (cmd.type === "set_source") {
       const to = cmd.payload?.source;
-      if (!SOURCES.includes(to)) return this.ackCommand(cmd.id, "rejected", { reason: "مصدر غير معروف" });
-      if (this.lockout) return this.ackCommand(cmd.id, "rejected", { reason: "النظام مقفل بالحماية" });
-      if (this.mode !== "manual") return this.ackCommand(cmd.id, "rejected", { reason: "النظام ليس في الوضع اليدوي" });
-      if (this.transfer) return this.ackCommand(cmd.id, "rejected", { reason: "يوجد تحويل قيد التنفيذ" });
-      if (to === this.active) return this.ackCommand(cmd.id, "rejected", { reason: "هذا هو المصدر الحالي" });
+      if (!SOURCES.includes(to))
+        return this.ackCommand(cmd.id, "rejected", { reason: "مصدر غير معروف" });
+      if (this.lockout)
+        return this.ackCommand(cmd.id, "rejected", { reason: "النظام مقفل بالحماية" });
+      if (this.mode !== "manual")
+        return this.ackCommand(cmd.id, "rejected", { reason: "النظام ليس في الوضع اليدوي" });
+      if (this.transfer)
+        return this.ackCommand(cmd.id, "rejected", { reason: "يوجد تحويل قيد التنفيذ" });
+      if (to === this.active)
+        return this.ackCommand(cmd.id, "rejected", { reason: "هذا هو المصدر الحالي" });
       if (!this.candidates(now)[to].qualified)
-        return this.ackCommand(cmd.id, "rejected", { reason: "المصدر غير مؤهل أو خارج الحدود المضبوطة" });
+        return this.ackCommand(cmd.id, "rejected", {
+          reason: "المصدر غير مؤهل أو خارج الحدود المضبوطة",
+        });
       await this.ackCommand(cmd.id, "accepted");
       this.manualChoice = to;
       this.override = null;
@@ -666,7 +741,9 @@ export class EmulatedBoard {
       mode: this.mode,
       state: this.state,
       active: this.active,
-      transfer: this.transfer ? `${this.transfer.phase}${this.transfer.sub ? "/" + this.transfer.sub : ""} → ${this.transfer.to}` : null,
+      transfer: this.transfer
+        ? `${this.transfer.phase}${this.transfer.sub ? "/" + this.transfer.sub : ""} → ${this.transfer.to}`
+        : null,
       world: { ...this.world, stuckOpen: [...this.world.stuckOpen] },
       gen: this.gen,
       configVersion: this.configVersion,

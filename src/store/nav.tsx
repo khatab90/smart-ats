@@ -13,7 +13,14 @@ export type Tab = "home" | "live" | "energy" | "logs" | "more";
 export type Route = "notifications" | "profile" | "users" | "devices" | "addDevice" | "settings";
 
 const TABS: readonly Tab[] = ["home", "live", "energy", "logs", "more"];
-const ROUTES: readonly Route[] = ["notifications", "profile", "users", "devices", "addDevice", "settings"];
+const ROUTES: readonly Route[] = [
+  "notifications",
+  "profile",
+  "users",
+  "devices",
+  "addDevice",
+  "settings",
+];
 
 interface NavState {
   tab: Tab;
@@ -77,7 +84,10 @@ export function NavProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setTab = useCallback((tab: Tab) => navigate({ tab, stack: [] }), [navigate]);
-  const go = useCallback((tab: Tab, view?: string) => navigate({ tab, view, stack: [] }), [navigate]);
+  const go = useCallback(
+    (tab: Tab, view?: string) => navigate({ tab, view, stack: [] }),
+    [navigate],
+  );
   const push = useCallback(
     (r: Route) => navigate({ ...ref.current, stack: [...ref.current.stack, r] }),
     [navigate],
@@ -96,7 +106,10 @@ export function NavProvider({ children }: { children: ReactNode }) {
     window.history.replaceState(null, "", toHash(next));
   }, []);
 
-  const value = useMemo(() => ({ ...state, setTab, push, back, go }), [state, setTab, push, back, go]);
+  const value = useMemo(
+    () => ({ ...state, setTab, push, back, go }),
+    [state, setTab, push, back, go],
+  );
   return <NavContext.Provider value={value}>{children}</NavContext.Provider>;
 }
 

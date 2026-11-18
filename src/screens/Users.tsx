@@ -1,6 +1,28 @@
-import { Check, Clock3, Crown, LogOut, Mail, Minus, RefreshCw, Trash2, UserPlus, Users as UsersIcon, X } from "lucide-react";
+import {
+  Check,
+  Clock3,
+  Crown,
+  LogOut,
+  Mail,
+  Minus,
+  RefreshCw,
+  Trash2,
+  UserPlus,
+  Users as UsersIcon,
+  X,
+} from "lucide-react";
 import { useState } from "react";
-import { Button, Card, ConfirmSheet, EmptyState, ErrorState, ScreenHeader, SectionTitle, Sheet, Skeleton } from "../components/ui";
+import {
+  Button,
+  Card,
+  ConfirmSheet,
+  EmptyState,
+  ErrorState,
+  ScreenHeader,
+  SectionTitle,
+  Sheet,
+  Skeleton,
+} from "../components/ui";
 import { PERMISSIONS, ROLE_META } from "../data/meta";
 import type { InvitationRow, MemberRow, Role } from "../data/types";
 import { useMembers } from "../hooks/data";
@@ -49,13 +71,21 @@ export function Users() {
   const confirmPending = () => {
     if (!pending || !device) return;
     if (pending.kind === "role")
-      return run(() => membersApi.setRole(device.id, pending.member.user_id, pending.role), "تم تغيير الصلاحية");
+      return run(
+        () => membersApi.setRole(device.id, pending.member.user_id, pending.role),
+        "تم تغيير الصلاحية",
+      );
     if (pending.kind === "remove")
-      return run(() => membersApi.removeMember(device.id, pending.member.user_id), "تمت إزالة المستخدم");
+      return run(
+        () => membersApi.removeMember(device.id, pending.member.user_id),
+        "تمت إزالة المستخدم",
+      );
     if (pending.kind === "owner")
-      return run(() => membersApi.transferOwnership(device.id, pending.member.user_id), "تم نقل الملكية");
-    if (pending.kind === "leave")
-      return run(() => leaveDevice(device.id), "غادرت الجهاز");
+      return run(
+        () => membersApi.transferOwnership(device.id, pending.member.user_id),
+        "تم نقل الملكية",
+      );
+    if (pending.kind === "leave") return run(() => leaveDevice(device.id), "غادرت الجهاز");
     return run(() => membersApi.revokeInvitation(pending.invitation.id), "تم إلغاء الدعوة");
   };
 
@@ -64,7 +94,11 @@ export function Users() {
     if (err !== null) return pushToast({ kind: "error", title: "تعذر إعادة الإرسال", body: err });
     const mail = await membersApi.sendInvitationEmail(res.email, res.token);
     if (mail.error !== null)
-      return pushToast({ kind: "error", title: "تم تجديد الدعوة لكن تعذر إرسال البريد", body: mail.error });
+      return pushToast({
+        kind: "error",
+        title: "تم تجديد الدعوة لكن تعذر إرسال البريد",
+        body: mail.error,
+      });
     pushToast({ kind: "success", title: "أُعيد إرسال الدعوة", body: res.email });
     await reload();
   };
@@ -247,8 +281,7 @@ export function Users() {
         {selected && (
           <div className="space-y-3">
             <p className="text-[13px] text-muted">
-              {selected.full_name || "مستخدم"} •{" "}
-              <span dir="ltr">{selected.email}</span>
+              {selected.full_name || "مستخدم"} • <span dir="ltr">{selected.email}</span>
             </p>
             {isAdmin && selected.user_id !== ownerId && selected.user_id !== user?.id && (
               <>

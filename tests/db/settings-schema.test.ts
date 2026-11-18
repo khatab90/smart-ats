@@ -55,8 +55,16 @@ describe("numeric limits match the database", () => {
       const partner = PARTNER[f.key] ? `${PARTNER[f.key]}, ` : "";
       assert.equal(await accepts(`${partner}${f.key} = ${f.min}`), true, "min accepted");
       assert.equal(await accepts(`${partner}${f.key} = ${f.max}`), true, "max accepted");
-      assert.equal(await accepts(`${partner}${f.key} = ${f.min - eps}`), false, "below min rejected");
-      assert.equal(await accepts(`${partner}${f.key} = ${f.max + eps}`), false, "above max rejected");
+      assert.equal(
+        await accepts(`${partner}${f.key} = ${f.min - eps}`),
+        false,
+        "below min rejected",
+      );
+      assert.equal(
+        await accepts(`${partner}${f.key} = ${f.max + eps}`),
+        false,
+        "above max rejected",
+      );
       if (f.optional) assert.equal(await accepts(`${f.key} = null`), true, "null accepted");
     });
   }
@@ -65,7 +73,8 @@ describe("numeric limits match the database", () => {
 describe("nominal values match the database", () => {
   test("every app option is accepted, others rejected", async () => {
     for (const v of NOMINAL_VOLTAGES) assert.equal(await accepts(`nominal_voltage = ${v}`), true);
-    for (const v of NOMINAL_FREQUENCIES) assert.equal(await accepts(`nominal_frequency = ${v}`), true);
+    for (const v of NOMINAL_FREQUENCIES)
+      assert.equal(await accepts(`nominal_frequency = ${v}`), true);
     assert.equal(await accepts("nominal_voltage = 110"), false);
     assert.equal(await accepts("nominal_frequency = 55"), false);
   });

@@ -7,7 +7,10 @@ import { errorMessage } from "../lib/errors";
 export type Result<T> = { data: T; error: null } | { data: null; error: string };
 
 export const ok = <T>(data: T): Result<T> => ({ data, error: null });
-export const fail = <T = never>(err: unknown): Result<T> => ({ data: null, error: errorMessage(err) });
+export const fail = <T = never>(err: unknown): Result<T> => ({
+  data: null,
+  error: errorMessage(err),
+});
 
 /**
  * Runs a Supabase request and maps its `{ data, error }` into a Result.

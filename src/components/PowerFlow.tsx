@@ -20,7 +20,10 @@ const SLOTS: Record<number, number[]> = { 1: [66], 2: [40, 92], 3: [22, 66, 110]
 export function PowerFlow({ status, live }: { status: DeviceStatus | null; live: boolean }) {
   const shown = installedSources(status);
   const slots = SLOTS[shown.length] ?? SLOTS[3];
-  const SRC_Y = Object.fromEntries(shown.map((id, i) => [id, slots[i]])) as Record<SourceId, number>;
+  const SRC_Y = Object.fromEntries(shown.map((id, i) => [id, slots[i]])) as Record<
+    SourceId,
+    number
+  >;
   const active =
     live && status?.system_state !== "no_source" ? (status?.active_source ?? null) : null;
   const transferring = live && status?.system_state === "transferring";

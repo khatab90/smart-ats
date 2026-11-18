@@ -13,7 +13,12 @@ await build({
   platform: "node",
   format: "esm",
   target: "node20",
-  banner: { js: "// Smart ATS device emulator — bundled. Configure with emulator.config.json next to this file." },
+  banner: {
+    js: "// Smart ATS device emulator — bundled. Configure with emulator.config.json next to this file.",
+  },
 });
-copyFileSync(new URL("./emulator.config.example.json", import.meta.url), new URL("emulator.config.example.json", out));
+copyFileSync(
+  new URL("./emulator.config.example.json", import.meta.url),
+  new URL("emulator.config.example.json", out),
+);
 console.log("dist-emulator/ats-emulator.mjs");

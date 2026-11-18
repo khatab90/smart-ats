@@ -139,7 +139,12 @@ export type NotificationRow = Pick<
 
 export type NotificationPrefs = Pick<
   Tables<"notification_preferences">,
-  "source_outage" | "transfer" | "electrical_fault" | "connection_lost" | "transfer_failed" | "sound"
+  | "source_outage"
+  | "transfer"
+  | "electrical_fault"
+  | "connection_lost"
+  | "transfer_failed"
+  | "sound"
 >;
 
 export type Profile = Pick<Tables<"profiles">, "id" | "email" | "phone" | "full_name">;
@@ -158,5 +163,12 @@ export interface MemberRow {
 
 export type InvitationRow = Pick<
   Tables<"invitations">,
-  "id" | "email" | "role" | "created_at" | "last_sent_at" | "expires_at" | "accepted_at" | "revoked_at"
+  | "id"
+  | "email"
+  | "role"
+  | "created_at"
+  | "last_sent_at"
+  | "expires_at"
+  | "accepted_at"
+  | "revoked_at"
 >;

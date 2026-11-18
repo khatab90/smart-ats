@@ -206,7 +206,8 @@ export function NotificationSettings({ open, onClose }: { open: boolean; onClose
                 <p className="text-[11px] leading-5 text-muted">{meta.desc}</p>
                 {meta.critical && !prefs[key] && (
                   <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-danger-strong">
-                    <TriangleAlert className="size-3" /> إنذار حرج موقوف: لن تعرف بانقطاع الكهرباء أو فشل التحويل.
+                    <TriangleAlert className="size-3" /> إنذار حرج موقوف: لن تعرف بانقطاع الكهرباء
+                    أو فشل التحويل.
                   </p>
                 )}
               </div>
@@ -233,8 +234,8 @@ export function NotificationSettings({ open, onClose }: { open: boolean; onClose
         </div>
       </div>
       <p className="mt-3 text-[11px] leading-5 text-muted">
-        «انقطاع المصدر الحالي» و«فشل عملية التحويل» إنذاران حرجان، ويُنصح بإبقائهما مفعّلين. إيقاف أي نوع
-        يوقف التنبيه فقط، ويبقى الحدث مسجلاً في سجل أحداث الجهاز.
+        «انقطاع المصدر الحالي» و«فشل عملية التحويل» إنذاران حرجان، ويُنصح بإبقائهما مفعّلين. إيقاف أي
+        نوع يوقف التنبيه فقط، ويبقى الحدث مسجلاً في سجل أحداث الجهاز.
       </p>
     </Sheet>
   );

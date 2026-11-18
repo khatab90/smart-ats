@@ -9,7 +9,10 @@ export function onAuthChange(fn: (event: string, session: Session | null) => voi
   return () => data.subscription.unsubscribe();
 }
 
-export async function signIn(email: string, password: string): Promise<Result<null> & { unconfirmed?: boolean }> {
+export async function signIn(
+  email: string,
+  password: string,
+): Promise<Result<null> & { unconfirmed?: boolean }> {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { ...fail(error), unconfirmed: /not confirmed/i.test(error.message) };
   return ok(null);
@@ -27,15 +30,23 @@ export const signUp = (email: string, password: string, fullName: string) =>
   );
 
 export const resendConfirmation = (email: string) =>
-  run(supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: appBaseUrl() } }), () => null);
+  run(
+    supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: appBaseUrl() } }),
+    () => null,
+  );
 
 export const sendPasswordReset = (email: string) =>
   run(supabase.auth.resetPasswordForEmail(email, { redirectTo: appBaseUrl() }), () => null);
 
-export const setPassword = (password: string) => run(supabase.auth.updateUser({ password }), () => null);
+export const setPassword = (password: string) =>
+  run(supabase.auth.updateUser({ password }), () => null);
 
 /** Re-authenticates before changing the password, so a left-open session cannot. */
-export async function changePassword(email: string, current: string, next: string): Promise<Result<null>> {
+export async function changePassword(
+  email: string,
+  current: string,
+  next: string,
+): Promise<Result<null>> {
   const re = await supabase.auth.signInWithPassword({ email, password: current });
   if (re.error) return { data: null, error: "كلمة المرور الحالية غير صحيحة" };
   return setPassword(next);
@@ -44,7 +55,8 @@ export async function changePassword(email: string, current: string, next: strin
 export const requestEmailChange = (email: string) =>
   run(supabase.auth.updateUser({ email }, { emailRedirectTo: appBaseUrl() }), () => null);
 
-export const requestPhoneChange = (phone: string) => run(supabase.auth.updateUser({ phone }), () => null);
+export const requestPhoneChange = (phone: string) =>
+  run(supabase.auth.updateUser({ phone }), () => null);
 
 export const verifyPhoneChange = (phone: string, token: string) =>
   run(supabase.auth.verifyOtp({ phone, token, type: "phone_change" }), () => null);
