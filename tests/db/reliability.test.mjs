@@ -231,28 +231,24 @@ describe("DB-6: delivered commands are not re-sent on every message", () => {
   });
 });
 
-describe("ATS-2: reset_generator command", () => {
-  test("admins can send it with an empty payload; unknown commands are refused", async () => {
+describe("Passive generator and solar schedule", () => {
+  test("generator start commands and settings no longer exist", async () => {
     await h.as(U1, "owner@x.io");
-    const c = await h.one(
-      "select (public.send_command(gen_random_uuid(), 'ATS-R00001', 'reset_generator', '{\"x\":1}')).*",
-    );
-    assert.equal(c.type, "reset_generator");
-    assert.deepEqual(c.payload, {});
-    await h.rejects(
-      "select public.send_command(gen_random_uuid(), 'ATS-R00001', 'clear_lockout', '{}')",
-      [],
-      /INVALID_COMMAND/,
-    );
-    await h.as(U2, "viewer@x.io");
     await h.rejects(
       "select public.send_command(gen_random_uuid(), 'ATS-R00001', 'reset_generator', '{}')",
       [],
-      /NOT_ADMIN/,
+      /INVALID_COMMAND/,
     );
+    await h.as(null);
+    const cols = (
+      await h.rows(
+        "select column_name from information_schema.columns where table_name='device_settings' and column_name like 'gen\\_%'",
+      )
+    ).map((c) => c.column_name);
+    assert.deepEqual(cols, []);
   });
 
-  test("the board can report generator_reset and lockout_cleared", async () => {
+  test("the board can report lockout_cleared; generator_reset is no longer a valid event", async () => {
     await h.as("anon");
     const r = await h.ingest(
       dev,
@@ -265,7 +261,64 @@ describe("ATS-2: reset_generator command", () => {
         ],
       }),
     );
-    assert.equal(r.skipped_events, 0);
+    assert.equal(r.skipped_events, 1);
+  });
+
+  test("an admin can set a valid solar schedule; the board receives it with the UTC offset", async () => {
+    await h.as(U1, "owner@x.io");
+    const sched = {
+      enabled: true,
+      periods: [
+        { days: [0, 1, 2, 3, 4, 5, 6], start: "08:00", end: "17:00" },
+        { days: [5], start: "20:00", end: "02:00" },
+      ],
+    };
+    await h.db.query(
+      "update public.device_settings set solar_schedule = $1, timezone = 'Asia/Baghdad'",
+      [JSON.stringify(sched)],
+    );
+    await h.as("anon");
+    const s = (
+      await h.one("select public.device_get_settings($1, $2) s", [dev.device_id, dev.token])
+    ).s;
+    assert.deepEqual(s.solar_schedule, sched);
+    assert.equal(s.utc_offset_min, 180);
+    assert.equal("gen_warmup_s" in s, false);
+  });
+
+  test("invalid schedules are rejected by the database", async () => {
+    await h.as(U1, "owner@x.io");
+    const bad = [
+      { enabled: true, periods: [] }, // enabled without any period
+      { enabled: true, periods: [{ days: [7], start: "08:00", end: "17:00" }] },
+      { enabled: true, periods: [{ days: [1], start: "8:00", end: "17:00" }] },
+      { enabled: true, periods: [{ days: [1], start: "24:00", end: "17:00" }] },
+      { enabled: true, periods: [{ days: [1], start: "08:00", end: "08:00" }] },
+      { enabled: true, periods: [{ days: [], start: "08:00", end: "17:00" }] },
+      { enabled: "yes", periods: [] },
+      { enabled: false },
+    ];
+    for (const b of bad) {
+      await h.rejects(
+        "update public.device_settings set solar_schedule = $1",
+        [JSON.stringify(b)],
+        /check constraint/,
+      );
+    }
+    await h.as(U2, "viewer@x.io");
+    await h.db.query(
+      'update public.device_settings set solar_schedule = \'{"enabled": false, "periods": []}\'',
+    );
+    await h.as(U1, "owner@x.io");
+    assert.equal(
+      (
+        await h.one(
+          "select solar_schedule->>'enabled' e from public.device_settings where device_id='ATS-R00001'",
+        )
+      ).e,
+      "true",
+      "a viewer cannot change it",
+    );
   });
 });
 

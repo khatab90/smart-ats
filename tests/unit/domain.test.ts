@@ -1,15 +1,17 @@
 import assert from "node:assert/strict";
 import { describe, test } from "vitest";
-import type { DeviceStatus, NotificationRow } from "../../src/data/types";
+import type { DeviceStatus, EditableSettings, NotificationRow } from "../../src/data/types";
 import { notificationText } from "../../src/domain/notifications";
+import { validateSettings } from "../../src/domain/settings";
 import {
-  generatorFirst,
   installedSources,
   isFeeding,
+  isSelectable,
+  isUsableManually,
   mergePriority,
+  outsideSchedule,
   visiblePriority,
 } from "../../src/domain/sources";
-import { validateSettings } from "../../src/domain/settings";
 
 const status = (sources: DeviceStatus["sources"]) => ({ sources }) as Pick<DeviceStatus, "sources">;
 
@@ -41,12 +43,21 @@ describe("priority with hidden sources", () => {
       "solar",
     ]);
   });
-  test("generator-first is judged on the visible order", () => {
-    assert.equal(generatorFirst(["solar", "generator", "grid"], ["grid", "generator"]), true);
-    assert.equal(
-      generatorFirst(["grid", "generator", "solar"], ["grid", "generator", "solar"]),
-      false,
-    );
+});
+
+describe("passive sources and the solar schedule", () => {
+  test("Smart mode needs the source inside its limits and allowed by the schedule", () => {
+    assert.equal(isSelectable({ v: 230, f: 50, qualified: true }), true);
+    assert.equal(isSelectable({ v: 230, f: 50, qualified: true, allowed: false }), false);
+    assert.equal(isSelectable({ v: 0, f: 0, qualified: false, reason: "no_voltage" }), false);
+  });
+  test("a stopped generator is simply unavailable (the board never starts it)", () => {
+    assert.equal(isSelectable({ v: 0, f: 0, qualified: false, reason: "no_voltage" }), false);
+  });
+  test("a manual transfer ignores the schedule", () => {
+    assert.equal(isUsableManually({ v: 230, f: 50, qualified: true, allowed: false }), true);
+    assert.equal(outsideSchedule({ v: 230, f: 50, qualified: true, allowed: false }), true);
+    assert.equal(outsideSchedule({ v: 230, f: 50, qualified: true }), false);
   });
 });
 
@@ -70,9 +81,8 @@ describe("notification text from params", () => {
   });
   test("a failed transfer explains why", () => {
     assert.match(
-      n({ event: "transfer_failed", to: "generator", reason: "failed_to_start" }, "transfer_failed")
-        .body,
-      /فشل تشغيل المولد/,
+      n({ event: "transfer_failed", to: "solar", reason: "close_failed" }, "transfer_failed").body,
+      /الكونتاكتور/,
     );
   });
   test("old rows without params fall back to the stored text", () => {
@@ -81,7 +91,7 @@ describe("notification text from params", () => {
 });
 
 describe("settings cross-field rules", () => {
-  const base = {
+  const base: EditableSettings = {
     priority: ["grid", "solar", "generator"],
     nominal_voltage: 230,
     nominal_frequency: 50,
@@ -101,15 +111,19 @@ describe("settings cross-field rules", () => {
     rate_limit_window_min: 10,
     neutral_delay_ms: 1000,
     transfer_timeout_ms: 5000,
-    gen_crank_attempts: 3,
-    gen_warmup_s: 30,
-    gen_cooldown_s: 180,
     manual_revert_min: null,
     timezone: "Asia/Baghdad",
-  } as Parameters<typeof validateSettings>[0];
+    solar_schedule: { enabled: false, periods: [] },
+  };
   test("defaults are valid", () => assert.equal(validateSettings(base), null));
   test("recover band must be inside the trip band", () => {
     assert.match(validateSettings({ ...base, uv_recover_pct: 17 }) ?? "", /الرجوع/);
+  });
+  test("an enabled schedule needs at least one period", () => {
+    assert.match(
+      validateSettings({ ...base, solar_schedule: { enabled: true, periods: [] } }) ?? "",
+      /فترة/,
+    );
   });
   test("an invalid time zone is rejected", () => {
     assert.match(validateSettings({ ...base, timezone: "Mars/Base" }) ?? "", /المنطقة الزمنية/);

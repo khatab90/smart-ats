@@ -5,14 +5,25 @@
 //   report(now)   every interval_ms: one device_ingest round-trip
 // Time and I/O are injected (`clock`, `transport`) so the same code runs in
 // the CLI against Supabase and in tests against PGlite with a virtual clock.
-import { SOURCES, mayTransfer, smartTarget, stepQualification } from "./logic.mjs";
+//
+// All three sources are passive: the board never starts or stops anything.
+// A source is usable when it delivers voltage and frequency inside the
+// limits (the generator is started by hand or by its own controller).
+// In Smart mode, solar is used only inside its schedule.
+import {
+  SOURCES,
+  localClock,
+  mayTransfer,
+  smartTarget,
+  solarAllowedAt,
+  stepQualification,
+} from "./logic.mjs";
 
 const FALLBACK_NOMINAL = { v: 230, f: 50 }; // used until the user sets nominal values
 const EVENT_BUFFER_MAX = 500;
-const CRANK_MS = 3000;
-const CRANK_REST_MS = 2000;
 const CONTACTOR_MOVE_MS = 40;
 const CLOSE_FAIL_COOLDOWN_MS = 60_000;
+const SETTINGS_REFRESH_MS = 6 * 3600_000;
 
 const randomId = () => Math.random().toString(16).slice(2, 10);
 
@@ -22,7 +33,7 @@ export class EmulatedBoard {
    * @param {{ ingest(p): Promise<any>, getSettings(): Promise<any>, ack(id, status, result?): Promise<any> }} o.transport
    * @param {{ now(): number }} o.clock
    * @param {number} [o.intervalMs]
-   * @param {number} [o.timeScale] divides human-scale timers (warm-up, return delay…) for demos
+   * @param {number} [o.timeScale] divides the return delay and dwell time for demos
    * @param {(line: string) => void} [o.log]
    */
   constructor({
@@ -48,7 +59,7 @@ export class EmulatedBoard {
     this.world = {
       grid: "on",
       solar: "on",
-      genFailStart: false,
+      generator: "off", // started outside the ATS
       loadW: 2200,
       interlockWelded: false,
       stuckOpen: new Set(),
@@ -70,21 +81,23 @@ export class EmulatedBoard {
     this.droppedEvents = 0;
     this.settings = null;
     this.configVersion = 0;
+    this.settingsFetchedAt = 0;
     this.clockOffsetMs = 0;
     this.mode = "smart";
     this.modeSince = now;
     this.manualChoice = null;
     this.override = null;
     this.state = "normal";
-    this.lockout = null; // { reason }
+    this.lockout = null;
     this.active = this.bootSource;
     this.activeSince = now;
     this.lastOpenAt = 0;
+    this.lastOpened = null;
+    this.openedFor = null;
     this.transfer = null;
     this.transfers = [];
     this.rateLimited = false;
     this.noSourceReported = false;
-    this.gen = { running: false, locked: false, warmUntil: 0, stopAt: 0 };
     this.closeFailedUntil = { grid: 0, solar: 0, generator: 0 };
     this.handled = new Map(); // command id → last ack, for de-duplication
     this.qual = Object.fromEntries(
@@ -135,9 +148,6 @@ export class EmulatedBoard {
       rate_limit_window_min: s.rate_limit_window_min ?? 10,
       neutral_delay_ms: s.neutral_delay_ms ?? 1000,
       transfer_timeout_ms: s.transfer_timeout_ms ?? 5000,
-      gen_crank_attempts: s.gen_crank_attempts ?? 3,
-      gen_warmup_s: (s.gen_warmup_s ?? 30) / this.scale,
-      gen_cooldown_s: (s.gen_cooldown_s ?? 180) / this.scale,
       priority: s.priority ?? SOURCES,
     };
   }
@@ -156,33 +166,33 @@ export class EmulatedBoard {
   reading(id) {
     const c = this.cfg();
     const noise = (a) => (Math.random() - 0.5) * a;
-    if (id === "generator") {
-      if (!this.gen.running) return { v: 0, f: 0 };
-      return { v: c.nominal_voltage - 6 + noise(4), f: c.nominal_frequency + 0.2 + noise(0.2) };
-    }
     const p = this.world[id];
     if (p === "off") return { v: 0, f: 0 };
     const k = p === "low" ? 0.78 : p === "high" ? 1.14 : 1;
-    return { v: c.nominal_voltage * k + noise(3), f: c.nominal_frequency + noise(0.06) };
+    const drift = id === "generator" ? 0.2 : 0; // generators run slightly fast
+    return { v: c.nominal_voltage * k + noise(3), f: c.nominal_frequency + drift + noise(0.06) };
   }
 
   reasonFor(id) {
-    if (id === "generator" && this.gen.locked) return "failed_to_start";
-    if (id === "generator" && !this.gen.running) return "standby";
     const q = this.qual[id];
     return q.qualified ? null : (q.kind ?? "no_voltage");
   }
 
-  /** Sources Smart mode may pick: qualified, or a healthy stopped generator. */
+  /** Solar schedule, evaluated in the device's local time (Smart mode only). */
+  solarAllowed() {
+    const { weekday, minutes } = localClock(this.boardNow(), this.settings?.utc_offset_min ?? 0);
+    return solarAllowedAt(this.settings?.solar_schedule, weekday, minutes);
+  }
+
+  /** May Smart mode use this source now? */
+  smartUsable(id, now) {
+    if (!this.qual[id].qualified || this.closeFailedUntil[id] > now) return false;
+    if (id === "solar" && this.mode === "smart" && !this.solarAllowed()) return false;
+    return true;
+  }
+
   candidates(now) {
-    return Object.fromEntries(
-      SOURCES.map((s) => {
-        const blocked = this.closeFailedUntil[s] > now;
-        const ok =
-          this.qual[s].qualified || (s === "generator" && !this.gen.running && !this.gen.locked);
-        return [s, { qualified: ok && !blocked }];
-      }),
-    );
+    return Object.fromEntries(SOURCES.map((s) => [s, { qualified: this.smartUsable(s, now) }]));
   }
 
   setContactor(id, closed) {
@@ -223,20 +233,6 @@ export class EmulatedBoard {
       }
     }
 
-    // Generator cool-down after it stopped feeding the load.
-    if (
-      this.gen.running &&
-      this.active !== "generator" &&
-      this.gen.stopAt &&
-      now > this.gen.stopAt
-    ) {
-      if (this.transfer?.to !== "generator") {
-        this.gen.running = false;
-        this.gen.stopAt = 0;
-        this.qual.generator = { qualified: false, badSince: null, goodSince: null, kind: null };
-      }
-    }
-
     if (
       this.mode === "manual" &&
       this.settings?.manual_revert_min &&
@@ -248,13 +244,8 @@ export class EmulatedBoard {
       this.emit("mode_changed", { data: { mode: "smart", reason: "manual_revert" } });
     }
 
-    // PROTECTION FIRST: a source outside its limits is disconnected at once,
-    // whatever else is going on (generator cranking / warming up included).
-    if (
-      this.active &&
-      !this.qual[this.active].qualified &&
-      (!this.transfer || this.transfer.phase === "prepare")
-    ) {
+    // PROTECTION FIRST: a source outside its limits is disconnected at once.
+    if (this.active && !this.qual[this.active].qualified && !this.transfer) {
       this.protectiveOpen(now);
       if (this.lockout) return;
     }
@@ -264,20 +255,25 @@ export class EmulatedBoard {
     this.updateState();
   }
 
-  protectiveOpen(now) {
+  /** Opens the active contactor (protection or schedule). Returns false on a welded contact. */
+  openActive(now, why) {
     const from = this.active;
-    this.log(`  ⚡ protection opens ${from} (${this.qual[from].kind})`);
     this.setContactor(from, false);
     this.lastOpened = from;
     if (this.feedbackSettled(from)) {
       this.enterLockout(from);
-      return;
+      return false;
     }
-    if (from === "generator") this.gen.stopAt = now + this.cfg().gen_cooldown_s * 1000;
     this.lastOpenAt = now;
-    this.openedFor = { from, at: now, badSince: this.qual[from].badSince };
+    this.openedFor = { from, at: now, badSince: this.qual[from].badSince, why };
     this.active = null;
-    if (this.transfer) this.transfer.from = from;
+    return true;
+  }
+
+  protectiveOpen(now) {
+    const from = this.active;
+    this.log(`  ⚡ protection opens ${from} (${this.qual[from].kind})`);
+    if (!this.openActive(now, this.qual[from].kind ?? "no_voltage")) return;
     if (this.mode === "manual") {
       this.override = {
         active: true,
@@ -303,7 +299,15 @@ export class EmulatedBoard {
     const activeOk = this.active ? this.qual[this.active].qualified : false;
     if (this.mode === "manual" && activeOk) return;
 
+    // Smart mode leaves solar when its schedule ends, even with nothing else.
+    const scheduleEnded = this.mode === "smart" && this.active === "solar" && !this.solarAllowed();
     const target = smartTarget(c.priority, this.candidates(now));
+
+    if (scheduleEnded && !target) {
+      this.log("  🕑 solar schedule ended, no other source: disconnecting");
+      if (this.openActive(now, "outside_schedule")) this.reportNoSource();
+      return;
+    }
     if (!target) {
       if (!this.active) this.reportNoSource();
       return;
@@ -314,9 +318,11 @@ export class EmulatedBoard {
     this.transfers = this.transfers.filter((t) => now - t < windowMs);
     if (this.rateLimited && this.transfers.length < c.rate_limit_count) this.rateLimited = false;
 
+    // Leaving a failed source, or solar at the end of its schedule, ignores
+    // the dwell time and the rate limit.
     const check = mayTransfer({
       active: this.active,
-      activeQualified: activeOk,
+      activeQualified: activeOk && !scheduleEnded,
       target,
       activeSince: this.activeSince,
       now,
@@ -331,9 +337,11 @@ export class EmulatedBoard {
       return;
     }
     this.rateLimited = false;
-    const reason = !activeOk
-      ? ((this.openedFor?.from ? this.qual[this.openedFor.from].kind : null) ?? "source_lost")
-      : "priority_return";
+    const reason = scheduleEnded
+      ? "schedule"
+      : !activeOk
+        ? (this.openedFor?.why ?? "source_lost")
+        : "priority_return";
     this.startTransfer(target, reason, now);
   }
 
@@ -341,25 +349,27 @@ export class EmulatedBoard {
     if (this.noSourceReported) return;
     this.noSourceReported = true;
     for (const s of SOURCES) this.setContactor(s, false);
+    const why = (s) =>
+      s === "solar" && this.qual.solar.qualified && this.mode === "smart" && !this.solarAllowed()
+        ? "outside_schedule"
+        : (this.reasonFor(s) ?? "unavailable");
     this.emit("no_source_started", {
       severity: "critical",
-      data: Object.fromEntries(SOURCES.map((s) => [s, this.reasonFor(s) ?? "stopped"])),
+      data: Object.fromEntries(SOURCES.map((s) => [s, why(s)])),
     });
   }
 
   startTransfer(to, reason, now, cmdId = null) {
-    const needsGen = to === "generator" && !this.gen.running;
     this.transfer = {
       to,
       reason,
       cmdId,
-      // A source just disconnected by protection is still the one we leave.
+      // A source just disconnected (protection / schedule) is still the one we leave.
       from: this.active ?? this.openedFor?.from ?? null,
       t0: now,
       detectMs: this.openedFor?.badSince ? now - this.openedFor.badSince : 0,
-      phase: needsGen ? "prepare" : "open",
+      phase: "open",
       until: now,
-      attempt: 0,
       timings: {},
     };
     this.emit("transfer_started", {
@@ -367,15 +377,6 @@ export class EmulatedBoard {
       to,
       data: { reason, mode: this.mode },
     });
-    if (needsGen) this.crank(now);
-  }
-
-  crank(now) {
-    const t = this.transfer;
-    t.attempt += 1;
-    t.sub = "crank";
-    t.until = now + CRANK_MS / this.scale;
-    this.log(`  … cranking generator (${t.attempt}/${this.cfg().gen_crank_attempts})`);
   }
 
   failTransfer(reason, now) {
@@ -390,7 +391,6 @@ export class EmulatedBoard {
     this.transfer = null;
     if (!this.active) {
       this.noSourceReported = false;
-      // Try the next candidate on the next control step; report no_source if none.
       const next = smartTarget(this.cfg().priority, this.candidates(now));
       if (!next) this.reportNoSource();
     }
@@ -400,34 +400,6 @@ export class EmulatedBoard {
     const t = this.transfer;
     const c = this.cfg();
     if (now < t.until) return;
-
-    if (t.phase === "prepare") {
-      if (t.sub === "crank") {
-        if (!this.world.genFailStart) {
-          this.gen.running = true;
-          this.gen.stopAt = 0;
-          t.sub = "warmup";
-          t.until = now + c.gen_warmup_s * 1000;
-          this.log(`  … generator running, warming up ${c.gen_warmup_s.toFixed(1)} s`);
-          return;
-        }
-        if (t.attempt < c.gen_crank_attempts) {
-          t.sub = "rest";
-          t.until = now + CRANK_REST_MS / this.scale;
-          return;
-        }
-        this.gen.locked = true;
-        this.failTransfer("failed_to_start", now);
-        return;
-      }
-      if (t.sub === "rest") {
-        this.crank(now);
-        return;
-      }
-      // warm-up done
-      this.qual.generator = { qualified: true, badSince: null, goodSince: now, kind: null };
-      t.phase = "open";
-    }
 
     if (t.phase === "open") {
       if (this.active) {
@@ -450,7 +422,6 @@ export class EmulatedBoard {
         return;
       }
       t.timings.open_ms = now - t.openedAt;
-      if (t.from === "generator") this.gen.stopAt = now + c.gen_cooldown_s * 1000;
       this.lastOpenAt = now;
       this.active = null;
       t.phase = "neutral";
@@ -459,10 +430,10 @@ export class EmulatedBoard {
     }
 
     if (t.phase === "neutral") {
-      if (
-        !this.candidates(now)[t.to]?.qualified &&
-        !(t.to === "generator" && this.gen.running && this.qual.generator.qualified)
-      ) {
+      // Re-check the target: electrically for a manual choice, also the
+      // schedule for Smart mode.
+      const ok = t.cmdId ? this.qual[t.to].qualified : this.smartUsable(t.to, now);
+      if (!ok) {
         this.failTransfer("target_lost", now);
         return;
       }
@@ -515,8 +486,7 @@ export class EmulatedBoard {
 
   updateState() {
     if (this.lockout) this.state = "lockout";
-    else if (this.transfer && (this.transfer.phase !== "prepare" || !this.active))
-      this.state = "transferring";
+    else if (this.transfer) this.state = "transferring";
     else if (!this.active) this.state = "no_source";
     else this.state = "normal";
   }
@@ -535,24 +505,24 @@ export class EmulatedBoard {
     const feeding = this.state === "normal" && this.active;
     const r = this.active ? this.reading(this.active) : { v: 0, f: 0 };
     const c = this.cfg();
+    const shift = this.world.clockSkewMs + this.clockOffsetMs;
     const alarms = [];
     if (this.lockout) alarms.push("interlock_mismatch");
     if (!this.settings?.nominal_voltage || !this.settings?.nominal_frequency)
       alarms.push("settings_incomplete");
+    const solarAllowed = this.solarAllowed();
     return {
       v: 1,
       boot_id: this.bootId,
       seq: ++this.telemetrySeq,
-      ts: this.iso(now + this.world.clockSkewMs + this.clockOffsetMs),
+      ts: this.iso(now + shift),
       interval_ms: this.intervalMs,
-      fw: "emulator-2.0",
+      fw: "emulator-2.1",
       mode: this.mode,
-      mode_since: this.iso(this.modeSince + this.world.clockSkewMs + this.clockOffsetMs),
+      mode_since: this.iso(this.modeSince + shift),
       state: this.state,
       active: this.state === "no_source" ? null : this.active,
-      active_since: this.active
-        ? this.iso(this.activeSince + this.world.clockSkewMs + this.clockOffsetMs)
-        : null,
+      active_since: this.active ? this.iso(this.activeSince + shift) : null,
       sources: Object.fromEntries(
         SOURCES.map((s) => {
           const rd = this.reading(s);
@@ -569,6 +539,8 @@ export class EmulatedBoard {
               q_elapsed_s: q.qualified ? null : Math.round(done),
               q_required_s: q.qualified ? null : Math.round(need),
               reason: this.reasonFor(s),
+              // Smart mode may use this source now (solar schedule).
+              allowed: s !== "solar" || solarAllowed,
             },
           ];
         }),
@@ -586,7 +558,7 @@ export class EmulatedBoard {
       override: this.override,
       config_version: this.configVersion,
       controller: {
-        uptime_s: Math.round((now - (this.bootAt ?? now)) / 1000),
+        uptime_s: Math.round((now - this.bootAt) / 1000),
         reset_reason: "power_on",
         temp_c: 41,
         supply_v: 5.02,
@@ -627,20 +599,30 @@ export class EmulatedBoard {
         Date.parse(res.server_time) - (this.clock.now() + this.world.clockSkewMs);
       this.log("  ⏱ clock corrected from server_time");
     }
-    await this.syncSettings(res.settings_version);
+    await this.syncSettings(res.settings_version, now);
     for (const cmd of res.commands ?? []) await this.handleCommand(cmd);
     return true;
   }
 
-  async syncSettings(version) {
-    if (version === null || version === undefined || version <= this.configVersion) return;
+  /** Fetches settings on a new version, and every 6 h (time-zone offset). */
+  async syncSettings(version, now) {
+    const newer = version !== null && version !== undefined && version > this.configVersion;
+    const stale = this.settings && now - this.settingsFetchedAt > SETTINGS_REFRESH_MS;
+    if (!newer && !stale) return;
     const s = await this.transport.getSettings();
     if (!s) return;
+    this.settingsFetchedAt = now;
+    const changed = s.version !== this.configVersion;
     this.settings = s;
     this.configVersion = s.version;
-    this.emit("settings_applied", {
-      data: { version: s.version, nominal_set: Boolean(s.nominal_voltage && s.nominal_frequency) },
-    });
+    if (changed) {
+      this.emit("settings_applied", {
+        data: {
+          version: s.version,
+          nominal_set: Boolean(s.nominal_voltage && s.nominal_frequency),
+        },
+      });
+    }
   }
 
   // ------------------------------------------------------------- commands
@@ -686,9 +668,10 @@ export class EmulatedBoard {
         return this.ackCommand(cmd.id, "rejected", { reason: "يوجد تحويل قيد التنفيذ" });
       if (to === this.active)
         return this.ackCommand(cmd.id, "rejected", { reason: "هذا هو المصدر الحالي" });
-      if (!this.candidates(now)[to].qualified)
+      // Manual mode ignores the solar schedule; only the electrical limits count.
+      if (!this.qual[to].qualified)
         return this.ackCommand(cmd.id, "rejected", {
-          reason: "المصدر غير مؤهل أو خارج الحدود المضبوطة",
+          reason: "المصدر غير متوفر أو خارج الحدود المضبوطة",
         });
       await this.ackCommand(cmd.id, "accepted");
       this.manualChoice = to;
@@ -704,13 +687,6 @@ export class EmulatedBoard {
       this.emit("runtime_reset", { data: { sources: list } });
       return this.ackCommand(cmd.id, "completed", { sources: list });
     }
-    if (cmd.type === "reset_generator") {
-      await this.ackCommand(cmd.id, "accepted");
-      const was = this.gen.locked;
-      this.gen.locked = false;
-      if (was) this.emit("generator_reset", { data: {} });
-      return this.ackCommand(cmd.id, "completed", { was_locked: was });
-    }
     return this.ackCommand(cmd.id, "rejected", { reason: "أمر غير مدعوم" });
   }
 
@@ -719,14 +695,12 @@ export class EmulatedBoard {
   clearLockout() {
     if (!this.lockout) return false;
     this.world.interlockWelded = false;
-    const src = this.lockout.source;
     this.lockout = null;
-    // The welded contactor was repaired: everything is open now.
     for (const s of SOURCES) {
       this.setContactor(s, false);
       this.contactors[s].fb = false;
     }
-    if (src) this.lastOpenAt = this.clock.now();
+    this.lastOpenAt = this.clock.now();
     this.active = null;
     this.transfer = null;
     this.noSourceReported = false;
@@ -741,11 +715,9 @@ export class EmulatedBoard {
       mode: this.mode,
       state: this.state,
       active: this.active,
-      transfer: this.transfer
-        ? `${this.transfer.phase}${this.transfer.sub ? "/" + this.transfer.sub : ""} → ${this.transfer.to}`
-        : null,
+      solarAllowed: this.solarAllowed(),
+      transfer: this.transfer ? `${this.transfer.phase} → ${this.transfer.to}` : null,
       world: { ...this.world, stuckOpen: [...this.world.stuckOpen] },
-      gen: this.gen,
       configVersion: this.configVersion,
       buffered: this.buffer.length,
     };
@@ -753,7 +725,6 @@ export class EmulatedBoard {
 }
 
 const FAIL_TEXT = {
-  failed_to_start: "فشل تشغيل المولد",
   target_lost: "خرج المصدر الهدف عن الحدود قبل التوصيل",
   close_failed: "لم يتأكد إغلاق الكونتاكتور",
 };

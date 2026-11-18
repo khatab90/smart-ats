@@ -1,5 +1,5 @@
 {
-  "$comment": "Reference test vectors for the ATS decision logic (protocol v1). The JS emulator (tools/device-emulator/logic.mjs) and the ESP32 firmware must both pass every case. Times are in ms, thresholds in % of nominal.",
+  "$comment": "Reference test vectors for the ATS decision logic (protocol v1). The JS emulator (tools/device-emulator/logic.mjs) and the ESP32 firmware must both pass every case. Times are in ms, thresholds in % of nominal. Schedule checks are [weekday, minutesSinceLocalMidnight, allowed].",
   "version": 1,
   "settings": {
     "nominal_voltage": 230,
@@ -20,117 +20,708 @@
     "rate_limit_window_min": 10
   },
   "classify": [
-    { "name": "healthy", "reading": { "v": 229, "f": 60 }, "expect": { "ok": true, "kind": null, "recovered": true } },
-    { "name": "undervoltage below 190.9 V", "reading": { "v": 185, "f": 60 }, "expect": { "ok": false, "kind": "undervoltage" } },
-    { "name": "overvoltage above 253 V", "reading": { "v": 255, "f": 60 }, "expect": { "ok": false, "kind": "overvoltage" } },
-    { "name": "underfrequency below 57.6 Hz", "reading": { "v": 229, "f": 57 }, "expect": { "ok": false, "kind": "underfrequency" } },
-    { "name": "overfrequency above 62.4 Hz", "reading": { "v": 229, "f": 63 }, "expect": { "ok": false, "kind": "overfrequency" } },
-    { "name": "no voltage under 20 V", "reading": { "v": 0, "f": 0 }, "expect": { "ok": false, "kind": "no_voltage" } },
-    { "name": "missing reading is no voltage", "reading": { "v": null, "f": null }, "expect": { "ok": false, "kind": "no_voltage" } },
-    { "name": "inside trip band but outside recover band", "reading": { "v": 198, "f": 60 }, "expect": { "ok": true, "kind": null, "recovered": false } },
-    { "name": "frequency missing is judged on voltage only", "reading": { "v": 230, "f": null }, "expect": { "ok": true, "recovered": true } }
+    {
+      "name": "healthy",
+      "reading": {
+        "v": 229,
+        "f": 60
+      },
+      "expect": {
+        "ok": true,
+        "kind": null,
+        "recovered": true
+      }
+    },
+    {
+      "name": "undervoltage below 190.9 V",
+      "reading": {
+        "v": 185,
+        "f": 60
+      },
+      "expect": {
+        "ok": false,
+        "kind": "undervoltage"
+      }
+    },
+    {
+      "name": "overvoltage above 253 V",
+      "reading": {
+        "v": 255,
+        "f": 60
+      },
+      "expect": {
+        "ok": false,
+        "kind": "overvoltage"
+      }
+    },
+    {
+      "name": "underfrequency below 57.6 Hz",
+      "reading": {
+        "v": 229,
+        "f": 57
+      },
+      "expect": {
+        "ok": false,
+        "kind": "underfrequency"
+      }
+    },
+    {
+      "name": "overfrequency above 62.4 Hz",
+      "reading": {
+        "v": 229,
+        "f": 63
+      },
+      "expect": {
+        "ok": false,
+        "kind": "overfrequency"
+      }
+    },
+    {
+      "name": "no voltage under 20 V",
+      "reading": {
+        "v": 0,
+        "f": 0
+      },
+      "expect": {
+        "ok": false,
+        "kind": "no_voltage"
+      }
+    },
+    {
+      "name": "missing reading is no voltage",
+      "reading": {
+        "v": null,
+        "f": null
+      },
+      "expect": {
+        "ok": false,
+        "kind": "no_voltage"
+      }
+    },
+    {
+      "name": "inside trip band but outside recover band",
+      "reading": {
+        "v": 198,
+        "f": 60
+      },
+      "expect": {
+        "ok": true,
+        "kind": null,
+        "recovered": false
+      }
+    },
+    {
+      "name": "frequency missing is judged on voltage only",
+      "reading": {
+        "v": 230,
+        "f": null
+      },
+      "expect": {
+        "ok": true,
+        "recovered": true
+      }
+    }
   ],
   "qualification": [
     {
       "name": "undervoltage trips only after its delay",
-      "start": { "qualified": true },
+      "start": {
+        "qualified": true
+      },
       "isActive": true,
       "steps": [
-        { "t": 0, "reading": { "v": 180, "f": 60 }, "expect": { "qualified": true, "tripped": false } },
-        { "t": 1999, "reading": { "v": 180, "f": 60 }, "expect": { "qualified": true, "tripped": false } },
-        { "t": 2000, "reading": { "v": 180, "f": 60 }, "expect": { "qualified": false, "tripped": true, "kind": "undervoltage" } }
+        {
+          "t": 0,
+          "reading": {
+            "v": 180,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true,
+            "tripped": false
+          }
+        },
+        {
+          "t": 1999,
+          "reading": {
+            "v": 180,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true,
+            "tripped": false
+          }
+        },
+        {
+          "t": 2000,
+          "reading": {
+            "v": 180,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false,
+            "tripped": true,
+            "kind": "undervoltage"
+          }
+        }
       ]
     },
     {
       "name": "loss of voltage trips immediately",
-      "start": { "qualified": true },
+      "start": {
+        "qualified": true
+      },
       "isActive": true,
-      "steps": [{ "t": 0, "reading": { "v": 0, "f": 0 }, "expect": { "qualified": false, "tripped": true, "kind": "no_voltage" } }]
+      "steps": [
+        {
+          "t": 0,
+          "reading": {
+            "v": 0,
+            "f": 0
+          },
+          "expect": {
+            "qualified": false,
+            "tripped": true,
+            "kind": "no_voltage"
+          }
+        }
+      ]
     },
     {
       "name": "a short overvoltage spike under its delay does not trip",
-      "start": { "qualified": true },
+      "start": {
+        "qualified": true
+      },
       "isActive": true,
       "steps": [
-        { "t": 0, "reading": { "v": 260, "f": 60 }, "expect": { "qualified": true } },
-        { "t": 400, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": true } },
-        { "t": 600, "reading": { "v": 260, "f": 60 }, "expect": { "qualified": true } },
-        { "t": 1100, "reading": { "v": 260, "f": 60 }, "expect": { "qualified": false, "tripped": true, "kind": "overvoltage" } }
+        {
+          "t": 0,
+          "reading": {
+            "v": 260,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true
+          }
+        },
+        {
+          "t": 400,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true
+          }
+        },
+        {
+          "t": 600,
+          "reading": {
+            "v": 260,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true
+          }
+        },
+        {
+          "t": 1100,
+          "reading": {
+            "v": 260,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false,
+            "tripped": true,
+            "kind": "overvoltage"
+          }
+        }
       ]
     },
     {
       "name": "a returning source must be stable for the whole return delay; a blip restarts the timer",
-      "start": { "qualified": false },
+      "start": {
+        "qualified": false
+      },
       "isActive": false,
       "steps": [
-        { "t": 0, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
-        { "t": 60000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
-        { "t": 61000, "reading": { "v": 0, "f": 0 }, "expect": { "qualified": false } },
-        { "t": 62000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
-        { "t": 181000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": false } },
-        { "t": 182000, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": true } }
+        {
+          "t": 0,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false
+          }
+        },
+        {
+          "t": 60000,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false
+          }
+        },
+        {
+          "t": 61000,
+          "reading": {
+            "v": 0,
+            "f": 0
+          },
+          "expect": {
+            "qualified": false
+          }
+        },
+        {
+          "t": 62000,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false
+          }
+        },
+        {
+          "t": 181000,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false
+          }
+        },
+        {
+          "t": 182000,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true
+          }
+        }
       ]
     },
     {
       "name": "the active source at boot qualifies immediately",
-      "start": { "qualified": false },
+      "start": {
+        "qualified": false
+      },
       "isActive": true,
-      "steps": [{ "t": 0, "reading": { "v": 230, "f": 60 }, "expect": { "qualified": true } }]
+      "steps": [
+        {
+          "t": 0,
+          "reading": {
+            "v": 230,
+            "f": 60
+          },
+          "expect": {
+            "qualified": true
+          }
+        }
+      ]
     },
     {
       "name": "a reading inside the trip band but outside the recover band never requalifies",
-      "start": { "qualified": false },
+      "start": {
+        "qualified": false
+      },
       "isActive": false,
       "steps": [
-        { "t": 0, "reading": { "v": 198, "f": 60 }, "expect": { "qualified": false } },
-        { "t": 300000, "reading": { "v": 198, "f": 60 }, "expect": { "qualified": false } }
+        {
+          "t": 0,
+          "reading": {
+            "v": 198,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false
+          }
+        },
+        {
+          "t": 300000,
+          "reading": {
+            "v": 198,
+            "f": 60
+          },
+          "expect": {
+            "qualified": false
+          }
+        }
       ]
     }
   ],
   "smartTarget": [
     {
       "name": "first qualified source in the user priority",
-      "priority": ["generator", "solar", "grid"],
-      "qualified": { "grid": true, "solar": true, "generator": false },
+      "priority": [
+        "generator",
+        "solar",
+        "grid"
+      ],
+      "qualified": {
+        "grid": true,
+        "solar": true,
+        "generator": false
+      },
       "expect": "solar"
     },
     {
       "name": "nothing qualified",
-      "priority": ["grid", "solar", "generator"],
-      "qualified": { "grid": false, "solar": false, "generator": false },
+      "priority": [
+        "grid",
+        "solar",
+        "generator"
+      ],
+      "qualified": {
+        "grid": false,
+        "solar": false,
+        "generator": false
+      },
       "expect": null
     }
   ],
   "mayTransfer": [
     {
       "name": "dwell blocks a voluntary return",
-      "input": { "active": "solar", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 30000, "recentTransfersAgoMs": [] },
-      "expect": { "ok": false, "reason": "dwell" }
+      "input": {
+        "active": "solar",
+        "activeQualified": true,
+        "target": "grid",
+        "activeSinceAgoMs": 30000,
+        "recentTransfersAgoMs": []
+      },
+      "expect": {
+        "ok": false,
+        "reason": "dwell"
+      }
     },
     {
       "name": "leaving a failed source ignores dwell and the rate limit",
-      "input": { "active": "solar", "activeQualified": false, "target": "grid", "activeSinceAgoMs": 1000, "recentTransfersAgoMs": [10000, 20000, 30000] },
-      "expect": { "ok": true }
+      "input": {
+        "active": "solar",
+        "activeQualified": false,
+        "target": "grid",
+        "activeSinceAgoMs": 1000,
+        "recentTransfersAgoMs": [
+          10000,
+          20000,
+          30000
+        ]
+      },
+      "expect": {
+        "ok": true
+      }
     },
     {
       "name": "rate limit blocks a voluntary transfer",
-      "input": { "active": "solar", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 120000, "recentTransfersAgoMs": [60000, 120000, 180000] },
-      "expect": { "ok": false, "reason": "rate_limit" }
+      "input": {
+        "active": "solar",
+        "activeQualified": true,
+        "target": "grid",
+        "activeSinceAgoMs": 120000,
+        "recentTransfersAgoMs": [
+          60000,
+          120000,
+          180000
+        ]
+      },
+      "expect": {
+        "ok": false,
+        "reason": "rate_limit"
+      }
     },
     {
       "name": "transfers older than the window do not count",
-      "input": { "active": "solar", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 120000, "recentTransfersAgoMs": [601000, 700000, 800000] },
-      "expect": { "ok": true }
+      "input": {
+        "active": "solar",
+        "activeQualified": true,
+        "target": "grid",
+        "activeSinceAgoMs": 120000,
+        "recentTransfersAgoMs": [
+          601000,
+          700000,
+          800000
+        ]
+      },
+      "expect": {
+        "ok": true
+      }
     },
     {
       "name": "no change",
-      "input": { "active": "grid", "activeQualified": true, "target": "grid", "activeSinceAgoMs": 0, "recentTransfersAgoMs": [] },
-      "expect": { "ok": false, "reason": "no_change" }
+      "input": {
+        "active": "grid",
+        "activeQualified": true,
+        "target": "grid",
+        "activeSinceAgoMs": 0,
+        "recentTransfersAgoMs": []
+      },
+      "expect": {
+        "ok": false,
+        "reason": "no_change"
+      }
     },
     {
       "name": "from no source, any target is allowed",
-      "input": { "active": null, "activeQualified": false, "target": "generator", "activeSinceAgoMs": 0, "recentTransfersAgoMs": [1, 2, 3, 4] },
-      "expect": { "ok": true }
+      "input": {
+        "active": null,
+        "activeQualified": false,
+        "target": "generator",
+        "activeSinceAgoMs": 0,
+        "recentTransfersAgoMs": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expect": {
+        "ok": true
+      }
+    }
+  ],
+  "schedule": [
+    {
+      "name": "disabled schedule always allows",
+      "schedule": {
+        "enabled": false,
+        "periods": []
+      },
+      "checks": [
+        [
+          0,
+          0,
+          true
+        ],
+        [
+          3,
+          720,
+          true
+        ]
+      ]
+    },
+    {
+      "name": "daytime window, every day, end exclusive",
+      "schedule": {
+        "enabled": true,
+        "periods": [
+          {
+            "days": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "start": "08:00",
+            "end": "17:00"
+          }
+        ]
+      },
+      "checks": [
+        [
+          1,
+          479,
+          false
+        ],
+        [
+          1,
+          480,
+          true
+        ],
+        [
+          1,
+          1019,
+          true
+        ],
+        [
+          1,
+          1020,
+          false
+        ],
+        [
+          6,
+          600,
+          true
+        ]
+      ]
+    },
+    {
+      "name": "weekday-only window",
+      "schedule": {
+        "enabled": true,
+        "periods": [
+          {
+            "days": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "start": "09:00",
+            "end": "15:00"
+          }
+        ]
+      },
+      "checks": [
+        [
+          4,
+          600,
+          true
+        ],
+        [
+          5,
+          600,
+          false
+        ],
+        [
+          6,
+          600,
+          false
+        ]
+      ]
+    },
+    {
+      "name": "overnight period continues after midnight on the next day",
+      "schedule": {
+        "enabled": true,
+        "periods": [
+          {
+            "days": [
+              5
+            ],
+            "start": "20:00",
+            "end": "02:00"
+          }
+        ]
+      },
+      "checks": [
+        [
+          5,
+          1199,
+          false
+        ],
+        [
+          5,
+          1200,
+          true
+        ],
+        [
+          5,
+          1439,
+          true
+        ],
+        [
+          6,
+          0,
+          true
+        ],
+        [
+          6,
+          119,
+          true
+        ],
+        [
+          6,
+          120,
+          false
+        ],
+        [
+          4,
+          1300,
+          false
+        ],
+        [
+          0,
+          60,
+          false
+        ]
+      ]
+    },
+    {
+      "name": "two periods a day",
+      "schedule": {
+        "enabled": true,
+        "periods": [
+          {
+            "days": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "start": "08:00",
+            "end": "12:00"
+          },
+          {
+            "days": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6
+            ],
+            "start": "14:00",
+            "end": "18:00"
+          }
+        ]
+      },
+      "checks": [
+        [
+          2,
+          600,
+          true
+        ],
+        [
+          2,
+          780,
+          false
+        ],
+        [
+          2,
+          900,
+          true
+        ],
+        [
+          2,
+          1100,
+          false
+        ]
+      ]
+    }
+  ],
+  "localClock": [
+    {
+      "name": "Baghdad UTC+3 crosses midnight",
+      "utc": "2026-11-18T22:30:00Z",
+      "offset_min": 180,
+      "expect": {
+        "weekday": 4,
+        "minutes": 90
+      }
+    },
+    {
+      "name": "UTC",
+      "utc": "2026-11-15T08:05:00Z",
+      "offset_min": 0,
+      "expect": {
+        "weekday": 0,
+        "minutes": 485
+      }
     }
   ]
 }

@@ -23,6 +23,8 @@ import { cn } from "../lib/cn";
 import { fmtDateTime } from "../lib/format";
 import { updateSettings } from "../api/settings";
 import { installedSources } from "../domain/sources";
+import { asSchedule } from "../domain/schedule";
+import { SolarScheduleEditor } from "../features/settings/SolarScheduleEditor";
 import { useActiveDevice } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useToast } from "../store/toast";
@@ -40,6 +42,7 @@ export function Settings() {
     if (!settings) return null;
     const out = {} as Record<string, unknown>;
     for (const k of EDITABLE_KEYS) out[k] = (settings as DeviceSettings)[k];
+    out.solar_schedule = asSchedule(out.solar_schedule);
     return out as unknown as EditableSettings;
   }, [settings]);
 
@@ -160,6 +163,15 @@ export function Settings() {
                 disabled={readOnly}
               />
             </Card>
+
+            {installedSources(status).includes("solar") && (
+              <SolarScheduleEditor
+                value={draft.solar_schedule}
+                onChange={(v) => set("solar_schedule", v)}
+                timezone={draft.timezone}
+                disabled={readOnly}
+              />
+            )}
 
             {SETTINGS_GROUPS.map((g) => (
               <Card key={g.title} className="p-4">

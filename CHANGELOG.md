@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0 — 2026-11-18
+
+### Changed
+- **All sources are passive.** The board never starts the generator; it is used only when it delivers valid power, like the grid. Removed: generator start / warm-up / cool-down settings, the "ready to start" and "failed to start" states, the `reset_generator` command and its button.
+
+### Added
+- **Solar schedule for Smart mode.** Any number of periods (up to 8), each with its own days and hours, overnight allowed. Outside them Smart mode never uses solar, even with no other source; manual mode ignores the schedule. Editor in device settings, "outside its hours" badge on the dashboard, the schedule shown under the priority list.
+- The board reports `sources.<id>.allowed`; `device_get_settings` returns `utc_offset_min`; shared test vectors for the schedule rule (board and app).
+
+
 ## 2.0.0 — 2026-11-18
 
 Fixes every finding of the audit report and moves the project off Figma Make

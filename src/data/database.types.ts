@@ -16,7 +16,7 @@ export type Database = {
           payload: Json;
           result: Json | null;
           status: "pending" | "delivered" | "accepted" | "executing" | "completed" | "rejected" | "failed" | "expired";
-          type: "set_mode" | "set_source" | "reset_runtime" | "reset_generator";
+          type: "set_mode" | "set_source" | "reset_runtime";
           updated_at: string;
         };
         Insert: {
@@ -28,7 +28,7 @@ export type Database = {
           payload?: Json;
           result?: Json | null;
           status?: "pending" | "delivered" | "accepted" | "executing" | "completed" | "rejected" | "failed" | "expired";
-          type: "set_mode" | "set_source" | "reset_runtime" | "reset_generator";
+          type: "set_mode" | "set_source" | "reset_runtime";
           updated_at?: string;
         };
         Update: {
@@ -40,7 +40,7 @@ export type Database = {
           payload?: Json;
           result?: Json | null;
           status?: "pending" | "delivered" | "accepted" | "executing" | "completed" | "rejected" | "failed" | "expired";
-          type?: "set_mode" | "set_source" | "reset_runtime" | "reset_generator";
+          type?: "set_mode" | "set_source" | "reset_runtime";
           updated_at?: string;
         };
         Relationships: [
@@ -143,9 +143,6 @@ export type Database = {
           device_id: string;
           f_delay_ms: number;
           f_recover_pct: number;
-          gen_cooldown_s: number;
-          gen_crank_attempts: number;
-          gen_warmup_s: number;
           manual_revert_min: number | null;
           min_dwell_s: number;
           neutral_delay_ms: number;
@@ -159,6 +156,7 @@ export type Database = {
           rate_limit_count: number;
           rate_limit_window_min: number;
           return_delay_s: number;
+          solar_schedule: Json;
           timezone: string;
           transfer_timeout_ms: number;
           uf_trip_pct: number;
@@ -173,9 +171,6 @@ export type Database = {
           device_id: string;
           f_delay_ms?: number;
           f_recover_pct?: number;
-          gen_cooldown_s?: number;
-          gen_crank_attempts?: number;
-          gen_warmup_s?: number;
           manual_revert_min?: number | null;
           min_dwell_s?: number;
           neutral_delay_ms?: number;
@@ -189,6 +184,7 @@ export type Database = {
           rate_limit_count?: number;
           rate_limit_window_min?: number;
           return_delay_s?: number;
+          solar_schedule?: Json;
           timezone?: string;
           transfer_timeout_ms?: number;
           uf_trip_pct?: number;
@@ -203,9 +199,6 @@ export type Database = {
           device_id?: string;
           f_delay_ms?: number;
           f_recover_pct?: number;
-          gen_cooldown_s?: number;
-          gen_crank_attempts?: number;
-          gen_warmup_s?: number;
           manual_revert_min?: number | null;
           min_dwell_s?: number;
           neutral_delay_ms?: number;
@@ -219,6 +212,7 @@ export type Database = {
           rate_limit_count?: number;
           rate_limit_window_min?: number;
           return_delay_s?: number;
+          solar_schedule?: Json;
           timezone?: string;
           transfer_timeout_ms?: number;
           uf_trip_pct?: number;
@@ -429,7 +423,7 @@ export type Database = {
           severity: "info" | "warning" | "critical";
           source: "grid" | "solar" | "generator" | null;
           to_source: "grid" | "solar" | "generator" | null;
-          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "generator_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
+          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
         };
         Insert: {
           actor_id?: string | null;
@@ -445,7 +439,7 @@ export type Database = {
           severity?: "info" | "warning" | "critical";
           source?: "grid" | "solar" | "generator" | null;
           to_source?: "grid" | "solar" | "generator" | null;
-          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "generator_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
+          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
         };
         Update: {
           actor_id?: string | null;
@@ -461,7 +455,7 @@ export type Database = {
           severity?: "info" | "warning" | "critical";
           source?: "grid" | "solar" | "generator" | null;
           to_source?: "grid" | "solar" | "generator" | null;
-          type?: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "generator_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
+          type?: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
         };
         Relationships: [
           {
@@ -753,6 +747,10 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      _valid_solar_schedule: {
+        Args: { p: Json };
+        Returns: boolean;
+      };
       accept_invitation: {
         Args: { p_token: string };
         Returns: Json;

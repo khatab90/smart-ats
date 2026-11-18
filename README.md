@@ -5,7 +5,8 @@ Monitoring and remote-control app for a **3-source automatic transfer switch**
 Arabic, right-to-left, mobile-first. React + TypeScript + Supabase.
 
 - Live state of every installed source, power-flow view, Smart mode with
-  drag-and-drop priority, manual mode with safe transfers
+  drag-and-drop priority and a schedule for solar, manual mode with safe
+  transfers (all sources are passive: the board never starts the generator)
 - Live readings (V, A, kW, Hz), energy history (day / week / month)
 - Transfer log, runtime hours per source with reset
 - Five notification types, users with admin / viewer roles, email invitations

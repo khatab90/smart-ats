@@ -7,10 +7,23 @@ import type { DeviceStatus, SourceId, SourceReport, SystemState } from "../data/
 
 export const ALL_SOURCES: readonly SourceId[] = ["grid", "solar", "generator"];
 
-/** Usable now: qualified, or a stopped generator the board reports as ready to start. */
+/**
+ * Smart mode may pick this source now: inside its limits and, for solar,
+ * inside its schedule (the board reports `allowed`). All sources are
+ * passive — the board never starts the generator.
+ */
 export function isSelectable(r: SourceReport | undefined) {
-  return Boolean(r?.qualified || r?.reason === "standby");
+  return Boolean(r?.qualified && r.allowed !== false);
 }
+
+/** A manual transfer only needs the source inside its limits (the schedule does not apply). */
+export function isUsableManually(r: SourceReport | undefined) {
+  return Boolean(r?.qualified);
+}
+
+/** Solar delivers power but Smart mode may not use it right now. */
+export const outsideSchedule = (r: SourceReport | undefined) =>
+  Boolean(r?.qualified && r.allowed === false);
 
 /**
  * Sources physically wired to this board. A source counts as installed
@@ -79,7 +92,3 @@ export function mergePriority(
   const hidden = full.filter((id) => !visibleOrder.includes(id));
   return [...visibleOrder, ...hidden];
 }
-
-/** Smart mode with the generator first keeps it running whenever healthy. */
-export const generatorFirst = (priority: readonly SourceId[], installed: readonly SourceId[]) =>
-  visiblePriority(priority, installed)[0] === "generator";

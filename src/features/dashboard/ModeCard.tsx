@@ -1,4 +1,4 @@
-import { BrainCircuit, Hand, ShieldCheck, Zap } from "lucide-react";
+import { Clock3, BrainCircuit, Hand, ShieldCheck, Zap } from "lucide-react";
 import { useState } from "react";
 import { CommandProgress } from "../../components/control";
 import { Card, ConfirmSheet, Segmented, SourceIcon } from "../../components/ui";
@@ -7,7 +7,12 @@ import type { SourceId, SystemMode } from "../../data/types";
 import { useCommand } from "../../hooks/useCommand";
 import { cn } from "../../lib/cn";
 import { fmtNum } from "../../lib/format";
-import { installedSources, isSelectable, predictSmartTarget } from "../../domain/sources";
+import {
+  installedSources,
+  isUsableManually,
+  outsideSchedule,
+  predictSmartTarget,
+} from "../../domain/sources";
 import { useActiveDevice } from "../../store/devices";
 import { sourceBadge } from "../../components/status";
 import { PrioritySection } from "./PrioritySection";
@@ -70,8 +75,14 @@ export function ModeCard() {
           {installedSources(status).map((id) => {
             const r = status?.sources?.[id];
             const isActive = status?.active_source === id && status?.system_state !== "no_source";
-            const usable = isSelectable(r);
-            const reason = isActive ? "فعّال" : usable ? "متاح" : sourceBadge(r, false).label;
+            const usable = isUsableManually(r);
+            const reason = isActive
+              ? "فعّال"
+              : usable
+                ? outsideSchedule(r)
+                  ? "خارج الوقت"
+                  : "متاح"
+                : sourceBadge(r, false).label;
             return (
               <button
                 key={id}
@@ -177,15 +188,13 @@ export function ModeCard() {
                 <ShieldCheck className="mt-1 size-3.5 shrink-0 text-ok" />
                 يتحقق البورد من جهد وتردد المصدر ويرفض الأمر إذا كان خارج الحدود المضبوطة.
               </li>
-              {confirm.source === "generator" &&
-                status?.sources?.generator?.reason === "standby" && (
-                  <li className="flex gap-2">
-                    <Zap className="mt-1 size-3.5 shrink-0 text-gen" />
-                    المولد متوقف: سيشغّله البورد ({settings?.gen_crank_attempts ?? "—"} محاولات كحد
-                    أقصى) وينتظر زمن الإحماء ({settings ? `${settings.gen_warmup_s} ث` : "—"}) قبل
-                    نقل الحمل، لذلك قد يستغرق التنفيذ وقتاً أطول.
-                  </li>
-                )}
+              {outsideSchedule(status?.sources?.[confirm.source]) && (
+                <li className="flex gap-2">
+                  <Clock3 className="mt-1 size-3.5 shrink-0 text-solar" />
+                  الطاقة الشمسية خارج وقتها المحدد. التحويل اليدوي مسموح، وستبقى عليها ما دمت في
+                  الوضع اليدوي.
+                </li>
+              )}
             </ul>
           </div>
         )}

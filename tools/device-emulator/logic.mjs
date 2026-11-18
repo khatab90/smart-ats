@@ -96,3 +96,28 @@ export function mayTransfer({
     return { ok: false, reason: "rate_limit" };
   return { ok: true };
 }
+
+/**
+ * Solar schedule (Smart mode only). `days` are the days a period starts on
+ * (0 = Sunday … 6 = Saturday, local time); end < start runs past midnight.
+ * Disabled or missing = allowed at any time.
+ */
+export function solarAllowedAt(schedule, weekday, minutes) {
+  if (!schedule?.enabled) return true;
+  const toMin = (hhmm) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));
+  const yesterday = (weekday + 6) % 7;
+  return (schedule.periods ?? []).some((p) => {
+    const s = toMin(p.start);
+    const e = toMin(p.end);
+    if (s < e) return p.days.includes(weekday) && minutes >= s && minutes < e;
+    return (
+      (p.days.includes(weekday) && minutes >= s) || (p.days.includes(yesterday) && minutes < e)
+    );
+  });
+}
+
+/** Local weekday / minutes from UTC milliseconds and the offset sent by the server. */
+export function localClock(utcMs, offsetMin) {
+  const d = new Date(utcMs + (offsetMin ?? 0) * 60_000);
+  return { weekday: d.getUTCDay(), minutes: d.getUTCHours() * 60 + d.getUTCMinutes() };
+}

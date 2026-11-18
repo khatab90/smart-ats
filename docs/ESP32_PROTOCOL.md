@@ -14,9 +14,11 @@ firmware must pass the shared test vectors in
 
 > **Revision 2 changes** (migration `20261118000000`): `boot_id`; clock guard
 > and `server_time` sync; one bad event no longer rejects a message;
-> `reset_generator` command; `generator_reset` and `lockout_cleared` events;
-> protection-first rule during generator start; contactor close verification;
-> capacity / max-current settings removed.
+> `lockout_cleared` event; protection-first rule; contactor close
+> verification; **all sources are passive** (the board never starts the
+> generator); **solar schedule** for Smart mode (`sources.<id>.allowed`,
+> `solar_schedule`, `utc_offset_min`); capacity, max-current and generator
+> start settings removed.
 
 ## 1. `device_ingest` — telemetry + events (every `interval_ms`, e.g. 2 s)
 
@@ -39,7 +41,7 @@ Payload fields (`null` = no reading; never send 0 for a missing sensor):
 | `state` | `normal` \| `transferring` \| `no_source` \| `lockout` | |
 | `active` | `grid` \| `solar` \| `generator` \| null | source feeding the load (null in `no_source`) |
 | `active_since` | ISO | |
-| `sources.<id>` | object | `{ v, f, available, qualified, q_elapsed_s, q_required_s, reason }` |
+| `sources.<id>` | object | `{ v, f, available, qualified, q_elapsed_s, q_required_s, reason, allowed }` — `allowed: false` when Smart mode may not use the source now (solar outside its schedule) |
 | `load` | object | `{ v, a, w, f }` measured on the load side |
 | `contactors.<id>` | object | `{ cmd, fb }` commanded vs auxiliary-contact feedback |
 | `alarms` | string[] | e.g. `interlock_mismatch`, `settings_incomplete`, `sensor_fault`, `over_temperature`, `inverter_fault`, `generator_alarm` |
@@ -54,7 +56,8 @@ Payload fields (`null` = no reading; never send 0 for a missing sensor):
 `sources.<id>.reason` values:
 
 - `no_voltage`, `undervoltage`, `overvoltage`, `underfrequency`, `overfrequency`
-- `qualifying`, `standby` (stopped generator, healthy and ready to start), `failed_to_start`, `locked_out`, `inverter_fault`, `sensor_fault`
+- `qualifying`, `locked_out`, `inverter_fault`, `sensor_fault`
+- A stopped generator is simply `no_voltage`: the board does not start it.
 - `not_installed` — the app hides this source everywhere (dashboard, priority list, live screen, logs)
 
 ### 1.1 Robustness guarantees (server side)
@@ -94,12 +97,12 @@ Response:
 - De-duplication key: `(device, boot_id, seq)`. `seq` restarts at 1 on every boot; buffered events can be replayed safely after a disconnection. (Persisting `seq` in NVS is no longer required.)
 - Types:
   - `source_lost` with `data.was_active` (boolean) and `data.reason`; `source_restored`
-  - `transfer_started`, `transfer_completed`, `transfer_failed` with `data.reason` ∈ `failed_to_start | target_lost | close_failed | …`
-  - `no_source_started` with `data.<source> = reason`; `no_source_ended`
+  - `transfer_started`, `transfer_completed` with `data.reason` ∈ `source_lost | undervoltage | … | priority_return | schedule | manual`; `transfer_failed` with `data.reason` ∈ `target_lost | close_failed`
+  - `no_source_started` with `data.<source> = reason` (`outside_schedule` for solar blocked by its schedule); `no_source_ended`
   - `electrical_fault` with `data.kind` ∈ `undervoltage|overvoltage|underfrequency|overfrequency` and `data.value`; `electrical_fault_cleared`
   - `interlock_fault`, `transfer_lockout` (once per rate-limit episode), `protection_override`, `mode_changed`, `controller_restarted`
   - `settings_applied`, `settings_rejected`, `runtime_reset`
-  - `generator_reset` (after the `reset_generator` command cleared a lock), `lockout_cleared` (on-site reset, `data.by`)
+  - `lockout_cleared` (on-site reset, `data.by`)
 - When the source just disconnected by protection is left for another one, report it as `from` (not `null`).
 
 The server maps events to user notifications (every type can be muted per user; the two critical ones show a warning when muted):
@@ -121,8 +124,9 @@ The server maps events to user notifications (every type can be muted per user; 
 - trip/recover thresholds in **% of nominal** with their delays
 - `return_delay_s`, `min_dwell_s`, `rate_limit_count`, `rate_limit_window_min`
 - `neutral_delay_ms`, `transfer_timeout_ms` (maximum time to confirm a contactor move through its feedback)
-- `gen_crank_attempts`, `gen_warmup_s`, `gen_cooldown_s`
 - `manual_revert_min`, `timezone`
+- `solar_schedule` — `{ "enabled": bool, "periods": [{ "days": [0..6], "start": "HH:MM", "end": "HH:MM" }] }`; `days` are the days a period starts on (0 = Sunday), `end < start` runs past midnight, disabled = solar allowed at any time (vectors: `schedule`)
+- `utc_offset_min` — the device time zone's current UTC offset. Local time = UTC + offset (vectors: `localClock`). **Re-read the settings at boot and every 6 hours** so offset changes are picked up.
 
 While `nominal_voltage` or `nominal_frequency` is null, the board protects
 with factory defaults (**230 V / 50 Hz**, configurable in firmware) and
@@ -134,7 +138,7 @@ the settings.
 `{ "p_device_id", "p_token", "p_command_id", "p_status", "p_result" }` where `p_status` ∈ `accepted | executing | completed | rejected | failed`.
 
 - Acknowledge `accepted` (or `rejected` with `{ "reason": "..." }`) within **10 s**.
-- Long actions (generator crank + warm-up) report `executing`, then `completed` or `failed`.
+- A manual transfer reports `executing`, then `completed` or `failed`.
 - The app only reports success after `completed`.
 
 Commands:
@@ -142,16 +146,16 @@ Commands:
 - `set_mode { mode }`
 - `set_source { source }` — manual mode only. Refuse if the source is not qualified, a transfer is running, or the system is locked out.
 - `reset_runtime { sources: [...] }` — reset the non-volatile counters and set `since` to now.
-- `reset_generator {}` — clear a `failed_to_start` lock so the generator may be used again. Report `generator_reset` if a lock was cleared.
 
 ## 5. Required board behaviour
 
-- **Protection first.** Every control cycle (≈100 ms), before anything else: if the active source is outside its limits (after its delay), open its contactor **immediately** — also while the generator is cranking or warming up. Never keep the load on a failed source while preparing the next one.
+- **Passive sources.** The board never starts or stops any source. The generator is started by hand or by its own controller; it becomes selectable when it delivers valid voltage and frequency for `return_delay_s`, exactly like the grid.
+- **Protection first.** Every control cycle (≈100 ms), before anything else: if the active source is outside its limits (after its delay), open its contactor **immediately**.
 - **Qualification:** a source trips after its delay outside the trip limits, and requalifies only inside the recover band, continuously for `return_delay_s`. Loss of voltage trips immediately. (Vectors: `qualification`.)
-- **Smart mode:** pick the first selectable source in `priority` (a healthy stopped generator is selectable). Respect `min_dwell_s` and the rate limit, except when leaving a failed source. (Vectors: `smartTarget`, `mayTransfer`.)
+- **Smart mode:** pick the first qualified source in `priority`, skipping solar outside its schedule. Respect `min_dwell_s` and the rate limit, except when leaving a failed source or solar at the end of its schedule. (Vectors: `smartTarget`, `mayTransfer`, `schedule`.)
+- **Solar schedule (Smart mode only):** outside its periods solar is never used, **even if no other source is available**. If the load is on solar when a period ends, move to the next qualified source (reason `schedule`); if there is none, open the solar contactor and report `no_source_started` with `solar: "outside_schedule"`. When a period starts, solar is used again by normal priority rules. Manual mode ignores the schedule.
 - **No valid source:** enter `no_source`, open all contactors, stop the runtime and energy counters, report `no_source_started` once.
 - **Transfer sequence:** open the old contactor → verify its feedback (welded contact ⇒ latched `lockout` + `interlock_fault`) → wait `neutral_delay_ms` since the last opening → re-check the target → close the new contactor → **verify its feedback within `transfer_timeout_ms`**. If it does not confirm: open it again, report `transfer_failed` with `reason: "close_failed"`, keep that source out of Smart selection for 60 s, and try the next one.
-- **Generator:** crank up to `gen_crank_attempts` times, warm up before taking the load, cool down unloaded after leaving it. After the last failed attempt: `failed_to_start` lock until `reset_generator`.
 - **Lockout:** latched. Cleared **on site only** (panel button or power cycle after repair); report `lockout_cleared`. There is deliberately no remote unlock (see docs/DECISIONS.md, ADR-005).
 - **Manual mode:** protection still moves the load off a failed source and reports `override`. The board does not return to the user's choice by itself. Revert to Smart after `manual_revert_min` if it is set.
 - **While offline:** keep events in a ring buffer (≥ 500 entries; count drops in `controller.dropped_events`) and send them in the next successful `device_ingest`.

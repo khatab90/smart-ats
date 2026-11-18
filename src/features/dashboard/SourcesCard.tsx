@@ -1,12 +1,8 @@
-import { RotateCcw } from "lucide-react";
-import { useState } from "react";
-import { CommandProgress } from "../../components/control";
 import { sourceBadge } from "../../components/status";
-import { Badge, Button, Card, ConfirmSheet, SectionTitle, SourceIcon } from "../../components/ui";
+import { Badge, Card, SectionTitle, SourceIcon } from "../../components/ui";
 import { SOURCE_META } from "../../data/meta";
 import type { DeviceStatus, SourceId, SourceReport } from "../../data/types";
-import { installedSources } from "../../domain/sources";
-import { useCommand } from "../../hooks/useCommand";
+import { installedSources, outsideSchedule } from "../../domain/sources";
 import { fmtReading } from "../../lib/format";
 import { useActiveDevice } from "../../store/devices";
 
@@ -14,9 +10,9 @@ export const fmtVf = (r: SourceReport | undefined) =>
   `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
 
 /**
- * Sources worth showing right now: everything when no source feeds the
- * load (each with its reason), otherwise the usable ones plus any that need
- * the user's attention (a generator that failed to start).
+ * Sources worth showing right now: every installed source when nothing
+ * feeds the load (each with its reason), otherwise the ones delivering
+ * power or qualifying.
  */
 export function visibleSources(status: DeviceStatus | null): SourceId[] {
   const noSource = status?.system_state === "no_source";
@@ -24,21 +20,12 @@ export function visibleSources(status: DeviceStatus | null): SourceId[] {
     const r = status?.sources?.[id];
     if (!r) return false;
     if (noSource) return true;
-    return (
-      status?.active_source === id ||
-      r.available ||
-      r.qualified ||
-      r.reason === "qualifying" ||
-      r.reason === "standby" ||
-      r.reason === "failed_to_start"
-    );
+    return status?.active_source === id || r.available || r.qualified || r.reason === "qualifying";
   });
 }
 
 export function SourcesCard() {
-  const { status, link, isAdmin } = useActiveDevice();
-  const { state: cmd, send, reset, busy } = useCommand();
-  const [confirmReset, setConfirmReset] = useState(false);
+  const { status, link } = useActiveDevice();
   const live = link === "live" || link === "stale";
   const noSource = status?.system_state === "no_source";
   const visible = visibleSources(status);
@@ -60,7 +47,6 @@ export function SourcesCard() {
             const r = status?.sources?.[id];
             const isActive = status?.active_source === id && !noSource;
             const b = sourceBadge(r, isActive);
-            const genLocked = id === "generator" && r?.reason === "failed_to_start";
             return (
               <div key={id} className="p-4">
                 <div className="flex items-center gap-3">
@@ -79,47 +65,17 @@ export function SourcesCard() {
                     {b.label}
                   </Badge>
                 </div>
-                {genLocked && (
-                  <div className="mt-3 rounded-2xl bg-danger-soft p-3">
-                    <p className="text-[12px] leading-5 text-danger-strong">
-                      فشلت كل محاولات تشغيل المولد، فأوقف البورد استخدامه. افحص المولد (الوقود،
-                      البطارية، المفتاح) ثم أعد المحاولة.
-                    </p>
-                    {isAdmin && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        icon={RotateCcw}
-                        className="mt-2"
-                        disabled={link !== "live" || busy}
-                        onClick={() => setConfirmReset(true)}
-                      >
-                        إعادة محاولة المولد
-                      </Button>
-                    )}
-                  </div>
+                {!isActive && outsideSchedule(r) && status?.mode === "smart" && (
+                  <p className="mt-2 text-[11px] leading-5 text-muted">
+                    متوفرة لكن خارج وقتها المحدد، فلن يستخدمها الوضع الذكي. يمكنك التحويل إليها
+                    يدوياً.
+                  </p>
                 )}
               </div>
             );
           })
         )}
       </Card>
-      <CommandProgress state={cmd} onDismiss={reset} />
-      <ConfirmSheet
-        open={confirmReset}
-        onClose={() => setConfirmReset(false)}
-        title="إعادة محاولة تشغيل المولد"
-        confirmLabel="إعادة المحاولة"
-        onConfirm={() => {
-          void send("reset_generator", {});
-          setConfirmReset(false);
-        }}
-      >
-        <p className="text-[13px] leading-6 text-ink-2">
-          سيسمح البورد باستخدام المولد من جديد. إذا احتاجه النظام سيحاول تشغيله بعدد المحاولات
-          المضبوط في الإعدادات.
-        </p>
-      </ConfirmSheet>
     </div>
   );
 }

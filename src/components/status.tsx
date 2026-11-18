@@ -9,8 +9,9 @@ export function sourceBadge(
 ): { label: string; tone: Tone } {
   if (active) return { label: "فعّال", tone: "ok" };
   if (!report) return { label: "لا توجد بيانات", tone: "neutral" };
+  if (report.qualified && report.allowed === false)
+    return { label: UNAVAILABLE_REASON.outside_schedule, tone: "neutral" };
   if (report.qualified) return { label: "متاح", tone: "info" };
-  if (report.reason === "standby") return { label: UNAVAILABLE_REASON.standby, tone: "info" };
   if (report.reason === "qualifying" || (report.available && !report.qualified)) {
     const done = report.q_elapsed_s ?? null;
     const need = report.q_required_s ?? null;

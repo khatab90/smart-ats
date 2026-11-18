@@ -61,7 +61,6 @@ beforeAll(async () => {
     "update public.device_settings set nominal_voltage = 230, nominal_frequency = 50, return_delay_s = 30, priority = array['grid','solar','generator']",
   );
   board = new EmulatedBoard({ transport: pgliteTransport(), clock, timeScale: 1 });
-  board.world.genFailStart = true; // keep the generator out of the way
 });
 
 describe("board ↔ database", () => {

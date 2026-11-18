@@ -17,8 +17,12 @@
 --     private to their owner [SEC-4]
 --   * claim_device checks the PIN before revealing ownership [SEC-5]
 --   * release_device wipes the previous owner's last status [SEC-8]
---   * reset_generator command; lockout_cleared / generator_reset events [ATS-2, ATS-5]
+--   * lockout_cleared event (on-site reset of a latched lockout) [ATS-5]
 --   * capacity / max-current settings removed (unused, out of scope) [ATS-4]
+--   * the generator is a passive source like the grid (started outside the
+--     ATS): generator start/warm-up/cool-down settings removed
+--   * solar_schedule: hours when Smart mode may use solar; device_get_settings
+--     also returns utc_offset_min so the board can evaluate it locally
 --   * every notification type can be muted; notifications carry params so
 --     the app renders the text [UX, SE-6]
 -- =====================================================================
@@ -93,7 +97,7 @@ alter table public.events add constraint events_type_check check (type in (
   'interlock_fault', 'transfer_lockout', 'protection_override',
   'mode_changed', 'controller_restarted',
   'settings_applied', 'settings_rejected', 'runtime_reset',
-  'generator_reset', 'lockout_cleared',
+  'lockout_cleared',
   -- recorded by the server / app actions
   'connection_lost', 'connection_restored',
   'command_sent', 'command_result',
@@ -102,10 +106,6 @@ alter table public.events add constraint events_type_check check (type in (
   'member_added', 'member_removed', 'role_changed', 'ownership_transferred',
   'invitation_sent', 'invitation_revoked'
 ));
-
-alter table public.device_commands drop constraint if exists device_commands_type_check;
-alter table public.device_commands add constraint device_commands_type_check
-  check (type in ('set_mode', 'set_source', 'reset_runtime', 'reset_generator'));
 
 alter table public.notifications add column if not exists params jsonb not null default '{}'::jsonb;
 
@@ -119,6 +119,49 @@ alter table public.device_settings drop column if exists grid_capacity_kw;
 alter table public.device_settings drop column if exists solar_capacity_kw;
 alter table public.device_settings drop column if exists generator_capacity_kw;
 alter table public.device_settings drop column if exists max_current_a;
+
+-- The generator is started and stopped outside the ATS (manually or by its
+-- own controller); the board only sees whether it delivers valid power.
+alter table public.device_settings drop column if exists gen_crank_attempts;
+alter table public.device_settings drop column if exists gen_warmup_s;
+alter table public.device_settings drop column if exists gen_cooldown_s;
+
+-- Solar schedule (Smart mode only). Shape:
+--   { "enabled": bool, "periods": [ { "days": [0..6], "start": "HH:MM", "end": "HH:MM" } ] }
+-- days = days a period starts on (0 = Sunday … 6 = Saturday, device local
+-- time). end < start = overnight. Disabled = solar allowed at any time.
+create or replace function public._valid_solar_schedule(p jsonb)
+returns boolean language sql immutable
+set search_path = pg_catalog
+as $$
+  select coalesce(
+    jsonb_typeof(p) = 'object'
+    and jsonb_typeof(p -> 'enabled') = 'boolean'
+    and jsonb_typeof(p -> 'periods') = 'array'
+    and jsonb_array_length(p -> 'periods') <= 8
+    and ((p ->> 'enabled')::boolean = false or jsonb_array_length(p -> 'periods') >= 1)
+    and not exists (
+      select 1 from jsonb_array_elements(p -> 'periods') e
+      where not coalesce(
+        jsonb_typeof(e) = 'object'
+        and (e ->> 'start') ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+        and (e ->> 'end') ~ '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+        and e ->> 'start' <> e ->> 'end'
+        and jsonb_typeof(e -> 'days') = 'array'
+        and jsonb_array_length(e -> 'days') between 1 and 7
+        and not exists (
+          select 1 from jsonb_array_elements(e -> 'days') d
+          where jsonb_typeof(d) <> 'number' or d::text !~ '^[0-6]$'),
+        false)),
+    false)
+$$;
+
+alter table public.device_settings
+  add column if not exists solar_schedule jsonb not null default '{"enabled": false, "periods": []}'::jsonb;
+alter table public.device_settings drop constraint if exists settings_solar_schedule;
+alter table public.device_settings
+  add constraint settings_solar_schedule check (public._valid_solar_schedule(solar_schedule));
+grant update (solar_schedule) on public.device_settings to authenticated;
 
 -- ---------------------------------------------------------------------
 -- Profiles are private; members are listed through a checked function
@@ -263,7 +306,7 @@ declare
     'no_source_started', 'no_source_ended', 'electrical_fault', 'electrical_fault_cleared',
     'interlock_fault', 'transfer_lockout', 'protection_override', 'mode_changed',
     'controller_restarted', 'settings_applied', 'settings_rejected', 'runtime_reset',
-    'generator_reset', 'lockout_cleared']);
+    'lockout_cleared']);
   v_ts timestamptz;
 begin
   if jsonb_typeof(p_event) <> 'object' or v_type is null then return false; end if;
@@ -455,7 +498,7 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------
--- Commands: reset_generator
+-- Commands: stricter payload validation (null-safe)
 -- ---------------------------------------------------------------------
 create or replace function public.send_command(p_command_id uuid, p_device_id text, p_type text, p_payload jsonb)
 returns public.device_commands language plpgsql security definer
@@ -490,8 +533,6 @@ begin
     for v_src in select jsonb_array_elements_text(v_payload -> 'sources') loop
       if v_src not in ('grid', 'solar', 'generator') then raise exception 'INVALID_PAYLOAD' using errcode = '22023'; end if;
     end loop;
-  elsif p_type = 'reset_generator' then
-    v_payload := '{}'::jsonb;
   else
     raise exception 'INVALID_COMMAND' using errcode = '22023';
   end if;
@@ -509,6 +550,27 @@ begin
   values (p_device_id, now(), 'app', 'command_sent', auth.uid(),
           jsonb_build_object('command_id', p_command_id, 'command', p_type, 'payload', v_payload));
   return v_cmd;
+end $$;
+
+-- ---------------------------------------------------------------------
+-- Settings for the board, with the device's current UTC offset so the
+-- board can evaluate the solar schedule in local time. The board re-reads
+-- settings at boot and every 6 hours (time-zone offset changes).
+-- ---------------------------------------------------------------------
+create or replace function public.device_get_settings(p_device_id text, p_token text)
+returns jsonb language plpgsql security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_settings jsonb;
+begin
+  perform public._device_auth(p_device_id, p_token);
+  select (to_jsonb(s) - 'updated_by')
+         || jsonb_build_object('utc_offset_min',
+              round(extract(epoch from (now() at time zone s.timezone) - (now() at time zone 'UTC')) / 60)::int)
+  into v_settings
+  from public.device_settings s where s.device_id = p_device_id;
+  return v_settings;
 end $$;
 
 -- ---------------------------------------------------------------------
@@ -644,6 +706,8 @@ grant execute on function public.resend_invitation(uuid) to authenticated;
 grant execute on function public.revoke_invitation(uuid) to authenticated;
 grant execute on function public.get_invitation(text) to authenticated;
 grant execute on function public.accept_invitation(text) to authenticated;
+-- Used by a CHECK constraint on device_settings (evaluated as the updater).
+grant execute on function public._valid_solar_schedule(jsonb) to authenticated;
 -- register_device, check_device_heartbeats, prune_history and the _helpers
 -- stay service-role / SQL-editor only.
 

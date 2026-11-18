@@ -27,7 +27,8 @@ const TERMINAL = new Set<CommandPhase>([
   "error",
 ]);
 const ACK_TIMEOUT_MS = 12_000;
-const EXEC_TIMEOUT_MS = 5 * 60_000;
+// Neutral delay (≤ 3 s) + contactor confirmation (≤ 30 s) + margin.
+const EXEC_TIMEOUT_MS = 60_000;
 
 export function useCommand() {
   const { device, onCommand } = useDeviceMeta();
@@ -49,8 +50,8 @@ export function useCommand() {
   useEffect(() => onCommand(apply), [onCommand, apply]);
 
   // Fallback polling + timeouts while a command is in flight: the board must
-  // acknowledge within ACK_TIMEOUT_MS; once accepted, execution (e.g. a
-  // generator start + warm-up) may take up to EXEC_TIMEOUT_MS.
+  // acknowledge within ACK_TIMEOUT_MS; once accepted, a transfer may take up
+  // to EXEC_TIMEOUT_MS.
   const inFlight = state.id !== null && !TERMINAL.has(state.phase);
   useEffect(() => {
     if (!inFlight || !state.id) return;

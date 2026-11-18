@@ -40,9 +40,7 @@ and sites where several trusted people administer the same system.
 (e.g. a welded contact). Closing another source could connect two sources
 together.
 **Decision.** Lockout is latched and cleared only on site (panel button or a
-power cycle after repair). The app explains this and shows the alarm. A
-generator that failed to start, by contrast, is a recoverable condition and
-can be retried remotely (`reset_generator`).
+power cycle after repair). The app explains this and shows the alarm.
 
 ## ADR-006 — At-least-once commands, de-duplicated on the board
 
@@ -78,3 +76,26 @@ never deletes the event from the device history.
 **Decision.** Device tokens are 256-bit and PINs lock for 15 minutes after 5
 failures, so brute force is impractical. No extra per-call throttling is
 implemented at this scale; revisit with many boards per project.
+
+## ADR-011 — All three sources are passive
+
+**Context.** The owner treats the grid, the generator and solar the same
+way: the ATS only chooses among sources that already deliver power.
+**Decision.** The board never starts or stops the generator (it is started
+by hand or by its own controller). A source is selectable when its voltage
+and frequency stay inside the limits for `return_delay_s`. Generator start,
+warm-up and cool-down settings, the `reset_generator` command and the
+`standby` / `failed_to_start` states were removed.
+
+## ADR-012 — Solar schedule is strict in Smart mode
+
+**Context.** With batteries, solar is available around the clock, but the
+owner wants it used only at chosen times (e.g. to keep the battery for
+later).
+**Decision.** `device_settings.solar_schedule` holds periods (days, start,
+end; overnight allowed; up to 8). In Smart mode solar is never used outside
+them — not even when no other source is available; if the load is on solar
+when a period ends, the board moves to the next source or disconnects. The
+user can still switch to solar manually at any time. The board evaluates the
+schedule locally (UTC + `utc_offset_min`), so it works offline.
+

@@ -18,7 +18,6 @@ const FAULT: Record<string, string> = {
 };
 
 const FAIL_REASON: Record<string, string> = {
-  failed_to_start: "فشل تشغيل المولد",
   target_lost: "خرج المصدر عن الحدود قبل التوصيل",
   close_failed: "لم يتأكد إغلاق الكونتاكتور",
 };

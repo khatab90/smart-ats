@@ -42,8 +42,11 @@ test("smart prediction follows the user priority over qualified sources only", (
   };
   assert.equal(predictSmartTarget(["grid", "solar", "generator"], sources), "solar");
   assert.equal(predictSmartTarget(["generator", "grid"], sources), null);
-  const standby = { ...sources, generator: { v: 0, f: 0, qualified: false, reason: "standby" } };
-  assert.equal(predictSmartTarget(["generator", "solar"], standby), "generator");
+  // A stopped generator is not selectable (the board never starts it) …
+  assert.equal(predictSmartTarget(["generator", "solar"], sources), "solar");
+  // … and solar outside its schedule is skipped by Smart mode.
+  const night = { ...sources, solar: { ...sources.solar, allowed: false } };
+  assert.equal(predictSmartTarget(["solar", "grid", "generator"], night), null);
   assert.deepEqual(movePriority(["grid", "solar", "generator"], 2, 0), [
     "generator",
     "grid",

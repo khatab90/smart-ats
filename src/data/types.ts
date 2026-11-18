@@ -9,6 +9,7 @@
  *
  * Electrical values are nullable: null means "no reading", never "zero".
  */
+import type { SolarSchedule } from "../domain/schedule";
 import type { Database, Tables } from "./database.types";
 
 type Fn<F extends keyof Database["public"]["Functions"]> = Database["public"]["Functions"][F];
@@ -34,6 +35,8 @@ export interface SourceReport {
   q_elapsed_s?: number | null;
   q_required_s?: number | null;
   reason?: string | null;
+  /** Smart mode may use this source now (false = solar outside its schedule). */
+  allowed?: boolean;
 }
 
 export interface LoadReport {
@@ -86,7 +89,9 @@ export interface Membership {
   isOwner: boolean;
 }
 
-export type DeviceSettings = Omit<Tables<"device_settings">, "updated_by">;
+export type DeviceSettings = Omit<Tables<"device_settings">, "updated_by" | "solar_schedule"> & {
+  solar_schedule: SolarSchedule;
+};
 
 /** Settings an admin may change (mirrors the column grant in the migration). */
 export type EditableSettings = Omit<DeviceSettings, "device_id" | "version" | "updated_at">;

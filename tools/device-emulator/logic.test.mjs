@@ -3,7 +3,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, test } from "vitest";
-import { classify, mayTransfer, smartTarget, stepQualification } from "./logic.mjs";
+import {
+  classify,
+  localClock,
+  mayTransfer,
+  smartTarget,
+  solarAllowedAt,
+  stepQualification,
+} from "./logic.mjs";
 
 const V = JSON.parse(
   readFileSync(new URL("../../protocol/logic-vectors.json", import.meta.url), "utf8"),
@@ -60,6 +67,21 @@ describe("mayTransfer", () => {
         recentTransfers: i.recentTransfersAgoMs.map((ago) => now - ago),
       });
       assert.deepEqual(pick(r, Object.keys(c.expect)), c.expect);
+    });
+  }
+});
+
+describe("solar schedule", () => {
+  for (const c of V.schedule) {
+    test(c.name, () => {
+      for (const [wd, min, allowed] of c.checks) {
+        assert.equal(solarAllowedAt(c.schedule, wd, min), allowed, `weekday ${wd} minute ${min}`);
+      }
+    });
+  }
+  for (const c of V.localClock) {
+    test(`localClock: ${c.name}`, () => {
+      assert.deepEqual(localClock(Date.parse(c.utc), c.offset_min), c.expect);
     });
   }
 });

@@ -3,7 +3,8 @@ import { PriorityList } from "../../components/control";
 import { Button } from "../../components/ui";
 import { SOURCE_META } from "../../data/meta";
 import type { SourceId } from "../../data/types";
-import { generatorFirst, installedSources } from "../../domain/sources";
+import { describePeriod } from "../../domain/schedule";
+import { installedSources } from "../../domain/sources";
 import { cn } from "../../lib/cn";
 import { updateSettings } from "../../api/settings";
 import { useActiveDevice } from "../../store/devices";
@@ -18,7 +19,8 @@ export function PrioritySection({
   applied: boolean;
   editable: boolean;
 }) {
-  const { device, link, status } = useActiveDevice();
+  const { device, link, status, settings } = useActiveDevice();
+  const schedule = settings?.solar_schedule;
   const installed = installedSources(status);
   const { pushToast } = useToast();
   const [draft, setDraft] = useState<SourceId[] | null>(null);
@@ -57,10 +59,11 @@ export function PrioritySection({
         onChange={setDraft}
         disabled={!editable || saving}
       />
-      {generatorFirst(value, installed) && (
-        <p className="mt-2 rounded-2xl border border-warn/30 bg-warn-soft px-3 py-2 text-[11px] leading-5 font-semibold text-warn-strong">
-          {SOURCE_META.generator.name} في المرتبة الأولى: سيشغّله البورد ويبقى عليه كلما كان سليماً،
-          حتى لو كانت المصادر الأخرى متاحة.
+      {schedule?.enabled && installed.includes("solar") && (
+        <p className="mt-2 rounded-2xl bg-solar-soft px-3 py-2 text-[11px] leading-5 text-ink-2">
+          <span className="font-semibold">{SOURCE_META.solar.name}</span> تُستخدم في الوضع الذكي فقط
+          في: {schedule.periods.map(describePeriod).join("، ")}. خارج هذه الأوقات لا يستخدمها البورد
+          حتى لو لم يتوفر مصدر آخر.
         </p>
       )}
       <p className="mt-2 text-[11px] leading-5 text-muted">

@@ -7,6 +7,7 @@
  */
 import type { EditableSettings } from "../data/types";
 import { isValidTimeZone } from "../lib/tz";
+import { validateSchedule } from "./schedule";
 
 /** Allowed nominal values (DB: CHECK nominal_voltage IN (...), nominal_frequency IN (...)). */
 export const NOMINAL_VOLTAGES = [220, 230, 240] as const;
@@ -119,15 +120,6 @@ export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] 
     ],
   },
   {
-    title: "المولد",
-    desc: "",
-    fields: [
-      { key: "gen_crank_attempts", label: "محاولات التشغيل", unit: "محاولة", min: 1, max: 6 },
-      { key: "gen_warmup_s", label: "زمن الإحماء", unit: "ث", min: 0, max: 600 },
-      { key: "gen_cooldown_s", label: "زمن التبريد بدون حمل", unit: "ث", min: 0, max: 1800 },
-    ],
-  },
-  {
     title: "الوضع اليدوي",
     desc: "",
     fields: [
@@ -149,6 +141,7 @@ export const EDITABLE_KEYS: (keyof EditableSettings)[] = [
   "nominal_voltage",
   "nominal_frequency",
   ...SETTINGS_GROUPS.flatMap((g) => g.fields.map((f) => f.key)),
+  "solar_schedule",
   "timezone",
 ];
 
@@ -170,6 +163,6 @@ export function validateSettings(d: EditableSettings): string | null {
     return "حد الرجوع بعد الارتفاع يجب أن يكون أقرب للاسمي من حد الفصل.";
   if (d.f_recover_pct >= Math.min(d.uf_trip_pct, d.of_trip_pct))
     return "نطاق رجوع التردد يجب أن يكون أضيق من حدود الفصل.";
-  if (!isValidTimeZone(d.timezone)) return "المنطقة الزمنية غير صحيحة (مثال: Asia/Riyadh).";
-  return null;
+  if (!isValidTimeZone(d.timezone)) return "المنطقة الزمنية غير صحيحة (مثال: Asia/Baghdad).";
+  return validateSchedule(d.solar_schedule);
 }
