@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { classify, mayTransfer, smartTarget, stepQualification } from "./logic.mjs";
 
 const S = {

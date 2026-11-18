@@ -4,10 +4,10 @@
 import { PGlite } from "@electric-sql/pglite";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { test } from "node:test";
+import { test } from "vitest";
 
 const migration = readFileSync(
-  new URL("../migrations/20261116000000_smart_ats_schema.sql", import.meta.url),
+  new URL("../../supabase/migrations/20261116000000_smart_ats_schema.sql", import.meta.url),
   "utf8",
 );
 

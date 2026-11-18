@@ -1,6 +1,6 @@
 // Pure app logic. Run: node --experimental-strip-types --test tests/*.test.ts
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { classifyLink } from "../src/lib/link.ts";
 import { seriesStats, splitSegments, yDomain } from "../src/lib/series.ts";
 import { movePriority, predictSmartTarget } from "../src/lib/smart.ts";
