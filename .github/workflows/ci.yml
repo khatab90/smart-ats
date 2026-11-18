@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generated database types are up to date
+        run: npm run gen:types && git diff --exit-code src/data/database.types.ts
+      - name: Bundled upgrade SQL is up to date
+        run: npm run db:bundle && git diff --exit-code supabase/dist
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npx vite build

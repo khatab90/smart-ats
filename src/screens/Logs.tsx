@@ -56,7 +56,6 @@ import { addDaysInTz, startOfDayInTz } from "../lib/tz";
 import { useActiveDevice, useNow } from "../store/devices";
 import { useNav } from "../store/nav";
 
-const DAY = 86_400_000;
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
 export function Logs() {

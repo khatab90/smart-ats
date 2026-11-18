@@ -5,17 +5,21 @@ export class ErrorBoundary extends Component<
   { children: ReactNode; resetKey?: string },
   { error: Error | null }
 > {
-  state = { error: null as Error | null };
+  override state = { error: null as Error | null };
 
   static getDerivedStateFromError(error: Error) {
     return { error };
   }
 
-  componentDidUpdate(prev: { resetKey?: string }) {
+  override componentDidUpdate(prev: { resetKey?: string }) {
     if (prev.resetKey !== this.props.resetKey && this.state.error) this.setState({ error: null });
   }
 
-  render() {
+  override componentDidCatch(error: Error) {
+    console.error("Screen crashed:", error);
+  }
+
+  override render() {
     if (!this.state.error) return this.props.children;
     return (
       <div className="flex h-full flex-col items-center justify-center px-8 text-center">

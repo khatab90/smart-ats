@@ -1,15 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { projectId, publicAnonKey } from "../../utils/supabase/info";
+import { APP_ENV, SUPABASE_ANON_KEY, SUPABASE_URL } from "../config/supabase";
 
-export const SUPABASE_URL = `https://${projectId}.supabase.co`;
-
-/** Production builds never list or claim boards registered for testing. */
-export const APP_ENV: "production" | "test" =
-  import.meta.env.VITE_APP_ENV === "test" ? "test" : "production";
+export { APP_ENV, SUPABASE_URL };
 
 // Implicit flow so invitation / confirmation links work when opened on a
 // different browser than the one that requested them.
-export const supabase = createClient(SUPABASE_URL, publicAnonKey, {
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     flowType: "implicit",
     persistSession: true,
@@ -26,7 +22,7 @@ export function appBaseUrl() {
 
 // Isolated, non-persistent client used only to email invitation links, so it
 // can never touch the signed-in admin's session storage.
-const inviteMailer = createClient(SUPABASE_URL, publicAnonKey, {
+const inviteMailer = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     flowType: "implicit",
     persistSession: false,
