@@ -13,7 +13,7 @@ import { SOURCE_META } from "../data/meta";
 import type { SourceId } from "../data/types";
 import { PHASE_LABEL, type CommandState } from "../hooks/useCommand";
 import { cn } from "../lib/cn";
-import { movePriority } from "../lib/smart";
+import { movePriority } from "../domain/sources";
 import { SourceIcon } from "./ui";
 
 /** Inline lifecycle of the last command (A8). */

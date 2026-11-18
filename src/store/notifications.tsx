@@ -9,18 +9,19 @@ import {
   type ReactNode,
 } from "react";
 import type { NotificationPrefs, NotificationRow } from "../data/types";
-import { errorMessage } from "../lib/errors";
-import { supabase } from "../lib/supabase";
+import * as api from "../api/notifications";
+import { notificationText } from "../domain/notifications";
 import { useAuth } from "./auth";
 import { useToast } from "./toast";
 
 const DEFAULT_PREFS: NotificationPrefs = {
+  source_outage: true,
   transfer: true,
   electrical_fault: true,
   connection_lost: true,
+  transfer_failed: true,
   sound: false,
 };
-
 interface NotificationsCtx {
   items: NotificationRow[];
   loading: boolean;
@@ -69,61 +70,41 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const prefsRef = useRef(prefs);
-  prefsRef.current = prefs;
+  useEffect(() => {
+    prefsRef.current = prefs;
+  }, [prefs]);
 
   const reload = useCallback(async () => {
     if (!uid) return;
-    const [list, p] = await Promise.all([
-      supabase
-        .from("notifications")
-        .select("id, device_id, type, critical, title, body, created_at, read_at")
-        .order("created_at", { ascending: false })
-        .limit(200),
-      supabase
-        .from("notification_preferences")
-        .select("transfer, electrical_fault, connection_lost, sound")
-        .maybeSingle(),
-    ]);
-    if (list.error) {
-      setError(errorMessage(list.error));
+    const [list, p] = await Promise.all([api.listNotifications(), api.getPreferences()]);
+    if (list.error !== null) {
+      setError(list.error);
     } else {
-      setItems(list.data as NotificationRow[]);
+      setItems(list.data);
       setError(null);
     }
-    if (!p.error && p.data) setPrefs(p.data as NotificationPrefs);
+    if (p.error === null && p.data) setPrefs(p.data);
     setLoading(false);
   }, [uid]);
 
   useEffect(() => {
     void reload();
     if (!uid) return;
-    const channel = supabase
-      .channel(`notifications:${uid}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${uid}` },
-        (p) => {
-          const row = p.new as NotificationRow;
-          setItems((prev) => (prev.some((n) => n.id === row.id) ? prev : [row, ...prev]));
-          pushToast({ kind: row.type, title: row.title, body: row.body });
-          if (prefsRef.current.sound || row.critical) playAlert();
-        },
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    return api.subscribeNotifications(uid, (row) => {
+      setItems((prev) => (prev.some((n) => n.id === row.id) ? prev : [row, ...prev]));
+      const text = notificationText(row);
+      pushToast({ kind: row.type, title: text.title, body: text.body });
+      if (prefsRef.current.sound || row.critical) playAlert();
+    });
   }, [uid, reload, pushToast]);
 
   const savePrefs = useCallback(
     async (patch: Partial<NotificationPrefs>) => {
       if (!uid) return;
       const next = { ...prefsRef.current, ...patch };
-      const { error: err } = await supabase
-        .from("notification_preferences")
-        .upsert({ user_id: uid, ...next, updated_at: new Date().toISOString() });
-      if (err) {
-        pushToast({ kind: "error", title: "تعذر حفظ الإعدادات", body: errorMessage(err) });
+      const { error: err } = await api.savePreferences(uid, next);
+      if (err !== null) {
+        pushToast({ kind: "error", title: "تعذر حفظ الإعدادات", body: err });
         return;
       }
       setPrefs(next);
@@ -133,30 +114,22 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const markRead = useCallback(async (id: number) => {
     const at = new Date().toISOString();
-    const { error: err } = await supabase
-      .from("notifications")
-      .update({ read_at: at })
-      .eq("id", id)
-      .is("read_at", null);
-    if (!err) setItems((p) => p.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? at } : n)));
+    const { error: err } = await api.markRead(id, at);
+    if (err === null) setItems((p) => p.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? at } : n)));
   }, []);
 
   const markAllRead = useCallback(async () => {
     if (!uid) return;
     const at = new Date().toISOString();
-    const { error: err } = await supabase
-      .from("notifications")
-      .update({ read_at: at })
-      .eq("user_id", uid)
-      .is("read_at", null);
-    if (err) pushToast({ kind: "error", title: "تعذر تحديث الإشعارات", body: errorMessage(err) });
+    const { error: err } = await api.markAllRead(uid, at);
+    if (err !== null) pushToast({ kind: "error", title: "تعذر تحديث الإشعارات", body: err });
     else setItems((p) => p.map((n) => ({ ...n, read_at: n.read_at ?? at })));
   }, [uid, pushToast]);
 
   const remove = useCallback(
     async (id: number) => {
-      const { error: err } = await supabase.from("notifications").delete().eq("id", id);
-      if (err) pushToast({ kind: "error", title: "تعذر حذف الإشعار", body: errorMessage(err) });
+      const { error: err } = await api.deleteNotification(id);
+      if (err !== null) pushToast({ kind: "error", title: "تعذر حذف الإشعار", body: err });
       else setItems((p) => p.filter((n) => n.id !== id));
     },
     [pushToast],

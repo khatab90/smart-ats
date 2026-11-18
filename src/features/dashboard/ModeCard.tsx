@@ -7,7 +7,7 @@ import type { SourceId, SystemMode } from "../../data/types";
 import { useCommand } from "../../hooks/useCommand";
 import { cn } from "../../lib/cn";
 import { fmtNum } from "../../lib/format";
-import { isSelectable, predictSmartTarget } from "../../lib/smart";
+import { isSelectable, predictSmartTarget } from "../../domain/sources";
 import { useActiveDevice } from "../../store/devices";
 import { sourceBadge } from "../../components/status";
 import { PrioritySection } from "./PrioritySection";

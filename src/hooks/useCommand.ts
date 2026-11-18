@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CommandRow, CommandStatus, CommandType } from "../data/types";
-import { errorMessage } from "../lib/errors";
-import { supabase } from "../lib/supabase";
-import { useActiveDevice } from "../store/devices";
+import * as commandsApi from "../api/commands";
+import { useDeviceMeta } from "../store/devices";
 
 /**
  * Sends a command and tracks its lifecycle (A8). Success is reported only when
@@ -31,10 +30,12 @@ const ACK_TIMEOUT_MS = 12_000;
 const EXEC_TIMEOUT_MS = 5 * 60_000;
 
 export function useCommand() {
-  const { device, onCommand } = useActiveDevice();
+  const { device, onCommand } = useDeviceMeta();
   const [state, setState] = useState<CommandState>(IDLE);
   const stateRef = useRef(state);
-  stateRef.current = state;
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   const apply = useCallback((row: Pick<CommandRow, "id" | "status" | "result">) => {
     if (row.id !== stateRef.current.id || TERMINAL.has(stateRef.current.phase)) return;
@@ -65,12 +66,8 @@ export function useCommand() {
         );
         return;
       }
-      const { data } = await supabase
-        .from("device_commands")
-        .select("id, status, result")
-        .eq("id", cmdId)
-        .maybeSingle();
-      if (data) apply(data as CommandRow);
+      const { data } = await commandsApi.fetchCommand(cmdId);
+      if (data) apply(data);
     }, 2000);
     return () => clearInterval(id);
   }, [inFlight, state.id, apply]);
@@ -80,17 +77,12 @@ export function useCommand() {
       if (!device) return;
       const id = crypto.randomUUID();
       setState({ id, type, phase: "sending", message: null });
-      const { data, error } = await supabase.rpc("send_command", {
-        p_command_id: id,
-        p_device_id: device.id,
-        p_type: type,
-        p_payload: payload,
-      });
-      if (error) {
-        setState({ id, type, phase: "error", message: errorMessage(error) });
+      const { data, error } = await commandsApi.sendCommand(id, device.id, type, payload);
+      if (error !== null) {
+        setState({ id, type, phase: "error", message: error });
         return;
       }
-      apply(data as CommandRow);
+      apply(data);
     },
     [device, apply],
   );

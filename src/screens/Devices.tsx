@@ -15,10 +15,9 @@ import {
 import { ROLE_META } from "../data/meta";
 import type { DeviceStatus, Membership } from "../data/types";
 import { cn } from "../lib/cn";
-import { errorMessage } from "../lib/errors";
 import { fmtAgo, fmtFullDate } from "../lib/format";
 import { classifyLink } from "../lib/link";
-import { supabase } from "../lib/supabase";
+import { fetchLinkSummaries, leaveDevice, releaseDevice, renameDevice } from "../api/devices";
 import { useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useToast } from "../store/toast";
@@ -41,19 +40,11 @@ export function Devices() {
   useEffect(() => {
     if (!memberships.length) return;
     const load = () =>
-      supabase
-        .from("device_status")
-        .select("device_id, online, last_seen_at, interval_ms")
-        .in(
-          "device_id",
-          memberships.map((m) => m.device.id),
-        )
-        .then(({ data }) => {
-          const map: Record<string, StatusLite> = {};
-          for (const r of (data ?? []) as (StatusLite & { device_id: string })[])
-            map[r.device_id] = r;
-          setStatuses(map);
-        });
+      fetchLinkSummaries(memberships.map((m) => m.device.id)).then(({ data }) => {
+        const map: Record<string, StatusLite> = {};
+        for (const r of data ?? []) map[r.device_id] = r;
+        setStatuses(map);
+      });
     void load();
     const id = setInterval(load, 10_000);
     return () => clearInterval(id);
@@ -68,12 +59,9 @@ export function Devices() {
   const save = async () => {
     if (!edit) return;
     setSaving(true);
-    const { error: err } = await supabase
-      .from("devices")
-      .update({ name: name.trim(), location: location.trim() || null })
-      .eq("id", edit.device.id);
+    const { error: err } = await renameDevice(edit.device.id, name.trim(), location.trim() || null);
     setSaving(false);
-    if (err) return pushToast({ kind: "error", title: "تعذر الحفظ", body: errorMessage(err) });
+    if (err !== null) return pushToast({ kind: "error", title: "تعذر الحفظ", body: err });
     pushToast({ kind: "success", title: "تم حفظ بيانات الجهاز" });
     setEdit(null);
     await refresh();
@@ -82,13 +70,12 @@ export function Devices() {
   const doConfirm = async () => {
     if (!confirm) return;
     setBusy(true);
-    const fn = confirm.kind === "release" ? "release_device" : "leave_device";
-    const { error: err } = await supabase.rpc(fn, { p_device_id: confirm.m.device.id });
+    const action = confirm.kind === "release" ? releaseDevice : leaveDevice;
+    const { error: err } = await action(confirm.m.device.id);
     setBusy(false);
     setConfirm(null);
     setEdit(null);
-    if (err)
-      return pushToast({ kind: "error", title: "تعذر تنفيذ العملية", body: errorMessage(err) });
+    if (err !== null) return pushToast({ kind: "error", title: "تعذر تنفيذ العملية", body: err });
     pushToast({
       kind: "success",
       title: confirm.kind === "release" ? "تمت إزالة الجهاز من حسابك" : "غادرت الجهاز",

@@ -8,18 +8,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type {
-  CommandRow,
-  Device,
-  DeviceSettings,
-  DeviceStatus,
-  EventRow,
-  Membership,
-  Role,
-} from "../data/types";
-import { errorMessage } from "../lib/errors";
+import * as devicesApi from "../api/devices";
+import { subscribeDevice, subscribeMemberships, type ChannelState } from "../api/realtime";
+import { APP_ENV } from "../config/supabase";
+import type { CommandRow, DeviceSettings, DeviceStatus, EventRow, Membership } from "../data/types";
 import { classifyLink, type LinkState } from "../lib/link";
-import { APP_ENV, supabase } from "../lib/supabase";
+import { readStorage, writeStorage } from "../lib/storage";
 import { useAuth } from "./auth";
 
 const ACTIVE_KEY = "smart-ats.active-device";
@@ -46,26 +40,18 @@ export function DevicesProvider({ children }: { children: ReactNode }) {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeId, setActiveIdState] = useState<string | null>(() =>
-    localStorage.getItem(ACTIVE_KEY),
-  );
+  const [activeId, setActiveIdState] = useState<string | null>(() => readStorage(ACTIVE_KEY));
   const [clockOffsetMs, setClockOffset] = useState(0);
 
   const refresh = useCallback(async () => {
     if (!uid) return;
-    const { data, error: err } = await supabase
-      .from("device_members")
-      .select(
-        "role, device:devices!inner(id, environment, name, location, owner_id, claimed_at, firmware)",
-      )
-      .eq("user_id", uid);
-    if (err) {
-      setError(errorMessage(err));
+    const { data, error: err } = await devicesApi.listMemberships(uid);
+    if (err !== null) {
+      setError(err);
       setLoading(false);
       return;
     }
-    const rows = (data ?? []) as unknown as { role: Role; device: Device }[];
-    const list = rows
+    const list = data
       .filter((r) => r.device.environment === APP_ENV)
       .map((r) => ({ device: r.device, role: r.role, isOwner: r.device.owner_id === uid }))
       .sort((a, b) => a.device.name.localeCompare(b.device.name, "ar"));
@@ -77,26 +63,16 @@ export function DevicesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void refresh();
     if (!uid) return;
-    const channel = supabase
-      .channel(`members:${uid}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "device_members", filter: `user_id=eq.${uid}` },
-        () => void refresh(),
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    return subscribeMemberships(uid, () => void refresh());
   }, [uid, refresh]);
 
   useEffect(() => {
     const sync = async () => {
       const t0 = Date.now();
-      const { data, error: err } = await supabase.rpc("server_now");
-      if (err || !data) return;
+      const { data } = await devicesApi.serverNow();
+      if (data === null) return;
       const t1 = Date.now();
-      setClockOffset(Date.parse(data as string) - (t0 + t1) / 2);
+      setClockOffset(data - (t0 + t1) / 2);
     };
     void sync();
     const id = setInterval(sync, 5 * 60_000);
@@ -104,25 +80,23 @@ export function DevicesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Keep the selection valid as memberships change.
-  useEffect(() => {
-    if (loading) return;
-    if (!memberships.length) {
-      if (activeId) setActiveIdState(null);
-      return;
-    }
-    if (!activeId || !memberships.some((m) => m.device.id === activeId)) {
-      setActiveIdState(memberships[0].device.id);
-    }
-  }, [memberships, activeId, loading]);
+  const validActiveId =
+    loading || !memberships.length
+      ? loading
+        ? activeId
+        : null
+      : memberships.some((m) => m.device.id === activeId)
+        ? activeId
+        : memberships[0].device.id;
 
   const setActiveId = useCallback((id: string) => {
-    localStorage.setItem(ACTIVE_KEY, id);
+    writeStorage(ACTIVE_KEY, id);
     setActiveIdState(id);
   }, []);
 
   const value = useMemo(
-    () => ({ memberships, loading, error, activeId, setActiveId, refresh, clockOffsetMs }),
-    [memberships, loading, error, activeId, setActiveId, refresh, clockOffsetMs],
+    () => ({ memberships, loading, error, activeId: validActiveId, setActiveId, refresh, clockOffsetMs }),
+    [memberships, loading, error, validActiveId, setActiveId, refresh, clockOffsetMs],
   );
   return <DevicesContext.Provider value={value}>{children}</DevicesContext.Provider>;
 }
@@ -134,30 +108,35 @@ export function useDevices() {
 }
 
 // ---------------------------------------------------------------------------
-// Active device: live status, settings, events and command updates
+// Active device. Split in two contexts so components that only need the
+// device, role or settings do not re-render on every 2-second status update.
 // ---------------------------------------------------------------------------
 type Listener<T> = (row: T) => void;
 
-interface ActiveDeviceCtx {
+interface DeviceMetaCtx {
   membership: Membership | null;
-  device: Device | null;
+  device: Membership["device"] | null;
   isAdmin: boolean;
   isOwner: boolean;
-  status: DeviceStatus | null;
   settings: DeviceSettings | null;
   loading: boolean;
   error: string | null;
-  link: LinkState;
-  /** Board confirmed the current settings version. */
-  settingsApplied: boolean;
-  realtime: "connecting" | "live" | "polling";
+  realtime: ChannelState;
   serverNow: () => number;
   onEvent: (fn: Listener<EventRow>) => () => void;
   onCommand: (fn: Listener<CommandRow>) => () => void;
   refresh: () => Promise<void>;
 }
 
-const ActiveContext = createContext<ActiveDeviceCtx | null>(null);
+interface DeviceLiveCtx {
+  status: DeviceStatus | null;
+  link: LinkState;
+  /** Board confirmed the current settings version. */
+  settingsApplied: boolean;
+}
+
+const MetaContext = createContext<DeviceMetaCtx | null>(null);
+const LiveContext = createContext<DeviceLiveCtx | null>(null);
 
 export function ActiveDeviceProvider({ children }: { children: ReactNode }) {
   const { memberships, activeId, clockOffsetMs } = useDevices();
@@ -167,80 +146,58 @@ export function ActiveDeviceProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<DeviceSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [realtime, setRealtime] = useState<ActiveDeviceCtx["realtime"]>("connecting");
+  const [realtime, setRealtime] = useState<ChannelState>("connecting");
   const [link, setLink] = useState<LinkState>("never");
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const eventListeners = useRef(new Set<Listener<EventRow>>());
   const commandListeners = useRef(new Set<Listener<CommandRow>>());
   const offsetRef = useRef(clockOffsetMs);
-  offsetRef.current = clockOffsetMs;
+  useEffect(() => {
+    offsetRef.current = clockOffsetMs;
+  }, [clockOffsetMs]);
 
   const serverNow = useCallback(() => Date.now() + offsetRef.current, []);
 
-  const refresh = useCallback(async () => {
-    if (!deviceId) return;
-    const [s, cfg] = await Promise.all([
-      supabase.from("device_status").select("*").eq("device_id", deviceId).maybeSingle(),
-      supabase.from("device_settings").select("*").eq("device_id", deviceId).maybeSingle(),
-    ]);
-    if (s.error || cfg.error) {
-      setError(errorMessage(s.error ?? cfg.error));
-      return;
-    }
-    setError(null);
-    setStatus(s.data as DeviceStatus | null);
-    setSettings(cfg.data as DeviceSettings | null);
-  }, [deviceId]);
-
-  useEffect(() => {
+  // Reset per-device state when the selection changes (during render, so no
+  // stale device is ever shown).
+  if (loadedFor !== deviceId) {
+    setLoadedFor(deviceId);
     setStatus(null);
     setSettings(null);
     setLink("never");
-    if (!deviceId) return;
-    setLoading(true);
-    void refresh().finally(() => setLoading(false));
+    setLoading(Boolean(deviceId));
     setRealtime("connecting");
-    const filter = `device_id=eq.${deviceId}`;
-    const channel = supabase
-      .channel(`device:${deviceId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "device_status", filter },
-        (p) => {
-          if (p.new && "device_id" in p.new) setStatus(p.new as DeviceStatus);
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "device_settings", filter },
-        (p) => {
-          if (p.new && "device_id" in p.new) setSettings(p.new as DeviceSettings);
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "events", filter },
-        (p) => {
-          eventListeners.current.forEach((fn) => fn(p.new as EventRow));
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "device_commands", filter },
-        (p) => {
-          if (p.new && "id" in p.new)
-            commandListeners.current.forEach((fn) => fn(p.new as CommandRow));
-        },
-      )
-      .subscribe((state) => {
-        if (state === "SUBSCRIBED") {
-          setRealtime("live");
-          void refresh(); // close the gap between first fetch and subscription
-        } else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED") {
-          setRealtime("polling");
-        }
-      });
+  }
+
+  const refresh = useCallback(async () => {
+    if (!deviceId) return;
+    const [s, cfg] = await Promise.all([devicesApi.fetchStatus(deviceId), devicesApi.fetchSettings(deviceId)]);
+    if (s.error !== null || cfg.error !== null) {
+      setError(s.error ?? cfg.error);
+      return;
+    }
+    setError(null);
+    setStatus(s.data);
+    setSettings(cfg.data);
+  }, [deviceId]);
+
+  useEffect(() => {
+    if (!deviceId) return;
+    let alive = true;
+    void refresh().finally(() => alive && setLoading(false));
+    const unsubscribe = subscribeDevice(deviceId, {
+      status: setStatus,
+      settings: setSettings,
+      event: (row) => eventListeners.current.forEach((fn) => fn(row)),
+      command: (row) => commandListeners.current.forEach((fn) => fn(row)),
+      state: (st) => {
+        setRealtime(st);
+        if (st === "live") void refresh(); // close the gap between first fetch and subscription
+      },
+    });
     return () => {
-      void supabase.removeChannel(channel);
+      alive = false;
+      unsubscribe();
     };
   }, [deviceId, refresh]);
 
@@ -268,50 +225,54 @@ export function ActiveDeviceProvider({ children }: { children: ReactNode }) {
     return () => void commandListeners.current.delete(fn);
   }, []);
 
-  const value = useMemo<ActiveDeviceCtx>(
+  const meta = useMemo<DeviceMetaCtx>(
     () => ({
       membership,
       device: membership?.device ?? null,
       isAdmin: membership?.role === "admin",
       isOwner: Boolean(membership?.isOwner),
-      status,
       settings,
       loading,
       error,
-      link,
-      settingsApplied: Boolean(
-        settings &&
-        status?.config_version !== null &&
-        status?.config_version !== undefined &&
-        status.config_version >= settings.version,
-      ),
       realtime,
       serverNow,
       onEvent,
       onCommand,
       refresh,
     }),
-    [
-      membership,
-      status,
-      settings,
-      loading,
-      error,
-      link,
-      realtime,
-      serverNow,
-      onEvent,
-      onCommand,
-      refresh,
-    ],
+    [membership, settings, loading, error, realtime, serverNow, onEvent, onCommand, refresh],
   );
-  return <ActiveContext.Provider value={value}>{children}</ActiveContext.Provider>;
+
+  const configVersion = status?.config_version ?? null;
+  const live = useMemo<DeviceLiveCtx>(
+    () => ({
+      status,
+      link,
+      settingsApplied: Boolean(settings && configVersion !== null && configVersion >= settings.version),
+    }),
+    [status, link, settings, configVersion],
+  );
+
+  return (
+    <MetaContext.Provider value={meta}>
+      <LiveContext.Provider value={live}>{children}</LiveContext.Provider>
+    </MetaContext.Provider>
+  );
 }
 
-export function useActiveDevice() {
-  const c = useContext(ActiveContext);
-  if (!c) throw new Error("useActiveDevice must be used inside ActiveDeviceProvider");
+/** Device, role, settings and helpers — stable between status updates. */
+export function useDeviceMeta() {
+  const c = useContext(MetaContext);
+  if (!c) throw new Error("useDeviceMeta must be used inside ActiveDeviceProvider");
   return c;
+}
+
+/** Everything about the active device, including the live status. */
+export function useActiveDevice() {
+  const meta = useDeviceMeta();
+  const live = useContext(LiveContext);
+  if (!live) throw new Error("useActiveDevice must be used inside ActiveDeviceProvider");
+  return { ...meta, ...live };
 }
 
 /** Re-renders on an interval so live timers stay current. */

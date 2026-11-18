@@ -2,8 +2,7 @@ import { Check, KeyRound, Lock, Mail, User } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import { cn } from "../../lib/cn";
-import { errorMessage } from "../../lib/errors";
-import { appBaseUrl, supabase } from "../../lib/supabase";
+import * as authApi from "../../api/auth";
 import { type View } from "./AuthFlow";
 import { BackHeader, EMAIL_RE, FormError, SentScreen, strength } from "./shared";
 
@@ -28,15 +27,11 @@ export function Signup({ onNavigate }: { onNavigate: (v: View) => void }) {
     if (form.password !== form.confirm) return setError("كلمتا المرور غير متطابقتين");
     if (!agree) return setError("يجب الموافقة على الشروط وسياسة الخصوصية");
     setLoading(true);
-    const { data, error: err } = await supabase.auth.signUp({
-      email,
-      password: form.password,
-      options: { data: { full_name: form.name.trim() }, emailRedirectTo: appBaseUrl() },
-    });
+    const { data, error: err } = await authApi.signUp(email, form.password, form.name.trim());
     setLoading(false);
-    if (err) return setError(errorMessage(err));
+    if (err !== null) return setError(err);
     // With email confirmation enabled no session is returned until the link is opened.
-    if (!data.session) setSent(true);
+    if (!data.signedIn) setSent(true);
   };
 
   if (sent) {
@@ -47,12 +42,8 @@ export function Signup({ onNavigate }: { onNavigate: (v: View) => void }) {
         email={email}
         onBack={() => onNavigate("login")}
         onResend={async () => {
-          const { error: err } = await supabase.auth.resend({
-            type: "signup",
-            email,
-            options: { emailRedirectTo: appBaseUrl() },
-          });
-          return err ? errorMessage(err) : null;
+          const { error: err } = await authApi.resendConfirmation(email);
+          return err;
         }}
       />
     );

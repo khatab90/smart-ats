@@ -10,7 +10,8 @@ import {
 } from "react";
 import type { Profile } from "../data/types";
 import { isSchemaMissing } from "../lib/errors";
-import { supabase } from "../lib/supabase";
+import * as authApi from "../api/auth";
+import { probeProfile } from "../api/profile";
 
 interface AuthCtx {
   loading: boolean;
@@ -36,30 +37,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getSession().then(({ data }) => {
+    void authApi.getSession().then((s) => {
       if (!alive) return;
-      setSession(data.session);
+      setSession(s);
       setLoading(false);
     });
-    const { data } = supabase.auth.onAuthStateChange((event, s) => {
+    const unsubscribe = authApi.onAuthChange((event, s) => {
       setSession(s);
       if (event === "PASSWORD_RECOVERY") setRecovery(true);
       if (event === "SIGNED_OUT") setProfile(null);
     });
     return () => {
       alive = false;
-      data.subscription.unsubscribe();
+      unsubscribe();
     };
   }, []);
 
   const userId = session?.user.id;
   const refreshProfile = useCallback(async () => {
     if (!userId) return;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, email, phone, full_name")
-      .eq("id", userId)
-      .maybeSingle();
+    const { data, error } = await probeProfile(userId);
     if (error) {
       setDbError(isSchemaMissing(error) ? "schema" : "network");
       return;
@@ -73,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [userId, refreshProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    await authApi.signOut();
   }, []);
 
   const value = useMemo<AuthCtx>(

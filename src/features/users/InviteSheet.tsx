@@ -4,8 +4,7 @@ import { Badge, Button, Field, Sheet } from "../../components/ui";
 import { ROLE_META } from "../../data/meta";
 import type { Role } from "../../data/types";
 import { cn } from "../../lib/cn";
-import { errorMessage } from "../../lib/errors";
-import { sendInvitationEmail, supabase } from "../../lib/supabase";
+import { createInvitation, sendInvitationEmail } from "../../api/members";
 import { useToast } from "../../store/toast";
 
 export const ROLES: Role[] = ["admin", "viewer"];
@@ -66,21 +65,17 @@ export function InviteSheet({
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return setError("صيغة البريد الإلكتروني غير صحيحة");
     setError("");
     setLoading(true);
-    const { data, error: err } = await supabase.rpc("create_invitation", {
-      p_device_id: deviceId,
-      p_email: e,
-      p_role: role,
-    });
-    if (err) {
+    const { data, error: err } = await createInvitation(deviceId, e, role);
+    if (err !== null) {
       setLoading(false);
-      return setError(errorMessage(err));
+      return setError(err);
     }
-    const mail = await sendInvitationEmail(e, (data as { token: string }).token);
+    const mail = await sendInvitationEmail(e, data.token);
     setLoading(false);
     await onSent();
-    if (mail.error) {
+    if (mail.error !== null) {
       setError(
-        `حُفظت الدعوة لكن تعذر إرسال البريد: ${errorMessage(mail.error)} يمكنك إعادة الإرسال من قائمة الدعوات.`,
+        `حُفظت الدعوة لكن تعذر إرسال البريد: ${mail.error} يمكنك إعادة الإرسال من قائمة الدعوات.`,
       );
       return;
     }

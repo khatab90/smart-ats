@@ -5,9 +5,10 @@ import { PERMISSIONS, ROLE_META } from "../data/meta";
 import type { InvitationRow, MemberRow, Role } from "../data/types";
 import { useMembers } from "../hooks/data";
 import { cn } from "../lib/cn";
-import { errorMessage } from "../lib/errors";
 import { fmtDateTime } from "../lib/format";
-import { sendInvitationEmail, supabase } from "../lib/supabase";
+import * as membersApi from "../api/members";
+import { leaveDevice } from "../api/devices";
+import type { Result } from "../api/result";
 import { useAuth } from "../store/auth";
 import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
@@ -34,14 +35,13 @@ export function Users() {
   const [busy, setBusy] = useState(false);
   const ownerId = device?.owner_id;
 
-  const run = async (fn: () => PromiseLike<{ error: unknown }>, success: string) => {
+  const run = async (fn: () => Promise<Result<null>>, success: string) => {
     setBusy(true);
     const { error: err } = await fn();
     setBusy(false);
     setPending(null);
     setSelected(null);
-    if (err)
-      return pushToast({ kind: "error", title: "تعذر تنفيذ العملية", body: errorMessage(err) });
+    if (err !== null) return pushToast({ kind: "error", title: "تعذر تنفيذ العملية", body: err });
     pushToast({ kind: "success", title: success });
     await Promise.all([reload(), refresh()]);
   };
@@ -49,55 +49,22 @@ export function Users() {
   const confirmPending = () => {
     if (!pending || !device) return;
     if (pending.kind === "role")
-      return run(
-        () =>
-          supabase.rpc("set_member_role", {
-            p_device_id: device.id,
-            p_user_id: pending.member.user_id,
-            p_role: pending.role,
-          }),
-        "تم تغيير الصلاحية",
-      );
+      return run(() => membersApi.setRole(device.id, pending.member.user_id, pending.role), "تم تغيير الصلاحية");
     if (pending.kind === "remove")
-      return run(
-        () =>
-          supabase.rpc("remove_member", {
-            p_device_id: device.id,
-            p_user_id: pending.member.user_id,
-          }),
-        "تمت إزالة المستخدم",
-      );
+      return run(() => membersApi.removeMember(device.id, pending.member.user_id), "تمت إزالة المستخدم");
     if (pending.kind === "owner")
-      return run(
-        () =>
-          supabase.rpc("transfer_ownership", {
-            p_device_id: device.id,
-            p_user_id: pending.member.user_id,
-          }),
-        "تم نقل الملكية",
-      );
+      return run(() => membersApi.transferOwnership(device.id, pending.member.user_id), "تم نقل الملكية");
     if (pending.kind === "leave")
-      return run(() => supabase.rpc("leave_device", { p_device_id: device.id }), "غادرت الجهاز");
-    return run(
-      () => supabase.rpc("revoke_invitation", { p_invitation_id: pending.invitation.id }),
-      "تم إلغاء الدعوة",
-    );
+      return run(() => leaveDevice(device.id), "غادرت الجهاز");
+    return run(() => membersApi.revokeInvitation(pending.invitation.id), "تم إلغاء الدعوة");
   };
 
   const resend = async (inv: InvitationRow) => {
-    const { data, error: err } = await supabase.rpc("resend_invitation", {
-      p_invitation_id: inv.id,
-    });
-    if (err)
-      return pushToast({ kind: "error", title: "تعذر إعادة الإرسال", body: errorMessage(err) });
-    const res = data as { token: string; email: string };
-    const mail = await sendInvitationEmail(res.email, res.token);
-    if (mail.error)
-      return pushToast({
-        kind: "error",
-        title: "تم تجديد الدعوة لكن تعذر إرسال البريد",
-        body: errorMessage(mail.error),
-      });
+    const { data: res, error: err } = await membersApi.resendInvitation(inv.id);
+    if (err !== null) return pushToast({ kind: "error", title: "تعذر إعادة الإرسال", body: err });
+    const mail = await membersApi.sendInvitationEmail(res.email, res.token);
+    if (mail.error !== null)
+      return pushToast({ kind: "error", title: "تم تجديد الدعوة لكن تعذر إرسال البريد", body: mail.error });
     pushToast({ kind: "success", title: "أُعيد إرسال الدعوة", body: res.email });
     await reload();
   };
@@ -137,7 +104,7 @@ export function Users() {
             {members.map((m) => {
               const isMe = m.user_id === user?.id;
               const isDeviceOwner = m.user_id === ownerId;
-              const name = m.profile?.full_name || m.profile?.email || "مستخدم";
+              const name = m.full_name || m.email || "مستخدم";
               const canManage = isAdmin && !isDeviceOwner && !isMe;
               return (
                 <button
@@ -163,7 +130,7 @@ export function Users() {
                       dir="ltr"
                       style={{ textAlign: "right" }}
                     >
-                      {m.profile?.email}
+                      {m.email}
                     </span>
                   </span>
                   <span
@@ -280,8 +247,8 @@ export function Users() {
         {selected && (
           <div className="space-y-3">
             <p className="text-[13px] text-muted">
-              {selected.profile?.full_name || "مستخدم"} •{" "}
-              <span dir="ltr">{selected.profile?.email}</span>
+              {selected.full_name || "مستخدم"} •{" "}
+              <span dir="ltr">{selected.email}</span>
             </p>
             {isAdmin && selected.user_id !== ownerId && selected.user_id !== user?.id && (
               <>
@@ -352,11 +319,11 @@ export function Users() {
       >
         <p className="text-[13px] leading-6 text-ink-2">
           {pending?.kind === "role" &&
-            `سيصبح «${pending.member.profile?.full_name || pending.member.profile?.email}» ${ROLE_META[pending.role].label}: ${ROLE_META[pending.role].desc}.`}
+            `سيصبح «${pending.member.full_name || pending.member.email}» ${ROLE_META[pending.role].label}: ${ROLE_META[pending.role].desc}.`}
           {pending?.kind === "remove" &&
-            `سيفقد «${pending.member.profile?.full_name || pending.member.profile?.email}» الوصول إلى هذا الجهاز فوراً.`}
+            `سيفقد «${pending.member.full_name || pending.member.email}» الوصول إلى هذا الجهاز فوراً.`}
           {pending?.kind === "owner" &&
-            `سيصبح «${pending.member.profile?.full_name || pending.member.profile?.email}» مالك الجهاز، وتبقى أنت مسؤولاً يمكنه المالك الجديد إزالته.`}
+            `سيصبح «${pending.member.full_name || pending.member.email}» مالك الجهاز، وتبقى أنت مسؤولاً يمكنه المالك الجديد إزالته.`}
           {pending?.kind === "leave" &&
             "ستفقد الوصول إلى هذا الجهاز وإشعاراته. يحتاج المسؤول إلى دعوتك مجدداً للعودة."}
           {pending?.kind === "revoke" &&

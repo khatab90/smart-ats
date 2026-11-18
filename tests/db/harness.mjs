@@ -1,31 +1,9 @@
-// Shared PGlite harness: a Supabase-like Postgres in WASM with the real
-// migrations applied in order. Each test file gets its own database.
-import { PGlite } from "@electric-sql/pglite";
+// Shared test harness on top of tools/db/pglite.mjs: each test file gets its
+// own database with every migration applied, plus role-switching helpers.
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { bootDatabase, migrationFiles } from "../../tools/db/pglite.mjs";
 
-const MIGRATIONS_DIR = new URL("../../supabase/migrations/", import.meta.url);
-
-/** Migration files in the order Supabase applies them (timestamp prefix). */
-export function migrationFiles() {
-  return readdirSync(MIGRATIONS_DIR)
-    .filter((f) => f.endsWith(".sql"))
-    .sort()
-    .map((name) => ({ name, sql: readFileSync(new URL(name, MIGRATIONS_DIR), "utf8") }));
-}
-
-const SUPABASE_STUBS = `
-  create role anon nologin; create role authenticated nologin; create role service_role nologin;
-  create schema auth;
-  grant usage on schema auth to anon, authenticated;
-  grant usage on schema public to anon, authenticated;
-  create table auth.users (id uuid primary key, email text, phone text, raw_user_meta_data jsonb default '{}');
-  create function auth.uid() returns uuid language sql stable as
-    $$ select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid $$;
-  create function auth.jwt() returns jsonb language sql stable as
-    $$ select coalesce(nullif(current_setting('request.jwt.claims', true), ''), '{}')::jsonb $$;
-  grant execute on all functions in schema auth to anon, authenticated;
-`;
+export { migrationFiles };
 
 export const U1 = "11111111-1111-1111-1111-111111111111";
 export const U2 = "22222222-2222-2222-2222-222222222222";
@@ -37,12 +15,7 @@ export const iso = (ms) => new Date(ms).toISOString();
  * Returns query helpers bound to it.
  */
 export async function createDb({ upTo } = {}) {
-  const db = new PGlite();
-  await db.exec(SUPABASE_STUBS);
-  for (const m of migrationFiles()) {
-    if (upTo && m.name > upTo) break;
-    await db.exec(m.sql);
-  }
+  const db = await bootDatabase({ upTo });
 
   const h = {
     db,

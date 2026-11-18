@@ -1,14 +1,31 @@
 /**
- * Row and payload types shared by the app. They mirror the Supabase schema in
- * supabase/migrations and the ESP32 protocol v1 (docs/ESP32_PROTOCOL.md).
+ * Domain types used by the app.
+ *
+ * Every row type is DERIVED from the generated database types
+ * (database.types.ts, produced from supabase/migrations by `npm run gen:types`),
+ * so a column added, removed or renamed in SQL breaks the build here instead
+ * of failing at runtime. Only JSON columns get a hand-written shape, which
+ * mirrors the ESP32 protocol (docs/ESP32_PROTOCOL.md).
+ *
  * Electrical values are nullable: null means "no reading", never "zero".
  */
-export type SourceId = "grid" | "solar" | "generator";
-export type SystemMode = "smart" | "manual";
-export type SystemState = "normal" | "transferring" | "no_source" | "lockout";
-export type Role = "admin" | "viewer";
-export type Environment = "production" | "test";
+import type { Database, Tables } from "./database.types";
 
+type Fn<F extends keyof Database["public"]["Functions"]> = Database["public"]["Functions"][F];
+
+// ----------------------------------------------------------- enumerations
+export type SourceId = NonNullable<Tables<"device_status">["active_source"]>;
+export type SystemMode = NonNullable<Tables<"device_status">["mode"]>;
+export type SystemState = NonNullable<Tables<"device_status">["system_state"]>;
+export type Role = Tables<"device_members">["role"];
+export type Environment = Tables<"devices">["environment"];
+export type CommandType = Tables<"device_commands">["type"];
+export type CommandStatus = Tables<"device_commands">["status"];
+export type NotificationType = Tables<"notifications">["type"];
+export type EventType = Tables<"events">["type"];
+export type Severity = Tables<"events">["severity"];
+
+// ------------------------------------------------- protocol JSON payloads
 export interface SourceReport {
   v: number | null;
   f: number | null;
@@ -26,48 +43,42 @@ export interface LoadReport {
   f: number | null;
 }
 
-export interface DeviceStatus {
-  device_id: string;
-  online: boolean;
-  last_seen_at: string | null;
-  device_ts: string | null;
-  seq: number | null;
-  interval_ms: number | null;
-  mode: SystemMode | null;
-  mode_since: string | null;
-  system_state: SystemState | null;
-  active_source: SourceId | null;
-  active_since: string | null;
-  sources: Partial<Record<SourceId, SourceReport>> | null;
-  load: LoadReport | null;
-  contactors: Partial<Record<SourceId, { cmd: boolean; fb: boolean }>> | null;
-  alarms: string[] | null;
-  override: {
-    active: boolean;
-    at?: string | null;
-    reason?: string | null;
-    requested?: SourceId | null;
-  } | null;
-  config_version: number | null;
-  controller: {
-    uptime_s?: number;
-    reset_reason?: string;
-    temp_c?: number;
-    supply_v?: number;
-  } | null;
-  rssi: number | null;
-  runtime: Partial<Record<SourceId, { s: number; since: string | null }>> | null;
+export interface ProtectionOverride {
+  active: boolean;
+  at?: string | null;
+  reason?: string | null;
+  requested?: SourceId | null;
 }
 
-export interface Device {
-  id: string;
-  environment: Environment;
-  name: string;
-  location: string | null;
-  owner_id: string | null;
-  claimed_at: string | null;
-  firmware: string | null;
+export interface ControllerHealth {
+  uptime_s?: number;
+  reset_reason?: string;
+  temp_c?: number;
+  supply_v?: number;
+  dropped_events?: number;
 }
+
+type PerSource<T> = Partial<Record<SourceId, T>>;
+
+// ------------------------------------------------------------------- rows
+export type DeviceStatus = Omit<
+  Tables<"device_status">,
+  "sources" | "load" | "contactors" | "alarms" | "override" | "controller" | "energy_wh" | "runtime"
+> & {
+  sources: PerSource<SourceReport> | null;
+  load: LoadReport | null;
+  contactors: PerSource<{ cmd: boolean; fb: boolean }> | null;
+  alarms: string[] | null;
+  override: ProtectionOverride | null;
+  controller: ControllerHealth | null;
+  energy_wh: PerSource<number> | null;
+  runtime: PerSource<{ s: number; since: string | null }> | null;
+};
+
+export type Device = Pick<
+  Tables<"devices">,
+  "id" | "environment" | "name" | "location" | "owner_id" | "claimed_at" | "firmware"
+>;
 
 export interface Membership {
   device: Device;
@@ -75,141 +86,77 @@ export interface Membership {
   isOwner: boolean;
 }
 
-export interface DeviceSettings {
-  device_id: string;
-  version: number;
-  priority: SourceId[];
-  nominal_voltage: number | null;
-  nominal_frequency: number | null;
-  uv_trip_pct: number;
-  uv_recover_pct: number;
-  uv_delay_ms: number;
-  ov_trip_pct: number;
-  ov_recover_pct: number;
-  ov_delay_ms: number;
-  uf_trip_pct: number;
-  of_trip_pct: number;
-  f_recover_pct: number;
-  f_delay_ms: number;
-  return_delay_s: number;
-  min_dwell_s: number;
-  rate_limit_count: number;
-  rate_limit_window_min: number;
-  neutral_delay_ms: number;
-  transfer_timeout_ms: number;
-  gen_crank_attempts: number;
-  gen_warmup_s: number;
-  gen_cooldown_s: number;
-  grid_capacity_kw: number | null;
-  solar_capacity_kw: number | null;
-  generator_capacity_kw: number | null;
-  max_current_a: number | null;
-  manual_revert_min: number | null;
-  timezone: string;
-  updated_at: string;
-}
+export type DeviceSettings = Omit<Tables<"device_settings">, "updated_by">;
 
+/** Settings an admin may change (mirrors the column grant in the migration). */
 export type EditableSettings = Omit<DeviceSettings, "device_id" | "version" | "updated_at">;
 
-export interface EventRow {
-  id: number;
-  device_id: string;
-  seq: number | null;
-  occurred_at: string;
-  origin: "device" | "server" | "app";
-  type: string;
-  severity: "info" | "warning" | "critical";
-  source: SourceId | null;
-  from_source: SourceId | null;
-  to_source: SourceId | null;
-  actor_id: string | null;
+export type EventRow = Omit<Tables<"events">, "data" | "received_at" | "boot_id"> & {
   data: Record<string, unknown>;
-}
+};
 
-export interface TelemetryRow {
-  device_ts: string;
-  active_source: SourceId | null;
-  system_state: SystemState | null;
-  load_voltage: number | null;
-  load_current: number | null;
-  load_power_w: number | null;
-  load_frequency: number | null;
-  grid_voltage: number | null;
-  grid_frequency: number | null;
-  solar_voltage: number | null;
-  solar_frequency: number | null;
-  generator_voltage: number | null;
-  generator_frequency: number | null;
-}
+export type TelemetryRow = Pick<
+  Tables<"telemetry">,
+  | "device_ts"
+  | "active_source"
+  | "system_state"
+  | "load_voltage"
+  | "load_current"
+  | "load_power_w"
+  | "load_frequency"
+  | "grid_voltage"
+  | "grid_frequency"
+  | "solar_voltage"
+  | "solar_frequency"
+  | "generator_voltage"
+  | "generator_frequency"
+> & { active_source: SourceId | null; system_state: SystemState | null };
 
-export type CommandType = "set_mode" | "set_source" | "reset_runtime";
-export type CommandStatus =
-  | "pending"
-  | "delivered"
-  | "accepted"
-  | "executing"
-  | "completed"
-  | "rejected"
-  | "failed"
-  | "expired";
-
-export interface CommandRow {
-  id: string;
-  device_id: string;
-  type: CommandType;
+export type CommandRow = Pick<
+  Tables<"device_commands">,
+  "id" | "device_id" | "type" | "status" | "created_at" | "expires_at"
+> & {
   payload: Record<string, unknown>;
-  status: CommandStatus;
   result: { reason?: string; message?: string } | null;
-  created_at: string;
-  expires_at: string;
+};
+
+/** Facts behind a notification; the app renders the text from these. */
+export interface NotificationParams {
+  event?: string;
+  source?: SourceId | null;
+  from?: SourceId | null;
+  to?: SourceId | null;
+  kind?: string | null;
+  value?: string | null;
+  reason?: string | null;
+  device?: string;
 }
 
-export type NotificationType =
-  | "source_outage"
-  | "transfer"
-  | "electrical_fault"
-  | "connection_lost"
-  | "transfer_failed";
+export type NotificationRow = Pick<
+  Tables<"notifications">,
+  "id" | "device_id" | "type" | "critical" | "title" | "body" | "created_at" | "read_at"
+> & { params: NotificationParams };
 
-export interface NotificationRow {
-  id: number;
-  device_id: string;
-  type: NotificationType;
-  critical: boolean;
-  title: string;
-  body: string;
-  created_at: string;
-  read_at: string | null;
-}
+export type NotificationPrefs = Pick<
+  Tables<"notification_preferences">,
+  "source_outage" | "transfer" | "electrical_fault" | "connection_lost" | "transfer_failed" | "sound"
+>;
 
-export interface NotificationPrefs {
-  transfer: boolean;
-  electrical_fault: boolean;
-  connection_lost: boolean;
-  sound: boolean;
-}
+export type Profile = Pick<Tables<"profiles">, "id" | "email" | "phone" | "full_name">;
 
-export interface Profile {
-  id: string;
-  email: string | null;
-  phone: string | null;
-  full_name: string;
-}
-
+type MemberFnRow = Fn<"list_device_members">["Returns"][number];
 export interface MemberRow {
   user_id: string;
   role: Role;
   added_at: string;
-  profile: Profile | null;
+  is_owner: boolean;
+  full_name: string;
+  email: string | null;
+  /** Visible to admins and to the member themself only. */
+  phone: MemberFnRow["phone"];
 }
 
-export interface InvitationRow {
-  id: string;
-  email: string;
-  role: Role;
-  created_at: string;
-  last_sent_at: string;
-  expires_at: string;
-  accepted_at: string | null;
-  revoked_at: string | null;
-}
+export type InvitationRow = Pick<
+  Tables<"invitations">,
+  "id" | "email" | "role" | "created_at" | "last_sent_at" | "expires_at" | "accepted_at" | "revoked_at"
+>;

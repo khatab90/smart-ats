@@ -1,8 +1,7 @@
 import { KeyRound, Lock } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Card, Field } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { supabase } from "../../lib/supabase";
+import { changePassword } from "../../api/auth";
 import { useAuth } from "../../store/auth";
 import { Msg } from "./shared";
 
@@ -20,15 +19,10 @@ export function PasswordCard() {
     if (pw.next !== pw.confirm)
       return setMsg({ text: "كلمتا المرور غير متطابقتين", tone: "error" });
     setLoading(true);
-    // Re-authenticate so a left-open session cannot silently change the password.
-    const re = await supabase.auth.signInWithPassword({ email: user.email, password: pw.current });
-    if (re.error) {
-      setLoading(false);
-      return setMsg({ text: "كلمة المرور الحالية غير صحيحة", tone: "error" });
-    }
-    const { error } = await supabase.auth.updateUser({ password: pw.next });
+    // Re-authenticates first, so a left-open session cannot change the password.
+    const { error } = await changePassword(user.email, pw.current, pw.next);
     setLoading(false);
-    if (error) return setMsg({ text: errorMessage(error), tone: "error" });
+    if (error !== null) return setMsg({ text: error, tone: "error" });
     setPw({ current: "", next: "", confirm: "" });
     setMsg({ text: "تم تغيير كلمة المرور", tone: "ok" });
   };

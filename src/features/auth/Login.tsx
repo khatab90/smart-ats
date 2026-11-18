@@ -1,8 +1,7 @@
 import { Lock, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { appBaseUrl, supabase } from "../../lib/supabase";
+import * as authApi from "../../api/auth";
 import { type View } from "./AuthFlow";
 import { FormError } from "./shared";
 
@@ -21,21 +20,17 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
     const em = email.trim().toLowerCase();
     if (!em || !password) return setError("أدخل البريد الإلكتروني وكلمة المرور");
     setLoading(true);
-    const { error: err } = await supabase.auth.signInWithPassword({ email: em, password });
+    const r = await authApi.signIn(em, password);
     setLoading(false);
-    if (err) {
-      setError(errorMessage(err));
-      setUnconfirmed(/not confirmed/i.test(err.message));
+    if (r.error !== null) {
+      setError(r.error);
+      setUnconfirmed(Boolean(r.unconfirmed));
     }
   };
 
   const resend = async () => {
-    const { error: err } = await supabase.auth.resend({
-      type: "signup",
-      email: email.trim().toLowerCase(),
-      options: { emailRedirectTo: appBaseUrl() },
-    });
-    if (err) setError(errorMessage(err));
+    const { error: err } = await authApi.resendConfirmation(email.trim().toLowerCase());
+    if (err !== null) setError(err);
     else setResent(true);
   };
 

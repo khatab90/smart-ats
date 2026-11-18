@@ -1,8 +1,7 @@
 import { Mail, MailCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Card, Field } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { appBaseUrl, supabase } from "../../lib/supabase";
+import { requestEmailChange } from "../../api/auth";
 import { useAuth } from "../../store/auth";
 import { EMAIL_RE, Msg } from "./shared";
 
@@ -20,12 +19,9 @@ export function EmailCard() {
       return setMsg({ text: "صيغة البريد الإلكتروني غير صحيحة", tone: "error" });
     if (em === user?.email) return setMsg({ text: "هذا هو بريدك الحالي", tone: "error" });
     setSaving(true);
-    const { error } = await supabase.auth.updateUser(
-      { email: em },
-      { emailRedirectTo: appBaseUrl() },
-    );
+    const { error } = await requestEmailChange(em);
     setSaving(false);
-    if (error) return setMsg({ text: errorMessage(error), tone: "error" });
+    if (error !== null) return setMsg({ text: error, tone: "error" });
     setEmail("");
     setMsg({ text: `أرسلنا رابط تأكيد إلى ${em}. لن يتغير بريدك قبل فتح الرابط.`, tone: "ok" });
   };

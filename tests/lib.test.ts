@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vitest";
 import { classifyLink } from "../src/lib/link.ts";
 import { seriesStats, splitSegments, yDomain } from "../src/lib/series.ts";
-import { movePriority, predictSmartTarget } from "../src/lib/smart.ts";
+import { movePriority, predictSmartTarget } from "../src/domain/sources.ts";
 import { buildTimeline, durationsBy, stateAfter } from "../src/lib/timeline.ts";
 import { addDaysInTz, startOfDayInTz } from "../src/lib/tz.ts";
 

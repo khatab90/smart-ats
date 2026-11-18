@@ -4,7 +4,7 @@ import { Button, Sheet, StatusDot } from "../../components/ui";
 import type { DeviceStatus } from "../../data/types";
 import { cn } from "../../lib/cn";
 import { fmtAgo } from "../../lib/format";
-import { supabase } from "../../lib/supabase";
+import { fetchLinkSummaries } from "../../api/devices";
 import { useDevices } from "../../store/devices";
 import { useNav } from "../../store/nav";
 
@@ -17,19 +17,11 @@ export function DeviceSheet({ open, onClose }: { open: boolean; onClose: () => v
 
   useEffect(() => {
     if (!open || !memberships.length) return;
-    void supabase
-      .from("device_status")
-      .select("device_id, online, last_seen_at, interval_ms")
-      .in(
-        "device_id",
-        memberships.map((m) => m.device.id),
-      )
-      .then(({ data }) => {
-        const map: typeof statuses = {};
-        for (const row of (data ?? []) as (DeviceStatus & { device_id: string })[])
-          map[row.device_id] = row;
-        setStatuses(map);
-      });
+    void fetchLinkSummaries(memberships.map((m) => m.device.id)).then(({ data }) => {
+      const map: typeof statuses = {};
+      for (const row of data ?? []) map[row.device_id] = row;
+      setStatuses(map);
+    });
   }, [open, memberships]);
 
   return (

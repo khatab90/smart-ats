@@ -1,8 +1,9 @@
 import { Bluetooth, Check, Hash, KeyRound, Router, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Card, Field } from "../components/ui";
+import { claimDevice } from "../api/devices";
+import { APP_ENV } from "../config/supabase";
 import { errorMessage } from "../lib/errors";
-import { APP_ENV, supabase } from "../lib/supabase";
 import { useDevices } from "../store/devices";
 
 /**
@@ -29,17 +30,16 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
     if (pin.trim().length < 6) return setError("رمز PIN يتكون من 6 أرقام على الأقل.");
     if (name.trim().length < 2) return setError("أدخل اسماً للجهاز.");
     setLoading(true);
-    const { data, error: err } = await supabase.rpc("claim_device", {
-      p_device_id: id,
-      p_pin: pin.trim(),
-      p_environment: APP_ENV,
-      p_name: name.trim(),
-      p_location: location.trim() || null,
-      p_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    const { data: res, error: err } = await claimDevice({
+      deviceId: id,
+      pin: pin.trim(),
+      environment: APP_ENV,
+      name: name.trim(),
+      location: location.trim() || null,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
     setLoading(false);
-    if (err) return setError(errorMessage(err));
-    const res = data as { ok: boolean; error?: string; device_id?: string };
+    if (err !== null) return setError(err);
     if (!res.ok) return setError(errorMessage(res.error ?? ""));
     await refresh();
     setActiveId(res.device_id ?? id);

@@ -3,8 +3,7 @@ import { PriorityList } from "../../components/control";
 import { Button } from "../../components/ui";
 import type { SourceId } from "../../data/types";
 import { cn } from "../../lib/cn";
-import { errorMessage } from "../../lib/errors";
-import { supabase } from "../../lib/supabase";
+import { updateSettings } from "../../api/settings";
 import { useActiveDevice } from "../../store/devices";
 import { useToast } from "../../store/toast";
 
@@ -27,13 +26,9 @@ export function PrioritySection({
   const save = async () => {
     if (!device || !draft) return;
     setSaving(true);
-    const { error } = await supabase
-      .from("device_settings")
-      .update({ priority: draft })
-      .eq("device_id", device.id);
+    const { error } = await updateSettings(device.id, { priority: draft });
     setSaving(false);
-    if (error)
-      return pushToast({ kind: "error", title: "تعذر حفظ الترتيب", body: errorMessage(error) });
+    if (error !== null) return pushToast({ kind: "error", title: "تعذر حفظ الترتيب", body: error });
     setDraft(null);
     pushToast({ kind: "info", title: "تم حفظ ترتيب الأولوية", body: "سيُطبَّق بعد تأكيد البورد." });
   };

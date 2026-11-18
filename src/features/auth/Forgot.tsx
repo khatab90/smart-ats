@@ -1,8 +1,7 @@
 import { Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { appBaseUrl, supabase } from "../../lib/supabase";
+import * as authApi from "../../api/auth";
 import { type View } from "./AuthFlow";
 import { BackHeader, EMAIL_RE, FormError, SentScreen } from "./shared";
 
@@ -14,10 +13,8 @@ export function Forgot({ onNavigate }: { onNavigate: (v: View) => void }) {
   const em = email.trim().toLowerCase();
 
   const request = async () => {
-    const { error: err } = await supabase.auth.resetPasswordForEmail(em, {
-      redirectTo: appBaseUrl(),
-    });
-    return err ? errorMessage(err) : null;
+    const { error: err } = await authApi.sendPasswordReset(em);
+    return err;
   };
 
   const submit = async (e: FormEvent) => {

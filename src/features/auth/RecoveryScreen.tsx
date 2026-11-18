@@ -1,8 +1,7 @@
 import { Check, KeyRound, Lock } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { supabase } from "../../lib/supabase";
+import * as authApi from "../../api/auth";
 import { useAuth } from "../../store/auth";
 import { AuthHero } from "./AuthHero";
 import { FormError } from "./shared";
@@ -22,9 +21,9 @@ export function RecoveryScreen() {
     if (password.length < 8) return setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
     if (password !== confirm) return setError("كلمتا المرور غير متطابقتين");
     setLoading(true);
-    const { error: err } = await supabase.auth.updateUser({ password });
+    const { error: err } = await authApi.setPassword(password);
     setLoading(false);
-    if (err) setError(errorMessage(err));
+    if (err !== null) setError(err);
     else setDone(true);
   };
 

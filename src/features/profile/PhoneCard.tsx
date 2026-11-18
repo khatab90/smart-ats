@@ -1,8 +1,7 @@
 import { Phone, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Card, Field, Sheet } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { supabase } from "../../lib/supabase";
+import { requestPhoneChange, verifyPhoneChange } from "../../api/auth";
 import { useAuth } from "../../store/auth";
 import { useToast } from "../../store/toast";
 import { Msg, PHONE_RE } from "./shared";
@@ -26,9 +25,9 @@ export function PhoneCard({ onVerified }: { onVerified: () => Promise<void> }) {
       return setError("أدخل الرقم بالصيغة الدولية: + ثم رمز الدولة ثم الرقم بدون مسافات");
     setError("");
     setSending(true);
-    const { error: err } = await supabase.auth.updateUser({ phone: ph });
+    const { error: err } = await requestPhoneChange(ph);
     setSending(false);
-    if (err) return setError(errorMessage(err));
+    if (err !== null) return setError(err);
     setOtpFor(ph);
     setCode("");
     setOtpError("");
@@ -37,13 +36,9 @@ export function PhoneCard({ onVerified }: { onVerified: () => Promise<void> }) {
   const verify = async () => {
     if (!otpFor) return;
     setVerifying(true);
-    const { error: err } = await supabase.auth.verifyOtp({
-      phone: otpFor,
-      token: code.trim(),
-      type: "phone_change",
-    });
+    const { error: err } = await verifyPhoneChange(otpFor, code.trim());
     setVerifying(false);
-    if (err) return setOtpError(errorMessage(err));
+    if (err !== null) return setOtpError(err);
     setOtpFor(null);
     setPhone("");
     await onVerified();

@@ -1,8 +1,7 @@
 import { Save, User } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Card, Field } from "../../components/ui";
-import { errorMessage } from "../../lib/errors";
-import { supabase } from "../../lib/supabase";
+import { updateName } from "../../api/profile";
 import { useAuth } from "../../store/auth";
 import { Msg } from "./shared";
 
@@ -19,13 +18,9 @@ export function NameCard({ initial, onSaved }: { initial: string; onSaved: () =>
     if (name.trim().length < 3) return setError("أدخل الاسم الكامل");
     setError("");
     setSaving(true);
-    const { error: err } = await supabase
-      .from("profiles")
-      .update({ full_name: name.trim() })
-      .eq("id", user.id);
-    if (!err) await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+    const { error: err } = await updateName(user.id, name.trim());
     setSaving(false);
-    if (err) setError(errorMessage(err));
+    if (err !== null) setError(err);
     else await onSaved();
   };
 

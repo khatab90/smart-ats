@@ -2,25 +2,14 @@ import { CircleAlert, LogOut, MailPlus, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button, Card, ErrorState, Skeleton } from "../components/ui";
 import { ROLE_META } from "../data/meta";
-import type { Role } from "../data/types";
-import { errorMessage } from "../lib/errors";
 import { fmtDateTime } from "../lib/format";
 import { clearPendingInvite } from "../lib/invite";
-import { supabase } from "../lib/supabase";
+import { acceptInvitation, getInvitation, type InvitationInfo } from "../api/members";
 import { useAuth } from "../store/auth";
 import { useDevices } from "../store/devices";
 import { useToast } from "../store/toast";
 
-interface InviteInfo {
-  status: "pending" | "accepted" | "revoked" | "expired" | "invalid";
-  device_id?: string;
-  device_name?: string;
-  role?: Role;
-  email?: string;
-  inviter_name?: string | null;
-  expires_at?: string;
-  email_matches?: boolean;
-}
+type InviteInfo = InvitationInfo;
 
 const STATUS_TEXT: Record<Exclude<InviteInfo["status"], "pending">, string> = {
   accepted: "تم استخدام هذه الدعوة بالفعل.",
@@ -39,9 +28,9 @@ export function InvitationScreen({ token, onDone }: { token: string; onDone: () 
 
   const load = async () => {
     setError(null);
-    const { data, error: err } = await supabase.rpc("get_invitation", { p_token: token });
-    if (err) setError(errorMessage(err));
-    else setInfo(data as InviteInfo);
+    const { data, error: err } = await getInvitation(token);
+    if (err !== null) setError(err);
+    else setInfo(data);
   };
   useEffect(() => {
     void load();
@@ -55,10 +44,9 @@ export function InvitationScreen({ token, onDone }: { token: string; onDone: () 
 
   const accept = async () => {
     setBusy(true);
-    const { data, error: err } = await supabase.rpc("accept_invitation", { p_token: token });
+    const { data: res, error: err } = await acceptInvitation(token);
     setBusy(false);
-    if (err) return setError(errorMessage(err));
-    const res = data as { device_id: string };
+    if (err !== null) return setError(err);
     await refresh();
     setActiveId(res.device_id);
     pushToast({
