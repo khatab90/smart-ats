@@ -20,7 +20,7 @@ export function ScreenHeader({
           type="button"
           onClick={onBack}
           aria-label="رجوع"
-          className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-line bg-white text-ink-2 transition hover:text-brand-700 active:scale-95"
+          className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface text-ink-2 transition hover:text-brand-700 active:scale-95"
         >
           <ChevronRight className="size-5" />
         </button>

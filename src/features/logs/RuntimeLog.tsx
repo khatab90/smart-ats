@@ -56,7 +56,7 @@ export const STATE_COLOR: Record<FeedState, string> = {
   solar: SOURCE_META.solar.color,
   generator: SOURCE_META.generator.color,
   none: "#e5372b",
-  unknown: "#e9eef6",
+  unknown: "var(--color-track)",
 };
 
 export function RuntimeLog() {
@@ -348,7 +348,7 @@ export function DayStrip({
     .filter((s) => s.b > s.a && s.state !== "unknown");
   return (
     <div className="mt-3">
-      <div className="relative h-7 overflow-hidden rounded-lg bg-[#e9eef6]">
+      <div className="relative h-7 overflow-hidden rounded-lg bg-track">
         {parts.map((p, i) => (
           <span
             key={i}

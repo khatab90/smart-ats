@@ -35,9 +35,9 @@ export function Button({
         variant === "primary" &&
           "bg-brand-800 text-white shadow-[0_8px_20px_-8px_rgba(15,45,87,0.7)] hover:bg-brand-700",
         variant === "secondary" && "bg-brand-50 text-brand-800 hover:bg-brand-100",
-        variant === "outline" && "border border-line bg-white text-ink hover:border-brand-200",
+        variant === "outline" && "border border-line bg-surface text-ink hover:border-brand-200",
         variant === "ghost" && "text-brand-700 hover:bg-brand-50",
-        variant === "danger" && "bg-danger-soft text-danger-strong hover:bg-[#fbdcd9]",
+        variant === "danger" && "bg-danger-soft text-danger-strong hover:bg-danger-soft/70",
         full && "w-full",
         className,
       )}
@@ -76,7 +76,7 @@ export function IconButton({
       className={cn(
         "relative inline-flex size-11 shrink-0 items-center justify-center rounded-2xl transition active:scale-95",
         tone === "light"
-          ? "border border-line bg-white text-ink-2 hover:border-brand-200 hover:text-brand-700"
+          ? "border border-line bg-surface text-ink-2 hover:border-brand-200 hover:text-brand-700"
           : "bg-white/10 text-white hover:bg-white/15",
         className,
       )}

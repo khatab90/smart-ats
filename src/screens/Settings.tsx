@@ -216,7 +216,7 @@ export function Settings() {
                 disabled={readOnly}
                 value={draft.timezone}
                 onChange={(e) => set("timezone", e.target.value.trim())}
-                className="mt-3 h-11 w-full rounded-2xl border border-line bg-white px-4 text-right text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas"
+                className="mt-3 h-11 w-full rounded-2xl border border-line bg-surface px-4 text-right text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas"
               />
             </Card>
           </>
@@ -224,7 +224,7 @@ export function Settings() {
       </div>
 
       {isAdmin && dirty && (
-        <div className="sticky bottom-0 z-30 mt-4 border-t border-line bg-white/95 px-5 pt-3 pb-5 backdrop-blur">
+        <div className="sticky bottom-0 z-30 mt-4 border-t border-line bg-surface/95 px-5 pt-3 pb-5 backdrop-blur">
           {formError && (
             <p className="mb-2 rounded-xl bg-danger-soft px-3 py-2 text-[12px] text-danger-strong">
               {formError}
@@ -286,7 +286,7 @@ function NumberRow({
           else onChange(Number(t));
         }}
         className={cn(
-          "num mt-1 h-11 w-full rounded-2xl border bg-white px-4 text-right text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas",
+          "num mt-1 h-11 w-full rounded-2xl border bg-surface px-4 text-right text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas",
           invalid ? "border-danger" : "border-line",
         )}
       />

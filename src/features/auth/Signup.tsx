@@ -126,7 +126,7 @@ export function Signup({ onNavigate }: { onNavigate: (v: View) => void }) {
           onClick={() => setAgree((a) => !a)}
           className={cn(
             "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition",
-            agree ? "border-brand-800 bg-brand-800 text-white" : "border-line bg-white",
+            agree ? "border-brand-800 bg-brand-800 text-white" : "border-line bg-surface",
           )}
         >
           {agree && <Check className="size-3.5" strokeWidth={3} />}

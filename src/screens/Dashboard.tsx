@@ -76,7 +76,7 @@ export function Dashboard() {
           <button
             type="button"
             onClick={() => setDeviceSheet(true)}
-            className="flex w-full items-center gap-3 rounded-2xl border border-line bg-white px-3.5 py-2.5 text-start transition hover:border-brand-200"
+            className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface px-3.5 py-2.5 text-start transition hover:border-brand-200"
           >
             <Router className="size-[18px] text-brand-600" />
             <span className="min-w-0 flex-1">

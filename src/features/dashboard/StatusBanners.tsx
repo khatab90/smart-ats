@@ -171,7 +171,7 @@ export function Banner({
         <button
           type="button"
           onClick={action.onClick}
-          className="shrink-0 rounded-xl bg-white/70 px-3 py-1.5 text-[12px] font-bold"
+          className="shrink-0 rounded-xl bg-surface/70 px-3 py-1.5 text-[12px] font-bold"
         >
           {action.label}
         </button>

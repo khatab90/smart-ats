@@ -111,7 +111,7 @@ export function SolarScheduleEditor({
                       value={p.start}
                       disabled={disabled}
                       onChange={(e) => setPeriod(i, { start: e.target.value })}
-                      className="num mt-1 block h-11 w-full rounded-xl border border-line bg-white px-3 text-[14px] text-ink"
+                      className="num mt-1 block h-11 w-full rounded-xl border border-line bg-surface px-3 text-[14px] text-ink"
                       dir="ltr"
                     />
                   </label>
@@ -122,7 +122,7 @@ export function SolarScheduleEditor({
                       value={p.end}
                       disabled={disabled}
                       onChange={(e) => setPeriod(i, { end: e.target.value })}
-                      className="num mt-1 block h-11 w-full rounded-xl border border-line bg-white px-3 text-[14px] text-ink"
+                      className="num mt-1 block h-11 w-full rounded-xl border border-line bg-surface px-3 text-[14px] text-ink"
                       dir="ltr"
                     />
                   </label>
@@ -148,7 +148,7 @@ export function SolarScheduleEditor({
                           "h-8 rounded-full border px-3 text-[12px] font-semibold transition",
                           on
                             ? "border-solar bg-solar text-white"
-                            : "border-line bg-white text-ink-2",
+                            : "border-line bg-surface text-ink-2",
                         )}
                       >
                         {DAY_SHORT[d]}

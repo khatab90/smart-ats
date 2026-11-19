@@ -1,4 +1,5 @@
 import { House, LoaderCircle, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SOURCE_META } from "../data/meta";
 import type { DeviceStatus, SourceId } from "../data/types";
 import { cn } from "../lib/cn";
@@ -13,10 +14,48 @@ const ATS = { x: 160, y: 66 };
 const HOME = { x: 34, y: 66 };
 const pct = (x: number, y: number) => ({ left: `${(x / VW) * 100}%`, top: `${(y / VH) * 100}%` });
 
-/** Live only: when the board is offline or silent nothing is animated. */
 /** Vertical slots for 1–3 installed sources, centred on the ATS line. */
 const SLOTS: Record<number, number[]> = { 1: [66], 2: [40, 92], 3: [22, 66, 110] };
 
+const DOTS = 3;
+
+function usePrefersReducedMotion() {
+  const query = "(prefers-reduced-motion: reduce)";
+  const [reduce, setReduce] = useState(() => {
+    try {
+      return window.matchMedia(query).matches;
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    let mq: MediaQueryList;
+    try {
+      mq = window.matchMedia(query);
+    } catch {
+      return;
+    }
+    const on = () => setReduce(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return reduce;
+}
+
+/**
+ * Seconds for a dot to travel source → home: faster when the load draws more
+ * power (0.5 kW ≈ 2.6 s … 5 kW and above ≈ 1.2 s).
+ */
+export function flowSeconds(loadW: number | null | undefined): number {
+  const kw = Math.max(0, (loadW ?? 0) / 1000);
+  return Math.round(Math.max(1.2, Math.min(2.6, 2.75 - kw * 0.31)) * 10) / 10;
+}
+
+/**
+ * Live only: when the board is offline, silent, switching or without a
+ * source, nothing moves. Dots travel from the feeding source through the ATS
+ * to the house.
+ */
 export function PowerFlow({ status, live }: { status: DeviceStatus | null; live: boolean }) {
   const shown = installedSources(status);
   const slots = SLOTS[shown.length] ?? SLOTS[3];
@@ -27,6 +66,11 @@ export function PowerFlow({ status, live }: { status: DeviceStatus | null; live:
   const active =
     live && status?.system_state !== "no_source" ? (status?.active_source ?? null) : null;
   const transferring = live && status?.system_state === "transferring";
+  const reduceMotion = usePrefersReducedMotion();
+  const dur = flowSeconds(status?.load?.w);
+  // One continuous route for the dots: source → ATS → house.
+  const flowPath = (y: number) =>
+    `M${SRC_X - 22} ${y} C ${ATS.x + 60} ${y}, ${ATS.x + 50} ${ATS.y}, ${ATS.x + 22} ${ATS.y} L ${ATS.x - 22} ${ATS.y} L ${HOME.x + 24} ${ATS.y}`;
   return (
     <div className="relative h-[132px] w-full" aria-hidden="true">
       <svg
@@ -51,6 +95,30 @@ export function PowerFlow({ status, live }: { status: DeviceStatus | null; live:
             />
           );
         })}
+        {active && !transferring && !reduceMotion && (
+          <g key={active}>
+            {Array.from({ length: DOTS }, (_, i) => (
+              <g key={i}>
+                <circle r={6} fill={SOURCE_META[active].color} opacity={0.22}>
+                  <animateMotion
+                    dur={`${dur}s`}
+                    begin={`${(-dur * i) / DOTS}s`}
+                    repeatCount="indefinite"
+                    path={flowPath(SRC_Y[active])}
+                  />
+                </circle>
+                <circle r={3} fill="#ffffff">
+                  <animateMotion
+                    dur={`${dur}s`}
+                    begin={`${(-dur * i) / DOTS}s`}
+                    repeatCount="indefinite"
+                    path={flowPath(SRC_Y[active])}
+                  />
+                </circle>
+              </g>
+            ))}
+          </g>
+        )}
         <path
           d={`M${ATS.x - 22} ${ATS.y} H ${HOME.x + 24}`}
           fill="none"

@@ -1,7 +1,8 @@
 import { Bell, LogOut, Plus, Router, Settings2, ShieldCheck, UserRound, Users } from "lucide-react";
-import { arCount, initialOf } from "../lib/format";
+import { arCount, initialOf, num } from "../lib/format";
 import { Badge, Card, Row } from "../components/ui";
 import { ROLE_META } from "../data/meta";
+import { AppPrefsCard } from "../features/settings/AppPrefsCard";
 import { useAuth } from "../store/auth";
 import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
@@ -92,20 +93,26 @@ export function More() {
           title="الإشعارات"
           subtitle="الانقطاع والتحويل والخلل الكهربائي والاتصال"
           onClick={() => push("notifications")}
-          right={unreadCount ? <Badge tone="danger">{unreadCount}</Badge> : undefined}
+          right={unreadCount ? <Badge tone="danger">{num(unreadCount)}</Badge> : undefined}
         />
       </Group>
+
+      <div>
+        <p className="mb-2 px-1 text-[12px] font-semibold text-muted">إعدادات التطبيق</p>
+        <AppPrefsCard />
+      </div>
 
       <button
         type="button"
         onClick={() => void signOut()}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-danger/20 bg-white py-3.5 text-[14px] font-bold text-danger transition hover:bg-danger-soft"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-danger/20 bg-surface py-3.5 text-[14px] font-bold text-danger transition hover:bg-danger-soft"
       >
         <LogOut className="size-[18px]" /> تسجيل الخروج
       </button>
 
       <p className="flex items-center justify-center gap-1.5 text-[11px] text-faint">
-        <ShieldCheck className="size-3.5" /> Smart ATS • الإصدار {__APP_VERSION__}
+        <ShieldCheck className="size-3.5" /> Smart ATS • الإصدار{" "}
+        <span data-latin>{__APP_VERSION__}</span>
       </p>
     </div>
   );

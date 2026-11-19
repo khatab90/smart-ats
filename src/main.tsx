@@ -8,8 +8,10 @@ import "@fontsource/ibm-plex-sans-arabic/700.css";
 import "./index.css";
 import { parseAuthLink } from "./lib/authLink";
 import { captureInviteFromUrl } from "./lib/invite";
+import { applyStoredPrefs } from "./lib/prefs";
 import { reloadForNewVersion } from "./lib/staleBuild";
 
+applyStoredPrefs();
 captureInviteFromUrl();
 
 // An email link or Google sign-in that failed comes back with an error in the

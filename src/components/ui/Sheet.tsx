@@ -36,7 +36,7 @@ export function Sheet({
         onClick={onClose}
         className="absolute inset-0 animate-fade-in bg-brand-950/45 backdrop-blur-[2px]"
       />
-      <div className="relative flex max-h-[88%] animate-sheet-in flex-col rounded-t-[28px] bg-white">
+      <div className="relative flex max-h-[88%] animate-sheet-in flex-col rounded-t-[28px] bg-surface">
         <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line" />
         {title && (
           <div className="flex items-center justify-between px-5 pt-3 pb-2">

@@ -128,7 +128,7 @@ export function Notifications() {
                           className={cn(
                             "group relative flex items-start gap-3 rounded-[20px] border p-3.5 transition",
                             n.read_at
-                              ? "border-line/80 bg-white"
+                              ? "border-line/80 bg-surface"
                               : n.critical
                                 ? "border-danger/30 bg-danger-soft/40"
                                 : "border-brand-200 bg-brand-50/60",

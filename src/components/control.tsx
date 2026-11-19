@@ -128,7 +128,7 @@ export function PriorityList({
           <li
             key={id}
             className={cn(
-              "flex items-center gap-2.5 rounded-2xl border bg-white px-2.5 py-2 transition-shadow",
+              "flex items-center gap-2.5 rounded-2xl border bg-surface px-2.5 py-2 transition-shadow",
               dragging ? "border-brand-400 shadow-lg" : "border-line",
             )}
           >

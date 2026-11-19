@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from "./store/auth";
 import { ActiveDeviceProvider, DevicesProvider } from "./store/devices";
 import { NavProvider, useNav, type Route } from "./store/nav";
 import { NotificationsProvider } from "./store/notifications";
+import { PrefsProvider } from "./store/prefs";
 import { ToastProvider } from "./store/toast";
 
 const named = <T extends Record<string, unknown>>(p: Promise<T>, key: keyof T) =>
@@ -33,13 +34,15 @@ const AddDevice = lazy(() =>
 
 export default function App({ linkError = null }: { linkError?: string | null }) {
   return (
-    <ToastProvider>
-      <AuthProvider initialLinkError={linkError}>
-        <PhoneFrame>
-          <Root />
-        </PhoneFrame>
-      </AuthProvider>
-    </ToastProvider>
+    <PrefsProvider>
+      <ToastProvider>
+        <AuthProvider initialLinkError={linkError}>
+          <PhoneFrame>
+            <Root />
+          </PhoneFrame>
+        </AuthProvider>
+      </ToastProvider>
+    </PrefsProvider>
   );
 }
 

@@ -48,7 +48,7 @@ export function GoogleSignIn({ label = "المتابعة بحساب Google" }: {
         type="button"
         onClick={go}
         disabled={loading}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-line bg-white text-[15px] font-semibold text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition hover:bg-canvas disabled:opacity-60"
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-line bg-surface text-[15px] font-semibold text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition hover:bg-canvas disabled:opacity-60"
       >
         <GoogleMark />
         {loading ? "جارٍ التحويل إلى Google…" : label}

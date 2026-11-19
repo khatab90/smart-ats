@@ -28,6 +28,7 @@ interface AuthCtx {
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
+let linkErrorShown = false;
 
 export function AuthProvider({
   children,
@@ -39,8 +40,10 @@ export function AuthProvider({
 }) {
   const { pushToast } = useToast();
   useEffect(() => {
-    if (initialLinkError)
-      pushToast({ kind: "error", title: "تعذر تسجيل الدخول", body: initialLinkError });
+    // Once per page load (the tree is re-mounted when the digit style changes).
+    if (!initialLinkError || linkErrorShown) return;
+    linkErrorShown = true;
+    pushToast({ kind: "error", title: "تعذر تسجيل الدخول", body: initialLinkError });
   }, [initialLinkError, pushToast]);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);

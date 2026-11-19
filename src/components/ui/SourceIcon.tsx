@@ -31,7 +31,10 @@ export function SourceIcon({
         size === "lg" && "size-14 rounded-[20px]",
         className,
       )}
-      style={{ background: muted ? "#eef1f6" : m.soft, color: muted ? "#98a2b3" : m.color }}
+      style={{
+        background: muted ? "var(--color-track)" : m.soft,
+        color: muted ? "var(--color-faint)" : m.color,
+      }}
     >
       <Icon
         className={cn(size === "sm" ? "size-4" : size === "md" ? "size-5" : "size-7")}

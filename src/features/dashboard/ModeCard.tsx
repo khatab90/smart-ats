@@ -93,7 +93,7 @@ export function ModeCard() {
                   "flex flex-col items-center gap-1.5 rounded-2xl border p-3 transition disabled:cursor-not-allowed",
                   isActive
                     ? "border-ok bg-ok-soft/60 ring-2 ring-ok/20"
-                    : "border-line bg-white enabled:hover:border-brand-200",
+                    : "border-line bg-surface enabled:hover:border-brand-200",
                   !usable && !isActive && "border-dashed opacity-70",
                 )}
               >

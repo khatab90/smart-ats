@@ -51,7 +51,7 @@ export function Logo({ size = 40, className }: { size?: number; className?: stri
 
 export function PhoneFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center gap-16 bg-[radial-gradient(120%_80%_at_80%_0%,#c9dcfb_0%,#dfe6f1_45%,#d4dcea_100%)] sm:p-6">
+    <div className="flex min-h-dvh items-center justify-center gap-16 bg-[radial-gradient(120%_80%_at_80%_0%,#c9dcfb_0%,#dfe6f1_45%,#d4dcea_100%)] dark:bg-[radial-gradient(120%_80%_at_80%_0%,#13233f_0%,#0b1220_45%,#060b14_100%)] sm:p-6">
       <aside className="hidden max-w-[300px] lg:block" dir="rtl">
         <div className="flex items-center gap-3">
           <Logo size={48} />
@@ -65,9 +65,9 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
           Supabase.
         </p>
         <div className="mt-6 flex flex-wrap gap-2 text-[12px] font-semibold">
-          <span className="rounded-full bg-white/70 px-3 py-1.5 text-grid">الشبكة الوطنية</span>
-          <span className="rounded-full bg-white/70 px-3 py-1.5 text-solar">الطاقة الشمسية</span>
-          <span className="rounded-full bg-white/70 px-3 py-1.5 text-gen">المولد</span>
+          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-grid">الشبكة الوطنية</span>
+          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-solar">الطاقة الشمسية</span>
+          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-gen">المولد</span>
         </div>
       </aside>
       <div
@@ -112,7 +112,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="التنقل الرئيسي"
-      className="absolute inset-x-3 bottom-3 z-30 flex rounded-[26px] border border-line/80 bg-white/95 p-1.5 shadow-[0_12px_32px_-12px_rgba(10,31,61,0.35)] backdrop-blur-md"
+      className="absolute inset-x-3 bottom-3 z-30 flex rounded-[26px] border border-line/80 bg-surface/95 p-1.5 shadow-[0_12px_32px_-12px_rgba(10,31,61,0.35)] backdrop-blur-md"
     >
       {TABS.map((t) => {
         const active = tab === t.id;
@@ -169,7 +169,7 @@ export function ToastHost() {
             key={t.id}
             type="button"
             onClick={() => dismissToast(t.id)}
-            className="pointer-events-auto flex animate-toast-in items-start gap-3 rounded-[20px] border border-line/70 bg-white/95 p-3 text-start shadow-[0_16px_36px_-14px_rgba(10,31,61,0.4)] backdrop-blur"
+            className="pointer-events-auto flex animate-toast-in items-start gap-3 rounded-[20px] border border-line/70 bg-surface/95 p-3 text-start shadow-[0_16px_36px_-14px_rgba(10,31,61,0.4)] backdrop-blur"
           >
             <span
               className={cn(

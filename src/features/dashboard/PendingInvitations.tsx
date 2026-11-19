@@ -56,7 +56,7 @@ export function PendingInvitations() {
       {items.map((inv) => (
         <Card key={inv.id} className="border-brand-200 bg-brand-50 p-4">
           <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-600">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-surface text-brand-600">
               <MailPlus className="size-5" />
             </span>
             <div className="min-w-0 flex-1">

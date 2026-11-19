@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.3.0 — 2026-11-19
+
+### Added
+- **Dark theme**: automatic (follows the phone), light or dark, chosen in More → App settings. Built on semantic colour tokens (`surface`, `track`, …) so every screen adapts; applied before the first paint, so there is no flash.
+- **Arabic-Indic digits** (١٢٣) as an option next to Western digits. Every number on screen follows it, fixed texts included; device IDs, emails, firmware and input fields stay Western.
+- **Animated power flow** on the home screen: dots travel from the feeding source through the ATS to the house, faster when the house draws more power; still when offline, switching or without a source, and off when the phone asks for reduced motion.
+
 ## 2.2.0 — 2026-11-19
 
 ### Added

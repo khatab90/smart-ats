@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* dark: utilities follow the app's theme (data-theme on <html>), not only the OS. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 @theme {
   --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
 
@@ -41,6 +44,14 @@
   --color-faint: #98a2b3;
   --color-line: #e4e9f2;
   --color-canvas: #f3f6fb;
+  /* Cards, sheets, inputs (white in the light theme) */
+  --color-surface: #ffffff;
+  /* Empty tracks: progress bars, segmented controls, chart rings */
+  --color-track: #e9eef6;
+  --color-skeleton: #e6ebf3;
+  --color-toggle-off: #d0d6e2;
+  /* Desktop backdrop behind the phone frame */
+  --color-backdrop: #dfe6f1;
 
   --animate-flow: flow 1.1s linear infinite;
   --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
@@ -48,6 +59,49 @@
   --animate-sheet-in: sheet-in 0.34s cubic-bezier(0.2, 0.8, 0.2, 1);
   --animate-fade-in: fade-in 0.25s ease-out;
   --animate-toast-in: toast-in 0.4s cubic-bezier(0.2, 0.9, 0.25, 1.1);
+}
+
+/*
+ * Dark theme: the same semantic tokens with dark values, so every utility
+ * (bg-surface, text-ink, bg-brand-50 …) adapts without per-component code.
+ * Text that sits on the always-dark hero keeps using white.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-canvas: #0b1220;
+  --color-surface: #131c2e;
+  --color-line: #24314a;
+  --color-track: #1c2740;
+  --color-skeleton: #1a2438;
+  --color-toggle-off: #3a4760;
+  --color-backdrop: #060b14;
+
+  --color-ink: #e9eef7;
+  --color-ink-2: #c3cddd;
+  --color-muted: #94a1b6;
+  --color-faint: #6b7a93;
+
+  --color-brand-50: #13233f;
+  --color-brand-100: #19305a;
+  --color-brand-200: #2a4a7c;
+  --color-brand-400: #7ab0ff;
+  --color-brand-500: #5b9bff;
+  --color-brand-600: #6ea8ff;
+  --color-brand-700: #9cc2ff;
+  --color-brand-800: #3a72d6;
+  --color-brand-900: #dbe7ff;
+
+  --color-ok-soft: #0f2e22;
+  --color-ok-strong: #5ee0a0;
+  --color-warn-soft: #34230f;
+  --color-warn-strong: #ffb36b;
+  --color-danger-soft: #3a1517;
+  --color-danger-strong: #ff8a80;
+
+  --color-grid-soft: #13284a;
+  --color-solar-soft: #33290b;
+  --color-gen-soft: #241d45;
 }
 
 @layer base {
@@ -61,7 +115,7 @@
   body {
     min-width: 320px;
     min-height: 100dvh;
-    background: #dfe6f1;
+    background: var(--color-backdrop);
   }
 
   button {

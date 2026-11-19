@@ -113,7 +113,7 @@ export function LineChart({
                   x2={W}
                   y1={y(v)}
                   y2={y(v)}
-                  stroke="#e4e9f2"
+                  stroke="var(--color-line)"
                   strokeDasharray="3 4"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -308,7 +308,7 @@ export function Donut({
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#eef1f6"
+          stroke="var(--color-track)"
           strokeWidth={thickness}
         />
         {segments.map((s, i) => {

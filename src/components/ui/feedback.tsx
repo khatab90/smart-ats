@@ -12,7 +12,7 @@ export function ProgressBar({
   className?: string;
 }) {
   return (
-    <div className={cn("h-1.5 overflow-hidden rounded-full bg-[#e9eef6]", className)}>
+    <div className={cn("h-1.5 overflow-hidden rounded-full bg-track", className)}>
       <div
         className="h-full rounded-full transition-[width] duration-700"
         style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }}
@@ -45,7 +45,7 @@ export function EmptyState({
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <span className={cn("block animate-pulse rounded-xl bg-[#e6ebf3]", className)} />;
+  return <span className={cn("block animate-pulse rounded-xl bg-skeleton", className)} />;
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
@@ -80,7 +80,7 @@ export function InfoHint({ text }: { text: string }) {
         ؟
       </button>
       {open && (
-        <span className="absolute top-6 right-0 z-10 w-52 rounded-xl border border-line bg-white p-2.5 text-[11px] leading-5 font-normal text-ink-2 shadow-lg">
+        <span className="absolute top-6 right-0 z-10 w-52 rounded-xl border border-line bg-surface p-2.5 text-[11px] leading-5 font-normal text-ink-2 shadow-lg">
           {text}
         </span>
       )}

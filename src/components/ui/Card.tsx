@@ -10,7 +10,7 @@ export function Card({
   children: ReactNode;
   onClick?: () => void;
 }) {
-  const cls = cn("rounded-[22px] border border-line/80 bg-white card-shadow", className);
+  const cls = cn("rounded-[22px] border border-line/80 bg-surface card-shadow", className);
   if (onClick) {
     return (
       <button

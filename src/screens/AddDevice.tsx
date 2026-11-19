@@ -60,7 +60,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="إغلاق"
-            className="flex size-10 items-center justify-center rounded-2xl border border-line bg-white text-ink-2"
+            className="flex size-10 items-center justify-center rounded-2xl border border-line bg-surface text-ink-2"
           >
             <X className="size-5" />
           </button>
@@ -131,7 +131,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
-            <div className="flex items-start gap-3 rounded-2xl border border-line bg-white p-4">
+            <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4">
               <Bluetooth className="mt-0.5 size-5 shrink-0 text-faint" />
               <p className="text-[11px] leading-5 text-muted">
                 إعداد شبكة Wi-Fi للبورد عبر Bluetooth غير متاح في نسخة الويب، وينتظر التطبيق الأصلي.
@@ -142,7 +142,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
         )}
       </div>
 
-      <div className="border-t border-line bg-white/80 px-5 pt-3 pb-5 backdrop-blur">
+      <div className="border-t border-line bg-surface/80 px-5 pt-3 pb-5 backdrop-blur">
         {done ? (
           <Button size="lg" full onClick={onClose}>
             الذهاب إلى لوحة التحكم

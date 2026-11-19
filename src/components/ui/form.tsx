@@ -36,7 +36,7 @@ export function Field({
           type={isPassword && show ? "text" : type}
           dir={ltr ? "ltr" : undefined}
           className={cn(
-            "h-12 w-full rounded-2xl border bg-white text-[15px] text-ink outline-none transition placeholder:text-faint",
+            "h-12 w-full rounded-2xl border bg-surface text-[15px] text-ink outline-none transition placeholder:text-faint",
             "focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10",
             Icon ? "pr-11" : "pr-4",
             isPassword ? "pl-11" : "pl-4",
@@ -86,7 +86,7 @@ export function Toggle({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50",
-        checked ? "bg-ok" : "bg-[#d0d6e2]",
+        checked ? "bg-ok" : "bg-toggle-off",
       )}
     >
       <span
@@ -115,7 +115,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="tablist"
-      className={cn("flex gap-1 rounded-2xl p-1", dark ? "bg-white/10" : "bg-[#e9eef6]", className)}
+      className={cn("flex gap-1 rounded-2xl p-1", dark ? "bg-white/10" : "bg-track", className)}
     >
       {options.map((o) => {
         const active = o.value === value;
@@ -131,8 +131,8 @@ export function Segmented<T extends string>({
               "flex h-9 flex-1 items-center justify-center gap-1.5 rounded-xl text-[13px] font-semibold transition disabled:opacity-40",
               active
                 ? dark
-                  ? "bg-white text-brand-900 shadow"
-                  : "bg-white text-ink shadow-[0_1px_3px_rgba(16,24,40,0.12)]"
+                  ? "bg-white text-[#0a1f3d] shadow"
+                  : "bg-surface text-ink shadow-[0_1px_3px_rgba(16,24,40,0.12)]"
                 : dark
                   ? "text-white/70 hover:text-white"
                   : "text-muted hover:text-ink-2",
@@ -169,7 +169,7 @@ export function Chips<T extends string>({
               "flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-semibold transition",
               active
                 ? "border-brand-800 bg-brand-800 text-white"
-                : "border-line bg-white text-ink-2 hover:border-brand-200",
+                : "border-line bg-surface text-ink-2 hover:border-brand-200",
             )}
           >
             {o.label}

@@ -1,3 +1,5 @@
+import { localizeDigits } from "./digits";
+
 /**
  * Builds chart-ready series from raw samples (C7): null readings and time
  * gaps longer than `maxGapMs` break the line; zero readings (outages) are
@@ -99,8 +101,9 @@ export function ticksFor(lo: number, hi: number, count = 3): number[] {
  * ticks never print the same text (0.05 / 0.1 / 0.15, not 0.1 / 0.1 / 0.1).
  */
 export function formatTick(v: number, step: number): string {
-  if (Math.abs(v) >= 1000 && step >= 1000) return `${Number((v / 1000).toFixed(1))}k`;
+  if (Math.abs(v) >= 1000 && step >= 1000)
+    return localizeDigits(`${Number((v / 1000).toFixed(1))}k`);
   let d = 0;
   while (d < 4 && Math.abs(step * 10 ** d - Math.round(step * 10 ** d)) > 1e-6) d++;
-  return v.toFixed(d);
+  return localizeDigits(v.toFixed(d));
 }

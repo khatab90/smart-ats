@@ -1,3 +1,4 @@
+import { localizeDigits as L } from "./digits";
 import { startOfDayInTz } from "./tz";
 
 const LOCALE = "ar-EG-u-nu-latn";
@@ -16,23 +17,25 @@ function fmt(kind: string, opts: Intl.DateTimeFormatOptions, tz?: string) {
 const localTz = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export const fmtTime = (t: number, tz?: string) =>
-  fmt("time", { hour: "numeric", minute: "2-digit" }, tz).format(t);
+  L(fmt("time", { hour: "numeric", minute: "2-digit" }, tz).format(t));
 export const fmtTimeSec = (t: number, tz?: string) =>
-  fmt("timesec", { hour: "numeric", minute: "2-digit", second: "2-digit" }, tz).format(t);
+  L(fmt("timesec", { hour: "numeric", minute: "2-digit", second: "2-digit" }, tz).format(t));
 export const fmtDate = (t: number, tz?: string) =>
-  fmt("date", { day: "numeric", month: "long" }, tz).format(t);
+  L(fmt("date", { day: "numeric", month: "long" }, tz).format(t));
 export const fmtFullDate = (t: number, tz?: string) =>
-  fmt("fulldate", { day: "numeric", month: "long", year: "numeric" }, tz).format(t);
+  L(fmt("fulldate", { day: "numeric", month: "long", year: "numeric" }, tz).format(t));
 export const fmtWeekday = (t: number, tz?: string) =>
-  fmt("weekday", { weekday: "long" }, tz).format(t);
+  L(fmt("weekday", { weekday: "long" }, tz).format(t));
 export const fmtShortDay = (t: number, tz?: string) =>
-  fmt("shortday", { weekday: "short" }, tz).format(t);
+  L(fmt("shortday", { weekday: "short" }, tz).format(t));
 export const fmtDateTime = (t: number, tz?: string) =>
-  fmt(
-    "datetime",
-    { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" },
-    tz,
-  ).format(t);
+  L(
+    fmt(
+      "datetime",
+      { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" },
+      tz,
+    ).format(t),
+  );
 
 /** "اليوم" / "أمس" / weekday + date, in the given time zone. */
 export function fmtDayLabel(t: number, now = Date.now(), tz = localTz()) {
@@ -48,11 +51,15 @@ export function fmtClock(ms: number) {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const sec = s % 60;
-  return [h, m, sec].map((v) => String(v).padStart(2, "0")).join(":");
+  return L([h, m, sec].map((v) => String(v).padStart(2, "0")).join(":"));
 }
 
 /** Human duration in Arabic: "3 س 12 د" */
 export function fmtDuration(ms: number) {
+  return L(durationText(ms));
+}
+
+function durationText(ms: number) {
   // Under a minute, seconds: an 18 s outage must not read "0 د".
   if (ms < 59_500) return `${Math.max(0, Math.round(ms / 1000))} ث`;
   const totalMin = Math.max(0, Math.round(ms / 60_000));
@@ -68,6 +75,10 @@ export function fmtHours(seconds: number) {
 }
 
 export function fmtAgo(t: number, now = Date.now()) {
+  return L(agoText(t, now));
+}
+
+function agoText(t: number, now: number) {
   const s = Math.max(0, Math.floor((now - t) / 1000));
   if (s < 5) return "الآن";
   if (s < 60) return `منذ ${s} ث`;
@@ -80,7 +91,10 @@ export function fmtAgo(t: number, now = Date.now()) {
 }
 
 export const fmtNum = (v: number, digits = 0) =>
-  v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  L(v.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits }));
+
+/** A plain count or number shown as text, in the user's digit style. */
+export const num = (v: number | string) => L(String(v));
 
 /** Formats a nullable reading; null renders as an em dash, never as 0. */
 export const fmtReading = (v: number | null | undefined, digits = 0) =>
@@ -105,9 +119,9 @@ export function arCount(
   if (n === 1) return forms.one;
   if (n === 2) return forms.two;
   const r = n % 100;
-  if (r >= 3 && r <= 10) return `${n} ${forms.few}`;
-  if (r >= 11 && r <= 99) return `${n} ${forms.many}`;
-  return `${n} ${forms.base}`;
+  if (r >= 3 && r <= 10) return `${num(n)} ${forms.few}`;
+  if (r >= 11 && r <= 99) return `${num(n)} ${forms.many}`;
+  return `${num(n)} ${forms.base}`;
 }
 
 /** Avatar letter: first letter of the name, else of the email. */
