@@ -20,6 +20,7 @@ import { fmtTime } from "../lib/format";
 import { useNow } from "../store/devices";
 import { useNav, type Tab } from "../store/nav";
 import { useToast, type Toast } from "../store/toast";
+import { t, textDir } from "../i18n";
 
 export function Logo({ size = 40, className }: { size?: number; className?: string }) {
   return (
@@ -52,26 +53,31 @@ export function Logo({ size = 40, className }: { size?: number; className?: stri
 export function PhoneFrame({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh items-center justify-center gap-16 bg-[radial-gradient(120%_80%_at_80%_0%,#c9dcfb_0%,#dfe6f1_45%,#d4dcea_100%)] dark:bg-[radial-gradient(120%_80%_at_80%_0%,#13233f_0%,#0b1220_45%,#060b14_100%)] sm:p-6">
-      <aside className="hidden max-w-[300px] lg:block" dir="rtl">
+      <aside className="hidden max-w-[300px] lg:block" dir={textDir()}>
         <div className="flex items-center gap-3">
           <Logo size={48} />
           <div>
             <p className="text-2xl font-bold tracking-tight text-brand-900">Smart ATS</p>
-            <p className="text-sm text-muted">نظام التحويل التلقائي الذكي</p>
+            <p className="text-sm text-muted">{t("نظام التحويل التلقائي الذكي")}</p>
           </div>
         </div>
         <p className="mt-6 text-[15px] leading-8 text-ink-2">
-          مراقبة وتحكم بمفتاح التحويل التلقائي. القراءات والحالات تأتي من بورد ESP32 فقط، وتُخزَّن في
-          Supabase.
+          {t(
+            "مراقبة وتحكم بمفتاح التحويل التلقائي. القراءات والحالات تأتي من بورد ESP32 فقط، وتُخزَّن في Supabase.",
+          )}
         </p>
         <div className="mt-6 flex flex-wrap gap-2 text-[12px] font-semibold">
-          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-grid">الشبكة الوطنية</span>
-          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-solar">الطاقة الشمسية</span>
-          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-gen">المولد</span>
+          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-grid">
+            {t("الشبكة الوطنية")}
+          </span>
+          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-solar">
+            {t("الطاقة الشمسية")}
+          </span>
+          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-gen">{t("المولد")}</span>
         </div>
       </aside>
       <div
-        dir="rtl"
+        dir={textDir()}
         className="relative flex h-dvh w-full flex-col overflow-hidden bg-canvas sm:h-[min(880px,calc(100dvh-48px))] sm:max-w-[400px] sm:rounded-[46px] sm:phone-shadow"
       >
         <StatusBar />
@@ -100,18 +106,18 @@ function StatusBar() {
 }
 
 const TABS: { id: Tab; label: string; icon: LucideIcon }[] = [
-  { id: "home", label: "الرئيسية", icon: House },
-  { id: "live", label: "المراقبة", icon: Activity },
-  { id: "energy", label: "الطاقة", icon: ChartColumn },
-  { id: "logs", label: "السجل", icon: History },
-  { id: "more", label: "المزيد", icon: LayoutGrid },
+  { id: "home", label: t("الرئيسية"), icon: House },
+  { id: "live", label: t("المراقبة"), icon: Activity },
+  { id: "energy", label: t("الطاقة"), icon: ChartColumn },
+  { id: "logs", label: t("السجل"), icon: History },
+  { id: "more", label: t("المزيد"), icon: LayoutGrid },
 ];
 
 export function BottomNav() {
   const { tab, setTab } = useNav();
   return (
     <nav
-      aria-label="التنقل الرئيسي"
+      aria-label={t("التنقل الرئيسي")}
       className="absolute inset-x-3 bottom-3 z-30 flex rounded-[26px] border border-line/80 bg-surface/95 p-1.5 shadow-[0_12px_32px_-12px_rgba(10,31,61,0.35)] backdrop-blur-md"
     >
       {TABS.map((t) => {

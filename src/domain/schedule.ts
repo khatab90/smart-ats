@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 /**
  * Solar schedule: the hours when Smart mode may use solar.
  *
@@ -26,13 +27,13 @@ export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 /** Display order for an Iraqi week (Saturday first). */
 export const WEEK_ORDER = [6, 0, 1, 2, 3, 4, 5] as const;
 export const DAY_SHORT: Record<number, string> = {
-  0: "أحد",
-  1: "اثنين",
-  2: "ثلاثاء",
-  3: "أربعاء",
-  4: "خميس",
-  5: "جمعة",
-  6: "سبت",
+  0: t("أحد"),
+  1: t("اثنين"),
+  2: t("ثلاثاء"),
+  3: t("أربعاء"),
+  4: t("خميس"),
+  5: t("جمعة"),
+  6: t("سبت"),
 };
 
 export const DEFAULT_SCHEDULE: SolarSchedule = { enabled: false, periods: [] };
@@ -77,15 +78,16 @@ export function localClock(ms: number, timeZone: string): { weekday: number; min
 export function validateSchedule(s: SolarSchedule): string | null {
   if (!s.enabled) return null;
   if (s.periods.length === 0)
-    return "أضف فترة واحدة على الأقل لأوقات الطاقة الشمسية، أو أوقف التقييد.";
-  if (s.periods.length > MAX_PERIODS) return `الحد الأقصى ${MAX_PERIODS} فترات.`;
+    return t("أضف فترة واحدة على الأقل لأوقات الطاقة الشمسية، أو أوقف التقييد.");
+  if (s.periods.length > MAX_PERIODS) return t("الحد الأقصى {0} فترات.", { 0: MAX_PERIODS });
   for (const [i, p] of s.periods.entries()) {
     const n = i + 1;
-    if (!TIME_RE.test(p.start) || !TIME_RE.test(p.end)) return `الفترة ${n}: صيغة الوقت غير صحيحة.`;
-    if (p.start === p.end) return `الفترة ${n}: وقت البداية يساوي وقت النهاية.`;
-    if (p.days.length === 0) return `الفترة ${n}: اختر يوماً واحداً على الأقل.`;
+    if (!TIME_RE.test(p.start) || !TIME_RE.test(p.end))
+      return t("الفترة {0}: صيغة الوقت غير صحيحة.", { 0: n });
+    if (p.start === p.end) return t("الفترة {0}: وقت البداية يساوي وقت النهاية.", { 0: n });
+    if (p.days.length === 0) return t("الفترة {0}: اختر يوماً واحداً على الأقل.", { 0: n });
     if (p.days.some((d) => !Number.isInteger(d) || d < 0 || d > 6))
-      return `الفترة ${n}: يوم غير صحيح.`;
+      return t("الفترة {0}: يوم غير صحيح.", { 0: n });
   }
   return null;
 }
@@ -94,11 +96,11 @@ export function validateSchedule(s: SolarSchedule): string | null {
 export function describePeriod(p: SchedulePeriod): string {
   const days =
     p.days.length === 7
-      ? "كل الأيام"
+      ? t("كل الأيام")
       : WEEK_ORDER.filter((d) => p.days.includes(d))
           .map((d) => DAY_SHORT[d])
-          .join("، ");
-  const overnight = toMinutes(p.end) < toMinutes(p.start) ? " (حتى اليوم التالي)" : "";
+          .join(t("، "));
+  const overnight = toMinutes(p.end) < toMinutes(p.start) ? t(" (حتى اليوم التالي)") : "";
   return `${days} ${p.start} – ${p.end}${overnight}`;
 }
 

@@ -12,6 +12,7 @@ import {
   type SolarSchedule,
 } from "../../domain/schedule";
 import { cn } from "../../lib/cn";
+import { t } from "../../i18n";
 
 /**
  * Hours when Smart mode may use solar. Any combination is possible: one
@@ -50,8 +51,8 @@ export function SolarScheduleEditor({
     try {
       const { weekday, minutes } = localClock(Date.now(), timezone);
       return solarAllowedAt(value, weekday, minutes)
-        ? "الآن: ضمن الوقت المسموح"
-        : "الآن: خارج الوقت المسموح";
+        ? t("الآن: ضمن الوقت المسموح")
+        : t("الآن: خارج الوقت المسموح");
     } catch {
       return null; // invalid time zone: the form shows its own error
     }
@@ -64,23 +65,24 @@ export function SolarScheduleEditor({
           <Clock3 className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-bold text-ink">أوقات استخدام الطاقة الشمسية</p>
+          <p className="text-[15px] font-bold text-ink">{t("أوقات استخدام الطاقة الشمسية")}</p>
           <p className="mt-0.5 text-[11px] leading-5 text-muted">
-            في الوضع الذكي فقط. خارج هذه الأوقات لا يستخدم البورد الشمسية حتى لو لم يتوفر مصدر آخر،
-            ويمكنك التحويل إليها يدوياً في أي وقت.
+            {t(
+              "في الوضع الذكي فقط. خارج هذه الأوقات لا يستخدم البورد الشمسية حتى لو لم يتوفر مصدر آخر، ويمكنك التحويل إليها يدوياً في أي وقت.",
+            )}
           </p>
         </div>
         <Toggle
           checked={value.enabled}
           onChange={enable}
-          label="تقييد الشمسية بأوقات"
+          label={t("تقييد الشمسية بأوقات")}
           disabled={disabled}
         />
       </div>
 
       {!value.enabled ? (
         <p className="mt-3 rounded-2xl bg-canvas px-3 py-2 text-[12px] text-ink-2">
-          غير مقيّدة: يستخدمها الوضع الذكي في أي وقت حسب ترتيب الأولوية.
+          {t("غير مقيّدة: يستخدمها الوضع الذكي في أي وقت حسب ترتيب الأولوية.")}
         </p>
       ) : (
         <div className="mt-3 space-y-3">
@@ -89,11 +91,13 @@ export function SolarScheduleEditor({
             return (
               <div key={i} className="rounded-2xl border border-line p-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-[12px] font-semibold text-ink-2">الفترة {i + 1}</span>
+                  <span className="text-[12px] font-semibold text-ink-2">
+                    {t("الفترة")} {i + 1}
+                  </span>
                   <span className="flex-1" />
                   <button
                     type="button"
-                    aria-label={`حذف الفترة ${i + 1}`}
+                    aria-label={t("حذف الفترة {0}", { 0: i + 1 })}
                     disabled={disabled || value.periods.length === 1}
                     onClick={() =>
                       onChange({ ...value, periods: value.periods.filter((_, j) => j !== i) })
@@ -105,7 +109,7 @@ export function SolarScheduleEditor({
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <label className="text-[11px] text-muted">
-                    من
+                    {t("من")}
                     <input
                       type="time"
                       value={p.start}
@@ -116,7 +120,7 @@ export function SolarScheduleEditor({
                     />
                   </label>
                   <label className="text-[11px] text-muted">
-                    إلى
+                    {t("إلى")}
                     <input
                       type="time"
                       value={p.end}
@@ -128,12 +132,14 @@ export function SolarScheduleEditor({
                   </label>
                 </div>
                 {overnight && (
-                  <p className="mt-1 text-[11px] text-muted">تستمر الفترة إلى اليوم التالي.</p>
+                  <p className="mt-1 text-[11px] text-muted">
+                    {t("تستمر الفترة إلى اليوم التالي.")}
+                  </p>
                 )}
                 <div
                   className="mt-2 flex flex-wrap gap-1.5"
                   role="group"
-                  aria-label={`أيام الفترة ${i + 1}`}
+                  aria-label={t("أيام الفترة {0}", { 0: i + 1 })}
                 >
                   {WEEK_ORDER.map((d) => {
                     const on = p.days.includes(d);
@@ -169,7 +175,7 @@ export function SolarScheduleEditor({
                 onChange({ ...value, periods: [...value.periods, { ...DEFAULT_PERIOD }] })
               }
             >
-              إضافة فترة
+              {t("إضافة فترة")}
             </Button>
             {nowText && <span className="text-[11px] text-muted">{nowText}</span>}
           </div>

@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "./Button";
+import { t } from "../../i18n";
 
 export function Sheet({
   open,
@@ -32,7 +33,7 @@ export function Sheet({
     >
       <button
         type="button"
-        aria-label="إغلاق"
+        aria-label={t("إغلاق")}
         onClick={onClose}
         className="absolute inset-0 animate-fade-in bg-brand-950/45 backdrop-blur-[2px]"
       />
@@ -44,7 +45,7 @@ export function Sheet({
             <button
               type="button"
               onClick={onClose}
-              aria-label="إغلاق"
+              aria-label={t("إغلاق")}
               className="flex size-9 items-center justify-center rounded-xl bg-canvas text-muted hover:text-ink"
             >
               <X className="size-[18px]" />
@@ -99,7 +100,7 @@ export function ConfirmSheet({
             {confirmLabel}
           </Button>
           <Button full variant="secondary" onClick={onClose}>
-            إلغاء
+            {t("إلغاء")}
           </Button>
         </div>
       }

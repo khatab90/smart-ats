@@ -3,6 +3,7 @@ import { Card, SectionTitle, StatusDot } from "../../components/ui";
 import { cn } from "../../lib/cn";
 import { fmtAgo } from "../../lib/format";
 import { useActiveDevice, useNow } from "../../store/devices";
+import { t } from "../../i18n";
 
 export function SignalBars({ rssi, on }: { rssi: number | null; on: boolean }) {
   const level = !on || rssi === null ? 0 : rssi > -55 ? 4 : rssi > -65 ? 3 : rssi > -75 ? 2 : 1;
@@ -10,7 +11,7 @@ export function SignalBars({ rssi, on }: { rssi: number | null; on: boolean }) {
     <span
       className="flex items-end gap-0.5"
       dir="ltr"
-      aria-label={rssi !== null ? `قوة الإشارة ${rssi} dBm` : "لا توجد قراءة"}
+      aria-label={rssi !== null ? t("قوة الإشارة {0} dBm", { 0: rssi }) : t("لا توجد قراءة")}
     >
       {[1, 2, 3, 4].map((b) => (
         <span
@@ -32,7 +33,7 @@ export function ConnectionCard() {
   const lastSeen = status?.last_seen_at ? Date.parse(status.last_seen_at) : null;
   return (
     <div>
-      <SectionTitle title="الاتصال بالبورد" />
+      <SectionTitle title={t("الاتصال بالبورد")} />
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <span
@@ -46,12 +47,12 @@ export function ConnectionCard() {
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-2 text-[14px] font-semibold text-ink">
               {link === "live"
-                ? "متصل"
+                ? t("متصل")
                 : link === "stale"
-                  ? "بيانات متأخرة"
+                  ? t("بيانات متأخرة")
                   : link === "offline"
-                    ? "غير متصل"
-                    : "لم يتصل بعد"}
+                    ? t("غير متصل")
+                    : t("لم يتصل بعد")}
               <StatusDot
                 tone={link === "live" ? "ok" : link === "stale" ? "warn" : "danger"}
                 pulse={link === "live"}
@@ -60,13 +61,13 @@ export function ConnectionCard() {
             <p className="truncate text-[12px] text-muted">
               ESP32 •{" "}
               {realtime === "live"
-                ? "تحديث لحظي"
+                ? t("تحديث لحظي")
                 : realtime === "polling"
-                  ? "تحديث كل 5 ث"
-                  : "جارٍ الاتصال بالخادم"}
+                  ? t("تحديث كل 5 ث")
+                  : t("جارٍ الاتصال بالخادم")}
             </p>
           </div>
-          <div className="text-left">
+          <div className="text-end">
             <SignalBars rssi={status?.rssi ?? null} on={link === "live"} />
             <p className="num mt-1 text-[10px] text-faint" dir="ltr">
               {link === "live" && status?.rssi !== null && status?.rssi !== undefined
@@ -83,43 +84,44 @@ export function ConnectionCard() {
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-muted">آخر تحديث</p>
+            <p className="text-[10px] text-muted">{t("آخر تحديث")}</p>
             <p className="mt-0.5 text-[12px] font-semibold text-ink">
               {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-muted">البرنامج الثابت</p>
+            <p className="text-[10px] text-muted">{t("البرنامج الثابت")}</p>
             <p className="num mt-0.5 text-[12px] font-semibold text-ink" dir="ltr">
               {device.firmware ?? "—"}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-muted">إصدار الإعدادات</p>
+            <p className="text-[10px] text-muted">{t("إصدار الإعدادات")}</p>
             <p className="num mt-0.5 text-[12px] font-semibold text-ink">
               {status?.config_version ?? "—"} / {settings?.version ?? "—"}
               <span className={cn("ms-1 text-[10px]", settingsApplied ? "text-ok" : "text-warn")}>
-                {settingsApplied ? "مطبّق" : "معلّق"}
+                {settingsApplied ? t("مطبّق") : t("معلّق")}
               </span>
             </p>
           </div>
         </div>
         {live && status?.clock_invalid && (
           <p className="mt-3 rounded-2xl bg-warn-soft px-3 py-2 text-[11px] leading-5 text-warn-strong">
-            ساعة البورد غير مضبوطة، فيستخدم الخادم وقته لتسجيل القراءات والأحداث. تأكد من وصول البورد
-            إلى خدمة الوقت (NTP).
+            {t(
+              "ساعة البورد غير مضبوطة، فيستخدم الخادم وقته لتسجيل القراءات والأحداث. تأكد من وصول البورد إلى خدمة الوقت (NTP).",
+            )}
           </p>
         )}
         {(status?.skipped_events ?? 0) > 0 && (
           <p className="mt-2 text-[11px] leading-5 text-muted">
-            تجاهل الخادم {status?.skipped_events} حدثاً غير صالح من البورد. باقي البيانات حُفظت بشكل
-            طبيعي.
+            {t("تجاهل الخادم")} {status?.skipped_events}{" "}
+            {t("حدثاً غير صالح من البورد. باقي البيانات حُفظت بشكل طبيعي.")}
           </p>
         )}
         {(status?.controller?.dropped_events ?? 0) > 0 && (
           <p className="mt-2 text-[11px] leading-5 text-muted">
-            امتلأت ذاكرة البورد أثناء انقطاع الاتصال، وفُقد {status?.controller?.dropped_events} حدثاً
-            قديماً.
+            {t("امتلأت ذاكرة البورد أثناء انقطاع الاتصال، وفُقد")} {status?.controller?.dropped_events}{" "}
+            {t("حدثاً قديماً.")}
           </p>
         )}
       </Card>

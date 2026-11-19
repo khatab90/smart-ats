@@ -16,6 +16,7 @@ import { cn } from "../../lib/cn";
 import { fmtAgo, fmtTime } from "../../lib/format";
 import { useActiveDevice, useNow } from "../../store/devices";
 import { useNav } from "../../store/nav";
+import { t } from "../../i18n";
 
 export function StatusBanners() {
   const { status, link, settings, settingsApplied, isAdmin, serverNow } = useActiveDevice();
@@ -27,23 +28,24 @@ export function StatusBanners() {
 
   if (link === "never") {
     banners.push(
-      <Banner key="never" tone="info" icon={Clock3} title="بانتظار أول بيانات من البورد">
-        لم تصل أي قراءة من هذا الجهاز بعد. تأكد من تشغيل البورد واتصاله بالإنترنت.
+      <Banner key="never" tone="info" icon={Clock3} title={t("بانتظار أول بيانات من البورد")}>
+        {t("لم تصل أي قراءة من هذا الجهاز بعد. تأكد من تشغيل البورد واتصاله بالإنترنت.")}
       </Banner>,
     );
   } else if (link === "offline") {
     banners.push(
-      <Banner key="off" tone="danger" icon={WifiOff} title="البورد غير متصل">
-        آخر حالة معروفة في {lastSeen ? fmtTime(lastSeen, tz) : "—"} (
-        {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}). أزرار التحكم معطلة حتى يعود الاتصال.
+      <Banner key="off" tone="danger" icon={WifiOff} title={t("البورد غير متصل")}>
+        {t("آخر حالة معروفة في")} {lastSeen ? fmtTime(lastSeen, tz) : "—"} (
+        {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}
+        {t("). أزرار التحكم معطلة حتى يعود الاتصال.")}
       </Banner>,
     );
   } else {
     if (link === "stale") {
       banners.push(
-        <Banner key="stale" tone="warn" icon={Wifi} title="البيانات متأخرة">
-          آخر تحديث {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}. قد لا تعكس القراءات الحالة
-          الحالية.
+        <Banner key="stale" tone="warn" icon={Wifi} title={t("البيانات متأخرة")}>
+          {t("آخر تحديث")} {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}
+          {t(". قد لا تعكس القراءات الحالة الحالية.")}
         </Banner>,
       );
     }
@@ -52,7 +54,7 @@ export function StatusBanners() {
         (id) => status.sources?.[id]?.reason !== "not_installed",
       ).map((id) => {
         const r = status.sources?.[id];
-        return `${SOURCE_META[id].short}: ${UNAVAILABLE_REASON[r?.reason ?? ""] ?? "غير متاح"}`;
+        return `${SOURCE_META[id].short}: ${UNAVAILABLE_REASON[r?.reason ?? ""] ?? t("غير متاح")}`;
       });
       banners.push(
         <div
@@ -61,10 +63,10 @@ export function StatusBanners() {
           className="rounded-[22px] bg-danger px-4 py-4 text-white shadow-[0_12px_28px_-14px_rgba(229,55,43,0.9)]"
         >
           <p className="flex items-center gap-2 text-[16px] font-bold">
-            <ZapOff className="size-5" /> لا يوجد مصدر متاح
+            <ZapOff className="size-5" /> {t("لا يوجد مصدر متاح")}
           </p>
           <p className="mt-1 text-[13px] text-white/90">
-            الأحمال بدون كهرباء. لا يوجد أي مصدر صالح للتشغيل حالياً.
+            {t("الأحمال بدون كهرباء. لا يوجد أي مصدر صالح للتشغيل حالياً.")}
           </p>
           <p className="mt-2 text-[12px] leading-5 text-white/85">{reasons.join(" • ")}</p>
         </div>,
@@ -72,27 +74,27 @@ export function StatusBanners() {
     }
     if (status?.system_state === "lockout") {
       banners.push(
-        <Banner key="lock" tone="danger" icon={Lock} title="النظام مقفل بالحماية">
-          {(status.alarms ?? []).map((a) => ALARM_LABEL[a] ?? a).join("، ") ||
-            "يتطلب فحصاً في الموقع قبل إعادة التشغيل."}
+        <Banner key="lock" tone="danger" icon={Lock} title={t("النظام مقفل بالحماية")}>
+          {(status.alarms ?? []).map((a) => ALARM_LABEL[a] ?? a).join(t("، ")) ||
+            t("يتطلب فحصاً في الموقع قبل إعادة التشغيل.")}
         </Banner>,
       );
     } else if (status?.alarms?.length) {
       banners.push(
-        <Banner key="alarms" tone="warn" icon={CircleAlert} title="إنذارات البورد">
-          {status.alarms.map((a) => ALARM_LABEL[a] ?? a).join("، ")}
+        <Banner key="alarms" tone="warn" icon={CircleAlert} title={t("إنذارات البورد")}>
+          {status.alarms.map((a) => ALARM_LABEL[a] ?? a).join(t("، "))}
         </Banner>,
       );
     }
     if (status?.override?.active) {
       banners.push(
-        <Banner key="ovr" tone="warn" icon={ShieldAlert} title="الحماية تجاوزت اختيارك">
+        <Banner key="ovr" tone="warn" icon={ShieldAlert} title={t("الحماية تجاوزت اختيارك")}>
           {status.override.requested
-            ? `المصدر المختار (${SOURCE_META[status.override.requested].name}) `
-            : "المصدر المختار "}
-          خرج عن حدود التشغيل، فنقل البورد الحمل إلى{" "}
-          {status.active_source ? SOURCE_META[status.active_source].name : "المصدر المتاح"}. لن يعود
-          البورد إليه تلقائياً في الوضع اليدوي؛ اختره من جديد بعد استقراره.
+            ? t("المصدر المختار ({0}) ", { 0: SOURCE_META[status.override.requested].name })
+            : t("المصدر المختار ")}
+          {t("خرج عن حدود التشغيل، فنقل البورد الحمل إلى")}{" "}
+          {status.active_source ? SOURCE_META[status.active_source].name : t("المصدر المتاح")}
+          {t(". لن يعود البورد إليه تلقائياً في الوضع اليدوي؛ اختره من جديد بعد استقراره.")}
         </Banner>,
       );
     }
@@ -102,10 +104,10 @@ export function StatusBanners() {
           ? Date.parse(status.mode_since) + settings.manual_revert_min * 60_000 - serverNow()
           : null;
       banners.push(
-        <Banner key="manual" tone="info" icon={Hand} title="الوضع اليدوي مفعّل">
-          البورد لا يختار المصدر تلقائياً حسب الأولوية.
+        <Banner key="manual" tone="info" icon={Hand} title={t("الوضع اليدوي مفعّل")}>
+          {t("البورد لا يختار المصدر تلقائياً حسب الأولوية.")}
           {revert !== null && revert > 0
-            ? ` سيعود إلى الوضع الذكي خلال ${Math.ceil(revert / 60_000)} د.`
+            ? t(" سيعود إلى الوضع الذكي خلال {0} د.", { 0: Math.ceil(revert / 60_000) })
             : ""}
         </Banner>,
       );
@@ -117,16 +119,21 @@ export function StatusBanners() {
         key="cfg"
         tone="warn"
         icon={Settings2}
-        title="إعدادات الجهاز غير مكتملة"
-        action={isAdmin ? { label: "ضبط", onClick: () => push("settings") } : undefined}
+        title={t("إعدادات الجهاز غير مكتملة")}
+        action={isAdmin ? { label: t("ضبط"), onClick: () => push("settings") } : undefined}
       >
-        لم يُحدَّد الجهد والتردد الاسميان بعد، وهما أساس فحص صلاحية المصادر.
+        {t("لم يُحدَّد الجهد والتردد الاسميان بعد، وهما أساس فحص صلاحية المصادر.")}
       </Banner>,
     );
   } else if (settings && !settingsApplied && link !== "never") {
     banners.push(
-      <Banner key="pending" tone="info" icon={LoaderCircle} title="بانتظار تأكيد البورد للإعدادات">
-        الإصدار {settings.version} محفوظ، ولم يؤكد البورد تطبيقه بعد.
+      <Banner
+        key="pending"
+        tone="info"
+        icon={LoaderCircle}
+        title={t("بانتظار تأكيد البورد للإعدادات")}
+      >
+        {t("الإصدار")} {settings.version} {t("محفوظ، ولم يؤكد البورد تطبيقه بعد.")}
       </Banner>,
     );
   }

@@ -13,6 +13,7 @@ import { isSchemaMissing } from "../lib/errors";
 import * as authApi from "../api/auth";
 import { probeProfile } from "../api/profile";
 import { useToast } from "./toast";
+import { t } from "../i18n";
 
 interface AuthCtx {
   loading: boolean;
@@ -43,7 +44,7 @@ export function AuthProvider({
     // Once per page load (the tree is re-mounted when the digit style changes).
     if (!initialLinkError || linkErrorShown) return;
     linkErrorShown = true;
-    pushToast({ kind: "error", title: "تعذر تسجيل الدخول", body: initialLinkError });
+    pushToast({ kind: "error", title: t("تعذر تسجيل الدخول"), body: initialLinkError });
   }, [initialLinkError, pushToast]);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);

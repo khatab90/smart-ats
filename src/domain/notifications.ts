@@ -6,20 +6,21 @@
  */
 import { SOURCE_META } from "../data/meta";
 import type { NotificationRow, NotificationType, SourceId } from "../data/types";
+import { t } from "../i18n";
 
-const src = (id: SourceId | null | undefined) => (id ? SOURCE_META[id].name : "مصدر غير معروف");
+const src = (id: SourceId | null | undefined) => (id ? SOURCE_META[id].name : t("مصدر غير معروف"));
 
 const FAULT: Record<string, string> = {
-  undervoltage: "انخفاض الجهد",
-  overvoltage: "ارتفاع الجهد",
-  underfrequency: "انخفاض التردد",
-  overfrequency: "ارتفاع التردد",
-  unstable: "تحويلات متكررة بسبب عدم الاستقرار",
+  undervoltage: t("انخفاض الجهد"),
+  overvoltage: t("ارتفاع الجهد"),
+  underfrequency: t("انخفاض التردد"),
+  overfrequency: t("ارتفاع التردد"),
+  unstable: t("تحويلات متكررة بسبب عدم الاستقرار"),
 };
 
 const FAIL_REASON: Record<string, string> = {
-  target_lost: "خرج المصدر عن الحدود قبل التوصيل",
-  close_failed: "لم يتأكد إغلاق الكونتاكتور",
+  target_lost: t("خرج المصدر عن الحدود قبل التوصيل"),
+  close_failed: t("لم يتأكد إغلاق الكونتاكتور"),
 };
 
 export function notificationText(n: Pick<NotificationRow, "type" | "title" | "body" | "params">): {
@@ -27,48 +28,64 @@ export function notificationText(n: Pick<NotificationRow, "type" | "title" | "bo
   body: string;
 } {
   const p = n.params ?? {};
-  const where = p.device ? ` في «${p.device}»` : "";
+  const where = p.device ? t(" في «{0}»", { 0: p.device }) : "";
   switch (p.event) {
     case "source_lost":
       return {
-        title: "انقطاع المصدر الحالي",
-        body: `انقطع ${src(p.source)} الذي يغذي الأحمال${where}.`,
+        title: t("انقطاع المصدر الحالي"),
+        body: t("انقطع {0} الذي يغذي الأحمال{1}.", { 0: src(p.source), 1: where }),
       };
     case "no_source":
       return {
-        title: "لا يوجد مصدر متاح",
-        body: `الأحمال${where} بدون كهرباء: لا يوجد أي مصدر صالح للتشغيل.`,
+        title: t("لا يوجد مصدر متاح"),
+        body: t("الأحمال{0} بدون كهرباء: لا يوجد أي مصدر صالح للتشغيل.", { 0: where }),
       };
     case "transfer":
       return {
-        title: "تحويل بين المصادر",
-        body: `تم التحويل من ${p.from ? src(p.from) : "لا يوجد مصدر"} إلى ${src(p.to)}${where}.`,
+        title: t("تحويل بين المصادر"),
+        body: t("تم التحويل من {0} إلى {1}{2}.", {
+          0: p.from ? src(p.from) : t("لا يوجد مصدر"),
+          1: src(p.to),
+          2: where,
+        }),
       };
     case "electrical_fault":
     case "transfer_lockout": {
-      const what = FAULT[p.kind ?? ""] ?? "خروج عن حدود التشغيل";
-      const on = p.source ? src(p.source) : "النظام";
+      const what = FAULT[p.kind ?? ""] ?? t("خروج عن حدود التشغيل");
+      const on = p.source ? src(p.source) : t("النظام");
       return {
-        title: "خلل كهربائي",
-        body: `${what} في ${on}${p.value ? `: ${p.value}` : ""}${where}.`,
+        title: t("خلل كهربائي"),
+        body: t("{0} في {1}{2}{3}.", {
+          0: what,
+          1: on,
+          2: p.value ? `: ${p.value}` : "",
+          3: where,
+        }),
       };
     }
     case "connection_lost":
       return {
-        title: "انقطاع الاتصال بالبورد",
-        body: `لم تصل بيانات من الجهاز${where} منذ أكثر من 30 ثانية.`,
+        title: t("انقطاع الاتصال بالبورد"),
+        body: t("لم تصل بيانات من الجهاز{0} منذ أكثر من 30 ثانية.", { 0: where }),
       };
     case "transfer_failed": {
       const why = FAIL_REASON[p.reason ?? ""];
       return {
-        title: "فشل عملية التحويل",
-        body: `تعذر الانتقال إلى ${src(p.to)}${where}${why ? ` (${why})` : ""}.`,
+        title: t("فشل عملية التحويل"),
+        body: t("تعذر الانتقال إلى {0}{1}{2}.", {
+          0: src(p.to),
+          1: where,
+          2: why ? ` (${why})` : "",
+        }),
       };
     }
     case "interlock_fault":
       return {
-        title: "فشل التحويل: عطل القفل المتبادل",
-        body: `عدم تطابق بين أمر الكونتاكتور وحالته الفعلية${where}. تم قفل النظام ويتطلب فحصاً في الموقع.`,
+        title: t("فشل التحويل: عطل القفل المتبادل"),
+        body: t(
+          "عدم تطابق بين أمر الكونتاكتور وحالته الفعلية{0}. تم قفل النظام ويتطلب فحصاً في الموقع.",
+          { 0: where },
+        ),
       };
     default:
       return { title: n.title, body: n.body };

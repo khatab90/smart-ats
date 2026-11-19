@@ -1,6 +1,7 @@
 import { Eye, EyeOff, type LucideIcon } from "lucide-react";
 import { useState, type InputHTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
+import { t } from "../../i18n";
 
 export type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -29,7 +30,7 @@ export function Field({
       <span className="mb-1.5 block text-[13px] font-medium text-ink-2">{label}</span>
       <span className="relative block">
         {Icon && (
-          <Icon className="pointer-events-none absolute top-1/2 right-4 size-[18px] -translate-y-1/2 text-faint" />
+          <Icon className="pointer-events-none absolute top-1/2 start-4 size-[18px] -translate-y-1/2 text-faint" />
         )}
         <input
           id={inputId}
@@ -38,9 +39,9 @@ export function Field({
           className={cn(
             "h-12 w-full rounded-2xl border bg-surface text-[15px] text-ink outline-none transition placeholder:text-faint",
             "focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10",
-            Icon ? "pr-11" : "pr-4",
-            isPassword ? "pl-11" : "pl-4",
-            ltr && "text-right placeholder:text-right",
+            Icon ? "ps-11" : "ps-4",
+            isPassword ? "pe-11" : "pe-4",
+            ltr && "rtl:text-right rtl:placeholder:text-right",
             error ? "border-danger" : "border-line",
           )}
           {...rest}
@@ -49,8 +50,8 @@ export function Field({
           <button
             type="button"
             onClick={() => setShow((s) => !s)}
-            aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-            className="absolute top-1/2 left-3 -translate-y-1/2 rounded-lg p-1 text-faint hover:text-ink-2"
+            aria-label={show ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")}
+            className="absolute top-1/2 end-3 -translate-y-1/2 rounded-lg p-1 text-faint hover:text-ink-2"
           >
             {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
           </button>
@@ -91,8 +92,8 @@ export function Toggle({
     >
       <span
         className={cn(
-          "absolute top-0.5 right-0.5 size-6 rounded-full bg-white shadow-sm transition-transform",
-          checked && "-translate-x-5",
+          "absolute top-0.5 start-0.5 size-6 rounded-full bg-white shadow-sm transition-transform",
+          checked && "rtl:-translate-x-5 ltr:translate-x-5",
         )}
       />
     </button>

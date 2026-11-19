@@ -4,6 +4,7 @@ import { MODE_LABEL, SOURCE_META } from "../../data/meta";
 import { cn } from "../../lib/cn";
 import { fmtClock, fmtKw, fmtReading, fmtTime } from "../../lib/format";
 import { useActiveDevice, useNow } from "../../store/devices";
+import { t } from "../../i18n";
 
 export function Hero() {
   const { status, link, settings, serverNow } = useActiveDevice();
@@ -16,31 +17,33 @@ export function Hero() {
   const lastSeen = status?.last_seen_at ? Date.parse(status.last_seen_at) : null;
   const metrics = live
     ? [
-        { l: "الجهد", v: fmtReading(status?.load?.v), u: "V" },
-        { l: "التيار", v: fmtReading(status?.load?.a, 1), u: "A" },
-        { l: "القدرة", v: fmtKw(status?.load?.w), u: "kW" },
+        { l: t("الجهد"), v: fmtReading(status?.load?.v), u: "V" },
+        { l: t("التيار"), v: fmtReading(status?.load?.a, 1), u: "A" },
+        { l: t("القدرة"), v: fmtKw(status?.load?.w), u: "kW" },
       ]
     : [
-        { l: "الجهد", v: "—", u: "V" },
-        { l: "التيار", v: "—", u: "A" },
-        { l: "القدرة", v: "—", u: "kW" },
+        { l: t("الجهد"), v: "—", u: "V" },
+        { l: t("التيار"), v: "—", u: "A" },
+        { l: t("القدرة"), v: "—", u: "kW" },
       ];
 
   let headline: React.ReactNode;
   if (link === "never") {
     headline = (
       <div>
-        <p className="text-[22px] font-bold text-white/75">لا توجد بيانات حالياً</p>
-        <p className="text-[12px] text-white/55">ستظهر الحالة فور وصول أول قراءة من البورد</p>
+        <p className="text-[22px] font-bold text-white/75">{t("لا توجد بيانات حالياً")}</p>
+        <p className="text-[12px] text-white/55">
+          {t("ستظهر الحالة فور وصول أول قراءة من البورد")}
+        </p>
       </div>
     );
   } else if (!live) {
     headline = (
       <div>
-        <p className="text-[22px] font-bold text-white/75">غير متصل</p>
+        <p className="text-[22px] font-bold text-white/75">{t("غير متصل")}</p>
         <p className="text-[12px] text-white/55">
-          آخر حالة معروفة في {lastSeen ? fmtTime(lastSeen, tz) : "—"}:{" "}
-          {state === "no_source" ? "لا يوجد مصدر" : meta ? meta.name : "غير معروف"}
+          {t("آخر حالة معروفة في")} {lastSeen ? fmtTime(lastSeen, tz) : "—"}:{" "}
+          {state === "no_source" ? t("لا يوجد مصدر") : meta ? meta.name : t("غير معروف")}
         </p>
       </div>
     );
@@ -49,10 +52,10 @@ export function Hero() {
       <div>
         <p className="flex items-center gap-2 text-[22px] font-bold">
           <LoaderCircle className="size-5 animate-spin text-warn" />
-          جارٍ التحويل…
+          {t("جارٍ التحويل…")}
         </p>
         <p className="text-[12px] text-white/60">
-          فصل المصدر الحالي ثم توصيل المصدر الجديد بعد مهلة الأمان
+          {t("فصل المصدر الحالي ثم توصيل المصدر الجديد بعد مهلة الأمان")}
         </p>
       </div>
     );
@@ -60,9 +63,9 @@ export function Hero() {
     headline = (
       <div>
         <p className="flex items-center gap-2 text-[22px] font-bold text-[#ff8a80]">
-          <ZapOff className="size-5" /> لا يوجد مصدر متاح
+          <ZapOff className="size-5" /> {t("لا يوجد مصدر متاح")}
         </p>
-        <p className="text-[12px] text-white/60">الأحمال غير مغذّاة بالطاقة</p>
+        <p className="text-[12px] text-white/60">{t("الأحمال غير مغذّاة بالطاقة")}</p>
       </div>
     );
   } else {
@@ -77,7 +80,7 @@ export function Hero() {
           {meta.name}
         </p>
         <p className="mt-0.5 text-[12px] text-white/60">
-          يعمل منذ{" "}
+          {t("يعمل منذ")}{" "}
           <span className="num font-semibold text-white" dir="ltr">
             {since ? fmtClock(serverNow() - since) : "—"}
           </span>
@@ -90,7 +93,7 @@ export function Hero() {
     <section className="hero-surface relative overflow-hidden rounded-[28px] p-5 text-white shadow-[0_24px_48px_-24px_rgba(10,31,61,0.8)]">
       <div className="hero-grid absolute inset-0" />
       <div className="relative flex items-center justify-between">
-        <p className="text-[12px] font-medium text-white/60">المصدر الكهربائي الفعّال</p>
+        <p className="text-[12px] font-medium text-white/60">{t("المصدر الكهربائي الفعّال")}</p>
         {status?.mode && (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/90">
             {status.mode === "smart" ? (

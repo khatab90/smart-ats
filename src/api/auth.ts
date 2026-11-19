@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { appBaseUrl, supabase } from "./client";
 import { fail, ok, run, type Result } from "./result";
+import { t } from "../i18n";
 
 export const getSession = () => supabase.auth.getSession().then(({ data }) => data.session);
 
@@ -48,7 +49,7 @@ export async function changePassword(
   next: string,
 ): Promise<Result<null>> {
   const re = await supabase.auth.signInWithPassword({ email, password: current });
-  if (re.error) return { data: null, error: "كلمة المرور الحالية غير صحيحة" };
+  if (re.error) return { data: null, error: t("كلمة المرور الحالية غير صحيحة") };
   return setPassword(next);
 }
 

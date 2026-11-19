@@ -5,6 +5,7 @@ import type { DeviceStatus, SourceId, SourceReport } from "../../data/types";
 import { installedSources, outsideSchedule } from "../../domain/sources";
 import { fmtReading } from "../../lib/format";
 import { useActiveDevice } from "../../store/devices";
+import { t, uiStart } from "../../i18n";
 
 export const fmtVf = (r: SourceReport | undefined) =>
   `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
@@ -32,16 +33,16 @@ export function SourcesCard() {
 
   return (
     <div>
-      <SectionTitle title="حالة مصادر الطاقة" />
+      <SectionTitle title={t("حالة مصادر الطاقة")} />
       <Card className="divide-y divide-line">
         {!live ? (
           <p className="p-4 text-center text-[13px] text-muted">
             {link === "never"
-              ? "لا توجد بيانات حالياً."
-              : "حالة المصادر غير معروفة أثناء انقطاع الاتصال بالبورد."}
+              ? t("لا توجد بيانات حالياً.")
+              : t("حالة المصادر غير معروفة أثناء انقطاع الاتصال بالبورد.")}
           </p>
         ) : visible.length === 0 ? (
-          <p className="p-4 text-center text-[13px] text-muted">لا توجد مصادر متاحة حالياً.</p>
+          <p className="p-4 text-center text-[13px] text-muted">{t("لا توجد مصادر متاحة حالياً.")}</p>
         ) : (
           visible.map((id) => {
             const r = status?.sources?.[id];
@@ -56,7 +57,7 @@ export function SourcesCard() {
                     <p
                       className="num text-[12px] text-muted"
                       dir="ltr"
-                      style={{ textAlign: "right" }}
+                      style={{ textAlign: uiStart() }}
                     >
                       {fmtVf(r)}
                     </p>
@@ -67,8 +68,9 @@ export function SourcesCard() {
                 </div>
                 {!isActive && outsideSchedule(r) && status?.mode === "smart" && (
                   <p className="mt-2 text-[11px] leading-5 text-muted">
-                    متوفرة لكن خارج وقتها المحدد، فلن يستخدمها الوضع الذكي. يمكنك التحويل إليها
-                    يدوياً.
+                    {t(
+                      "متوفرة لكن خارج وقتها المحدد، فلن يستخدمها الوضع الذكي. يمكنك التحويل إليها يدوياً.",
+                    )}
                   </p>
                 )}
               </div>

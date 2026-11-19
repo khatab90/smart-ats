@@ -14,6 +14,7 @@ import { NavProvider, useNav, type Route } from "./store/nav";
 import { NotificationsProvider } from "./store/notifications";
 import { PrefsProvider } from "./store/prefs";
 import { ToastProvider } from "./store/toast";
+import { t } from "./i18n";
 
 const named = <T extends Record<string, unknown>>(p: Promise<T>, key: keyof T) =>
   p.then((m) => ({ default: m[key] as React.ComponentType<object> }));
@@ -148,8 +149,8 @@ function MainApp() {
           <CloudOff className="size-4 shrink-0" />
           <span className="flex-1">
             {!online
-              ? "لا يوجد اتصال بالإنترنت. البيانات المعروضة قد تكون قديمة."
-              : "تعذر الاتصال بقاعدة البيانات."}
+              ? t("لا يوجد اتصال بالإنترنت. البيانات المعروضة قد تكون قديمة.")
+              : t("تعذر الاتصال بقاعدة البيانات.")}
           </span>
           {online && (
             <button
@@ -157,7 +158,7 @@ function MainApp() {
               onClick={() => void refreshProfile()}
               className="rounded-lg bg-white/20 px-2 py-1"
             >
-              إعادة
+              {t("إعادة")}
             </button>
           )}
         </div>
@@ -193,13 +194,13 @@ function SetupRequired() {
       <span className="flex size-16 items-center justify-center rounded-3xl bg-warn-soft text-warn">
         <Database className="size-7" />
       </span>
-      <h1 className="mt-4 text-lg font-bold text-ink">قاعدة البيانات غير مهيأة</h1>
+      <h1 className="mt-4 text-lg font-bold text-ink">{t("قاعدة البيانات غير مهيأة")}</h1>
       <p className="mt-2 text-[13px] leading-6 text-muted">
-        لم يتم العثور على جداول Smart ATS في Supabase. لمشروع جديد شغّل الملف
+        {t("لم يتم العثور على جداول Smart ATS في Supabase. لمشروع جديد شغّل الملف")}
         <span className="mx-1 font-mono text-[11px]" dir="ltr">
           supabase/dist/full_install.sql
         </span>
-        مرة واحدة من SQL Editor.
+        {t("مرة واحدة من SQL Editor.")}
       </p>
       <div className="mt-6 flex w-full gap-3">
         <button
@@ -207,14 +208,14 @@ function SetupRequired() {
           onClick={() => void refreshProfile()}
           className="h-12 flex-1 rounded-2xl bg-brand-800 text-sm font-semibold text-white"
         >
-          إعادة التحقق
+          {t("إعادة التحقق")}
         </button>
         <button
           type="button"
           onClick={() => void signOut()}
           className="h-12 flex-1 rounded-2xl bg-brand-50 text-sm font-semibold text-brand-800"
         >
-          تسجيل الخروج
+          {t("تسجيل الخروج")}
         </button>
       </div>
     </div>

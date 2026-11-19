@@ -11,6 +11,7 @@ import { fmtNum, fmtReading, fmtTimeSec } from "../lib/format";
 import { seriesStats, splitSegments, yDomain, type Sample } from "../lib/series";
 import { useActiveDevice, useNow } from "../store/devices";
 import { LinkBadge } from "../components/status";
+import { t, uiStart } from "../i18n";
 
 type Channel = "load" | SourceId;
 type Metric = "v" | "a" | "kw" | "f";
@@ -23,10 +24,10 @@ const CHANNEL_COLOR: Record<Channel, string> = {
   generator: SOURCE_META.generator.color,
 };
 const METRIC: Record<Metric, { label: string; unit: string; digits: number }> = {
-  v: { label: "الجهد", unit: "V", digits: 0 },
-  a: { label: "التيار", unit: "A", digits: 1 },
-  kw: { label: "القدرة", unit: "kW", digits: 2 },
-  f: { label: "التردد", unit: "Hz", digits: 2 },
+  v: { label: t("الجهد"), unit: "V", digits: 0 },
+  a: { label: t("التيار"), unit: "A", digits: 1 },
+  kw: { label: t("القدرة"), unit: "kW", digits: 2 },
+  f: { label: t("التردد"), unit: "Hz", digits: 2 },
 };
 
 /** One reading from a telemetry row; source current/power use the shared feeding rule. */
@@ -91,7 +92,9 @@ export function Live() {
 
   const feedingNote =
     channel !== "load" && live && status?.active_source !== channel
-      ? "التيار والقدرة يُقاسان على جهة الحمل، ويظهران لهذا المصدر فقط عندما يكون هو المصدر الفعّال."
+      ? t(
+          "التيار والقدرة يُقاسان على جهة الحمل، ويظهران لهذا المصدر فقط عندما يكون هو المصدر الفعّال.",
+        )
       : null;
 
   const now = serverNow();
@@ -141,7 +144,11 @@ export function Live() {
   if (!device) {
     return (
       <div className="px-5 pt-16">
-        <EmptyState icon={Activity} title="لا يوجد جهاز" body="أضف جهازاً لعرض القراءات اللحظية." />
+        <EmptyState
+          icon={Activity}
+          title={t("لا يوجد جهاز")}
+          body={t("أضف جهازاً لعرض القراءات اللحظية.")}
+        />
       </div>
     );
   }
@@ -150,8 +157,8 @@ export function Live() {
     <div className="space-y-4 px-5 pt-4 pb-32">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-bold tracking-tight text-ink">المراقبة</h1>
-          <p className="text-[13px] text-muted">القراءات الكهربائية اللحظية من البورد</p>
+          <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("المراقبة")}</h1>
+          <p className="text-[13px] text-muted">{t("القراءات الكهربائية اللحظية من البورد")}</p>
         </div>
         <LinkBadge link={link} />
       </div>
@@ -160,7 +167,7 @@ export function Live() {
         value={channel}
         onChange={setChannel}
         options={[
-          { value: "load" as Channel, label: "الخرج (الحمل)" },
+          { value: "load" as Channel, label: t("الخرج (الحمل)") },
           ...installedSources(status).map((id) => ({
             value: id as Channel,
             label: SOURCE_META[id].short,
@@ -173,7 +180,9 @@ export function Live() {
         <div className="relative flex items-center justify-between">
           <p className="flex items-center gap-2 text-[13px] font-semibold text-white/80">
             <span className="size-2 rounded-full" style={{ background: color }} />
-            {channel === "load" ? "القدرة المسحوبة" : `قدرة ${SOURCE_META[channel].name}`}
+            {channel === "load"
+              ? t("القدرة المسحوبة")
+              : t("قدرة {0}", { 0: SOURCE_META[channel].name })}
           </p>
           <span className="num text-[11px] text-white/50" dir="ltr">
             {live && status?.device_ts ? fmtTimeSec(Date.parse(status.device_ts), tz) : "—"}
@@ -192,12 +201,12 @@ export function Live() {
         <p className="relative mt-2 text-center text-[12px] text-white/55">
           {!live ? (
             link === "never" ? (
-              "لا توجد بيانات حالياً"
+              t("لا توجد بيانات حالياً")
             ) : (
-              "البورد غير متصل — لا توجد قراءات حية"
+              t("البورد غير متصل — لا توجد قراءات حية")
             )
           ) : feedingNote ? (
-            "هذا المصدر لا يغذي الحمل حالياً"
+            t("هذا المصدر لا يغذي الحمل حالياً")
           ) : (
             <span dir="ltr">{fmtReading(current.f, 2)} Hz</span>
           )}
@@ -205,31 +214,37 @@ export function Live() {
       </section>
 
       <div className="grid grid-cols-2 gap-3">
-        <Tile icon={Zap} label="الجهد" value={fmtReading(current.v)} unit="V" color={color}>
+        <Tile icon={Zap} label={t("الجهد")} value={fmtReading(current.v)} unit="V" color={color}>
           <p className="text-[10px] text-muted">
             {range ? (
               <>
-                النطاق المسموح{" "}
+                {t("النطاق المسموح")}{" "}
                 <bdi>
                   {range.min}–{range.max} V
                 </bdi>
               </>
             ) : (
-              "لم يُضبط الجهد الاسمي في الإعدادات"
+              t("لم يُضبط الجهد الاسمي في الإعدادات")
             )}
           </p>
         </Tile>
-        <Tile icon={Waves} label="التيار" value={fmtReading(current.a, 1)} unit="A" color={color} />
+        <Tile
+          icon={Waves}
+          label={t("التيار")}
+          value={fmtReading(current.a, 1)}
+          unit="A"
+          color={color}
+        />
         <Tile
           icon={Gauge}
-          label="القدرة"
+          label={t("القدرة")}
           value={fmtReading(current.kw, 2)}
           unit="kW"
           color={color}
         />
         <Tile
           icon={Activity}
-          label="التردد"
+          label={t("التردد")}
           value={fmtReading(current.f, 2)}
           unit="Hz"
           color={color}
@@ -237,10 +252,10 @@ export function Live() {
           <p className="text-[10px] text-muted">
             {settings?.nominal_frequency ? (
               <>
-                الاسمي <span dir="ltr">{settings.nominal_frequency} Hz</span>
+                {t("الاسمي")} <span dir="ltr">{settings.nominal_frequency} Hz</span>
               </>
             ) : (
-              "لم يُضبط التردد الاسمي"
+              t("لم يُضبط التردد الاسمي")
             )}
           </p>
         </Tile>
@@ -249,17 +264,17 @@ export function Live() {
 
       <Card className="p-4">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[15px] font-bold text-ink">الرسم البياني التفصيلي</p>
-          <span className="text-[11px] text-muted">آخر 3 دقائق</span>
+          <p className="text-[15px] font-bold text-ink">{t("الرسم البياني التفصيلي")}</p>
+          <span className="text-[11px] text-muted">{t("آخر 3 دقائق")}</span>
         </div>
         <Segmented
           value={metric}
           onChange={setMetric}
           options={[
-            { value: "v", label: "الجهد" },
-            { value: "a", label: "التيار" },
-            { value: "kw", label: "القدرة" },
-            { value: "f", label: "التردد" },
+            { value: "v", label: t("الجهد") },
+            { value: "a", label: t("التيار") },
+            { value: "kw", label: t("القدرة") },
+            { value: "f", label: t("التردد") },
           ]}
         />
         <div className="mt-4">
@@ -269,7 +284,7 @@ export function Live() {
             <Skeleton className="h-[160px]" />
           ) : segments.length === 0 ? (
             <div className="flex h-[160px] items-center justify-center rounded-2xl bg-canvas px-6 text-center text-[13px] text-muted">
-              لا توجد قراءات لهذا القياس خلال آخر 3 دقائق.
+              {t("لا توجد قراءات لهذا القياس خلال آخر 3 دقائق.")}
             </div>
           ) : (
             <LineChart
@@ -286,28 +301,28 @@ export function Live() {
               bands={bands}
               safe={metric === "v" && range ? { from: range.min, to: range.max } : undefined}
               xLabels={[
-                { t: now, label: "الآن" },
-                { t: now - 60_000, label: "قبل دقيقة" },
-                { t: now - 120_000, label: "قبل دقيقتين" },
-                { t: now - WINDOW_MS, label: "قبل 3 د" },
+                { t: now, label: t("الآن") },
+                { t: now - 60_000, label: t("قبل دقيقة") },
+                { t: now - 120_000, label: t("قبل دقيقتين") },
+                { t: now - WINDOW_MS, label: t("قبل 3 د") },
               ]}
             />
           )}
         </div>
         <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-muted">
           <span className="flex items-center gap-1">
-            <span className="size-2.5 rounded-sm bg-danger/40" /> لا يوجد مصدر
+            <span className="size-2.5 rounded-sm bg-danger/40" /> {t("لا يوجد مصدر")}
           </span>
           <span className="flex items-center gap-1">
-            <span className="size-2.5 rounded-sm bg-warn/40" /> تحويل
+            <span className="size-2.5 rounded-sm bg-warn/40" /> {t("تحويل")}
           </span>
-          <span>الفراغ في الخط = لا توجد قراءة</span>
+          <span>{t("الفراغ في الخط = لا توجد قراءة")}</span>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
           {[
-            { l: "الأدنى", v: stats?.min },
-            { l: "المتوسط", v: stats?.avg },
-            { l: "الأعلى", v: stats?.max },
+            { l: t("الأدنى"), v: stats?.min },
+            { l: t("المتوسط"), v: stats?.avg },
+            { l: t("الأعلى"), v: stats?.max },
           ].map((s) => (
             <div key={s.l} className="rounded-xl bg-canvas py-2">
               <p className="text-[10px] text-muted">{s.l}</p>
@@ -319,7 +334,7 @@ export function Live() {
           ))}
         </div>
         <p className="mt-2 text-[10px] text-faint">
-          الإحصائيات تشمل القراءات الصفرية أثناء الانقطاع.
+          {t("الإحصائيات تشمل القراءات الصفرية أثناء الانقطاع.")}
         </p>
       </Card>
     </div>
@@ -350,7 +365,7 @@ function Tile({
       <p
         className="num mt-2 text-[24px] leading-none font-bold text-ink"
         dir="ltr"
-        style={{ textAlign: "right" }}
+        style={{ textAlign: uiStart() }}
       >
         {value}
         <span className="ms-1 text-[12px] font-medium text-muted">{unit}</span>

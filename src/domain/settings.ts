@@ -8,6 +8,7 @@
 import type { EditableSettings } from "../data/types";
 import { isValidTimeZone } from "../lib/tz";
 import { validateSchedule } from "./schedule";
+import { t } from "../i18n";
 
 /** Allowed nominal values (DB: CHECK nominal_voltage IN (...), nominal_frequency IN (...)). */
 export const NOMINAL_VOLTAGES = [220, 230, 240] as const;
@@ -30,71 +31,87 @@ export interface NumField {
 
 export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] }[] = [
   {
-    title: "حدود الجهد",
-    desc: "نسب من الجهد الاسمي. يُفصل المصدر عند تجاوز حد الفصل لمدة المهلة، ولا يعود إلا ضمن حد الرجوع.",
+    title: t("حدود الجهد"),
+    desc: t(
+      "نسب من الجهد الاسمي. يُفصل المصدر عند تجاوز حد الفصل لمدة المهلة، ولا يعود إلا ضمن حد الرجوع.",
+    ),
     fields: [
       {
         key: "uv_trip_pct",
-        label: "فصل عند انخفاض الجهد",
-        unit: "% تحت الاسمي",
+        label: t("فصل عند انخفاض الجهد"),
+        unit: t("% تحت الاسمي"),
         min: 5,
         max: 30,
         step: 0.5,
       },
       {
         key: "uv_recover_pct",
-        label: "الرجوع بعد الانخفاض",
-        unit: "% تحت الاسمي",
+        label: t("الرجوع بعد الانخفاض"),
+        unit: t("% تحت الاسمي"),
         min: 2,
         max: 29,
         step: 0.5,
       },
-      { key: "uv_delay_ms", label: "مهلة الانخفاض", unit: "ms", min: 100, max: 30000, step: 100 },
+      { key: "uv_delay_ms", label: t("مهلة الانخفاض"), unit: "ms", min: 100, max: 30000, step: 100 },
       {
         key: "ov_trip_pct",
-        label: "فصل عند ارتفاع الجهد",
-        unit: "% فوق الاسمي",
+        label: t("فصل عند ارتفاع الجهد"),
+        unit: t("% فوق الاسمي"),
         min: 3,
         max: 25,
         step: 0.5,
       },
       {
         key: "ov_recover_pct",
-        label: "الرجوع بعد الارتفاع",
-        unit: "% فوق الاسمي",
+        label: t("الرجوع بعد الارتفاع"),
+        unit: t("% فوق الاسمي"),
         min: 1,
         max: 24,
         step: 0.5,
       },
-      { key: "ov_delay_ms", label: "مهلة الارتفاع", unit: "ms", min: 50, max: 10000, step: 50 },
+      { key: "ov_delay_ms", label: t("مهلة الارتفاع"), unit: "ms", min: 50, max: 10000, step: 50 },
     ],
   },
   {
-    title: "حدود التردد",
-    desc: "نسب من التردد الاسمي.",
+    title: t("حدود التردد"),
+    desc: t("نسب من التردد الاسمي."),
     fields: [
-      { key: "uf_trip_pct", label: "فصل عند انخفاض التردد", unit: "%", min: 1, max: 10, step: 0.5 },
-      { key: "of_trip_pct", label: "فصل عند ارتفاع التردد", unit: "%", min: 1, max: 10, step: 0.5 },
-      { key: "f_recover_pct", label: "نطاق الرجوع", unit: "± %", min: 0.5, max: 9, step: 0.5 },
-      { key: "f_delay_ms", label: "مهلة التردد", unit: "ms", min: 100, max: 30000, step: 100 },
+      {
+        key: "uf_trip_pct",
+        label: t("فصل عند انخفاض التردد"),
+        unit: "%",
+        min: 1,
+        max: 10,
+        step: 0.5,
+      },
+      {
+        key: "of_trip_pct",
+        label: t("فصل عند ارتفاع التردد"),
+        unit: "%",
+        min: 1,
+        max: 10,
+        step: 0.5,
+      },
+      { key: "f_recover_pct", label: t("نطاق الرجوع"), unit: "± %", min: 0.5, max: 9, step: 0.5 },
+      { key: "f_delay_ms", label: t("مهلة التردد"), unit: "ms", min: 100, max: 30000, step: 100 },
     ],
   },
   {
-    title: "مؤقتات التحويل",
-    desc: "تمنع التحويل المتكرر وتضمن تحويلاً آمناً للأحمال ذات المحركات.",
+    title: t("مؤقتات التحويل"),
+    desc: t("تمنع التحويل المتكرر وتضمن تحويلاً آمناً للأحمال ذات المحركات."),
     fields: [
       {
         key: "return_delay_s",
-        label: "مدة الاستقرار قبل العودة",
-        unit: "ث",
+        label: t("مدة الاستقرار قبل العودة"),
+        unit: t("ث"),
         min: 30,
         max: 1800,
-        hint: "يجب أن يبقى المصدر الأعلى أولوية مستقراً طوال هذه المدة قبل العودة إليه.",
+        hint: t("يجب أن يبقى المصدر الأعلى أولوية مستقراً طوال هذه المدة قبل العودة إليه."),
       },
-      { key: "min_dwell_s", label: "أقل مدة بقاء على المصدر", unit: "ث", min: 0, max: 1800 },
+      { key: "min_dwell_s", label: t("أقل مدة بقاء على المصدر"), unit: t("ث"), min: 0, max: 1800 },
       {
         key: "neutral_delay_ms",
-        label: "فترة التوقف بين الفصل والوصل",
+        label: t("فترة التوقف بين الفصل والوصل"),
         unit: "ms",
         min: 500,
         max: 3000,
@@ -102,35 +119,35 @@ export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] 
       },
       {
         key: "transfer_timeout_ms",
-        label: "مهلة اعتبار التحويل فاشلاً",
+        label: t("مهلة اعتبار التحويل فاشلاً"),
         unit: "ms",
         min: 1000,
         max: 30000,
         step: 500,
       },
-      { key: "rate_limit_count", label: "أقصى عدد تحويلات", unit: "تحويل", min: 2, max: 30 },
+      { key: "rate_limit_count", label: t("أقصى عدد تحويلات"), unit: t("تحويل"), min: 2, max: 30 },
       {
         key: "rate_limit_window_min",
-        label: "خلال",
-        unit: "دقيقة",
+        label: t("خلال"),
+        unit: t("دقيقة"),
         min: 1,
         max: 120,
-        hint: "عند تجاوز العدد يُثبَّت النظام على أكثر المصادر استقراراً ويُرفع إنذار.",
+        hint: t("عند تجاوز العدد يُثبَّت النظام على أكثر المصادر استقراراً ويُرفع إنذار."),
       },
     ],
   },
   {
-    title: "الوضع اليدوي",
+    title: t("الوضع اليدوي"),
     desc: "",
     fields: [
       {
         key: "manual_revert_min",
-        label: "العودة تلقائياً للوضع الذكي بعد",
-        unit: "دقيقة",
+        label: t("العودة تلقائياً للوضع الذكي بعد"),
+        unit: t("دقيقة"),
         min: 5,
         max: 1440,
         optional: true,
-        hint: "اتركه فارغاً لإبقاء الوضع اليدوي حتى تغييره يدوياً.",
+        hint: t("اتركه فارغاً لإبقاء الوضع اليدوي حتى تغييره يدوياً."),
       },
     ],
   },
@@ -181,19 +198,19 @@ export function validateSettings(d: EditableSettings): string | null {
     for (const f of g.fields) {
       const v = d[f.key];
       if (v === null) {
-        if (!f.optional) return `«${f.label}» مطلوب.`;
+        if (!f.optional) return t("«{0}» مطلوب.", { 0: f.label });
         continue;
       }
       if (!Number.isFinite(v) || v < f.min || v > f.max)
-        return `«${f.label}» يجب أن يكون بين ${f.min} و${f.max}.`;
+        return t("«{0}» يجب أن يكون بين {1} و{2}.", { 0: f.label, 1: f.min, 2: f.max });
     }
   }
   if (d.uv_recover_pct >= d.uv_trip_pct)
-    return "حد الرجوع بعد الانخفاض يجب أن يكون أقرب للاسمي من حد الفصل.";
+    return t("حد الرجوع بعد الانخفاض يجب أن يكون أقرب للاسمي من حد الفصل.");
   if (d.ov_recover_pct >= d.ov_trip_pct)
-    return "حد الرجوع بعد الارتفاع يجب أن يكون أقرب للاسمي من حد الفصل.";
+    return t("حد الرجوع بعد الارتفاع يجب أن يكون أقرب للاسمي من حد الفصل.");
   if (d.f_recover_pct >= Math.min(d.uf_trip_pct, d.of_trip_pct))
-    return "نطاق رجوع التردد يجب أن يكون أضيق من حدود الفصل.";
-  if (!isValidTimeZone(d.timezone)) return "المنطقة الزمنية غير صحيحة (مثال: Asia/Baghdad).";
+    return t("نطاق رجوع التردد يجب أن يكون أضيق من حدود الفصل.");
+  if (!isValidTimeZone(d.timezone)) return t("المنطقة الزمنية غير صحيحة (مثال: Asia/Baghdad).");
   return validateSchedule(d.solar_schedule);
 }

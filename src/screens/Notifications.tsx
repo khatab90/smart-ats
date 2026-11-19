@@ -30,6 +30,7 @@ import { useDevices, useNow } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
 import { notificationText } from "../domain/notifications";
+import { t } from "../i18n";
 
 const ICON: Record<NotificationType, LucideIcon> = {
   source_outage: ZapOff,
@@ -65,19 +66,19 @@ export function Notifications() {
   return (
     <div className="pb-10">
       <ScreenHeader
-        title="الإشعارات"
-        subtitle={unreadCount ? `${unreadCount} غير مقروءة` : "لا توجد إشعارات جديدة"}
+        title={t("الإشعارات")}
+        subtitle={unreadCount ? t("{0} غير مقروءة", { 0: unreadCount }) : t("لا توجد إشعارات جديدة")}
         onBack={back}
         right={
           <div className="flex gap-2">
             <IconButton
               icon={CheckCheck}
-              label="تحديد الكل كمقروء"
+              label={t("تحديد الكل كمقروء")}
               onClick={() => void markAllRead()}
             />
             <IconButton
               icon={Settings2}
-              label="إعدادات الإشعارات"
+              label={t("إعدادات الإشعارات")}
               onClick={() => setSettings(true)}
             />
           </div>
@@ -88,7 +89,7 @@ export function Notifications() {
           value={filter}
           onChange={setFilter}
           options={[
-            { value: "all", label: "الكل", count: items.length },
+            { value: "all", label: t("الكل"), count: items.length },
             ...NOTIF_ORDER.map((t) => ({
               value: t,
               label: NOTIF_META[t].label,
@@ -105,13 +106,15 @@ export function Notifications() {
         ) : list.length === 0 ? (
           <EmptyState
             icon={BellOff}
-            title="لا توجد إشعارات"
-            body="تصل الإشعارات هنا عند حدوث انقطاع أو تحويل أو خلل كهربائي أو فقدان الاتصال بالبورد."
+            title={t("لا توجد إشعارات")}
+            body={t(
+              "تصل الإشعارات هنا عند حدوث انقطاع أو تحويل أو خلل كهربائي أو فقدان الاتصال بالبورد.",
+            )}
           />
         ) : (
           [
-            { title: "اليوم", items: today },
-            { title: "سابقاً", items: earlier },
+            { title: t("اليوم"), items: today },
+            { title: t("سابقاً"), items: earlier },
           ].map(
             (g) =>
               g.items.length > 0 && (
@@ -171,7 +174,7 @@ export function Notifications() {
                           </button>
                           <button
                             type="button"
-                            aria-label="حذف الإشعار"
+                            aria-label={t("حذف الإشعار")}
                             onClick={() => void remove(n.id)}
                             className="rounded-lg p-2 text-faint transition hover:bg-danger-soft hover:text-danger"
                           >
@@ -194,20 +197,20 @@ export function Notifications() {
 export function NotificationSettings({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { prefs, savePrefs } = useNotifications();
   return (
-    <Sheet open={open} onClose={onClose} title="إعدادات الإشعارات">
+    <Sheet open={open} onClose={onClose} title={t("إعدادات الإشعارات")}>
       <div className="divide-y divide-line rounded-2xl border border-line">
-        {NOTIF_ORDER.map((t) => {
-          const meta = NOTIF_META[t];
-          const key = t as keyof NotificationPrefs;
+        {NOTIF_ORDER.map((type) => {
+          const meta = NOTIF_META[type];
+          const key = type as keyof NotificationPrefs;
           return (
-            <div key={t} className="flex items-center gap-3 p-3.5">
+            <div key={type} className="flex items-center gap-3 p-3.5">
               <div className="flex-1">
                 <p className="text-[13px] font-semibold text-ink">{meta.label}</p>
                 <p className="text-[11px] leading-5 text-muted">{meta.desc}</p>
                 {meta.critical && !prefs[key] && (
                   <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-danger-strong">
-                    <TriangleAlert className="size-3" /> إنذار حرج موقوف: لن تعرف بانقطاع الكهرباء
-                    أو فشل التحويل.
+                    <TriangleAlert className="size-3" />{" "}
+                    {t("إنذار حرج موقوف: لن تعرف بانقطاع الكهرباء أو فشل التحويل.")}
                   </p>
                 )}
               </div>
@@ -221,21 +224,22 @@ export function NotificationSettings({ open, onClose }: { open: boolean; onClose
         })}
         <div className="flex items-center gap-3 p-3.5">
           <div className="flex-1">
-            <p className="text-[13px] font-semibold text-ink">صوت التنبيه</p>
+            <p className="text-[13px] font-semibold text-ink">{t("صوت التنبيه")}</p>
             <p className="text-[11px] text-muted">
-              صوت مع كل إشعار جديد. الإنذارات الحرجة تصدر صوتاً دائماً.
+              {t("صوت مع كل إشعار جديد. الإنذارات الحرجة تصدر صوتاً دائماً.")}
             </p>
           </div>
           <Toggle
             checked={prefs.sound}
             onChange={(v) => void savePrefs({ sound: v })}
-            label="صوت التنبيه"
+            label={t("صوت التنبيه")}
           />
         </div>
       </div>
       <p className="mt-3 text-[11px] leading-5 text-muted">
-        «انقطاع المصدر الحالي» و«فشل عملية التحويل» إنذاران حرجان، ويُنصح بإبقائهما مفعّلين. إيقاف أي
-        نوع يوقف التنبيه فقط، ويبقى الحدث مسجلاً في سجل أحداث الجهاز.
+        {t(
+          "«انقطاع المصدر الحالي» و«فشل عملية التحويل» إنذاران حرجان، ويُنصح بإبقائهما مفعّلين. إيقاف أي نوع يوقف التنبيه فقط، ويبقى الحدث مسجلاً في سجل أحداث الجهاز.",
+        )}
       </p>
     </Sheet>
   );

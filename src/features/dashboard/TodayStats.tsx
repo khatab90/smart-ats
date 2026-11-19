@@ -3,6 +3,7 @@ import { useEnergy, useEvents } from "../../hooks/data";
 import { fmtNum } from "../../lib/format";
 import { startOfDayInTz } from "../../lib/tz";
 import { useActiveDevice, useNow } from "../../store/devices";
+import { t } from "../../i18n";
 
 export function TodayStats() {
   const { device, settings, serverNow, link } = useActiveDevice();
@@ -20,8 +21,12 @@ export function TodayStats() {
     <div className="grid grid-cols-2 gap-3">
       <Card className="p-3.5">
         <p className="flex items-center justify-between text-[11px] text-muted">
-          استهلاك اليوم
-          <InfoHint text="مجموع الطاقة المسجلة بعدادات البورد لكل المصادر منذ منتصف الليل بتوقيت الجهاز." />
+          {t("استهلاك اليوم")}
+          <InfoHint
+            text={t(
+              "مجموع الطاقة المسجلة بعدادات البورد لكل المصادر منذ منتصف الليل بتوقيت الجهاز.",
+            )}
+          />
         </p>
         {loading ? (
           <Skeleton className="mt-2 h-7 w-20" />
@@ -33,21 +38,25 @@ export function TodayStats() {
         )}
         {!loading && !hasEnergy && (
           <p className="text-[11px] text-faint">
-            {link === "never" ? "لا توجد بيانات" : "لا يوجد استهلاك مسجل"}
+            {link === "never" ? t("لا توجد بيانات") : t("لا يوجد استهلاك مسجل")}
           </p>
         )}
       </Card>
       <Card className="p-3.5">
         <p className="flex items-center justify-between text-[11px] text-muted">
-          تحويلات اليوم
-          <InfoHint text="عدد عمليات التحويل الناجحة منذ منتصف الليل. المحاولات الفاشلة لا تُحتسب وتظهر في السجل." />
+          {t("تحويلات اليوم")}
+          <InfoHint
+            text={t(
+              "عدد عمليات التحويل الناجحة منذ منتصف الليل. المحاولات الفاشلة لا تُحتسب وتظهر في السجل.",
+            )}
+          />
         </p>
         {loading ? (
           <Skeleton className="mt-2 h-7 w-12" />
         ) : (
           <p className="num mt-1 text-[22px] leading-tight font-bold text-ink">
             {transfers.data.length}{" "}
-            <span className="text-[11px] font-medium text-muted">عملية</span>
+            <span className="text-[11px] font-medium text-muted">{t("عملية")}</span>
           </p>
         )}
       </Card>

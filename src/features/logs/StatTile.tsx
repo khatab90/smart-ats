@@ -1,5 +1,6 @@
 import { Card, InfoHint, Skeleton } from "../../components/ui";
 import { cn } from "../../lib/cn";
+import { uiStart } from "../../i18n";
 
 export const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
@@ -29,7 +30,7 @@ export function StatTile({
             tone === "danger" ? "text-danger" : "text-ink",
           )}
           dir="ltr"
-          style={{ textAlign: "right" }}
+          style={{ textAlign: uiStart() }}
         >
           {value}
         </p>

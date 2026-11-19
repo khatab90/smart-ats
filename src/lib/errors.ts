@@ -1,57 +1,60 @@
+import { t } from "../i18n";
 /** Maps Supabase / RPC errors to clear Arabic messages. */
 const CODES: Record<string, string> = {
-  DEVICE_NOT_FOUND: "لا يوجد جهاز بهذا المعرّف. تأكد من Device ID المطبوع على البورد.",
-  INVALID_PIN: "رمز PIN غير صحيح.",
-  TOO_MANY_ATTEMPTS: "محاولات خاطئة كثيرة. أعد المحاولة بعد 15 دقيقة.",
-  CLAIMED_BY_OTHER: "هذا الجهاز مسجّل لحساب آخر. يجب على مالكه الحالي إزالته أولاً.",
-  ALREADY_YOURS: "هذا الجهاز مضاف إلى حسابك بالفعل.",
-  ENVIRONMENT_MISMATCH: "هذا الجهاز مخصص لبيئة الاختبار ولا يمكن إضافته في نسخة التشغيل.",
-  NAME_REQUIRED: "أدخل اسماً للجهاز.",
-  NOT_ADMIN: "هذه العملية متاحة للمسؤول فقط.",
-  NOT_OWNER: "هذه العملية متاحة لمالك الجهاز فقط.",
-  DEVICE_OFFLINE: "البورد غير متصل حالياً، لا يمكن إرسال الأوامر.",
-  INVALID_PAYLOAD: "بيانات الأمر غير صالحة.",
-  CANNOT_CHANGE_OWNER: "لا يمكن تغيير صلاحية مالك الجهاز.",
-  CANNOT_REMOVE_OWNER: "لا يمكن إزالة مالك الجهاز.",
-  OWNER_CANNOT_LEAVE: "المالك لا يستطيع المغادرة. انقل الملكية أولاً أو أزل الجهاز.",
-  TARGET_NOT_ADMIN: "يجب أن يكون المستخدم مسؤولاً قبل نقل الملكية إليه.",
-  MEMBER_NOT_FOUND: "المستخدم غير موجود في قائمة هذا الجهاز.",
-  ALREADY_MEMBER: "هذا المستخدم لديه وصول إلى الجهاز بالفعل.",
-  INVALID_EMAIL: "صيغة البريد الإلكتروني غير صحيحة.",
-  INVITATION_INVALID: "رابط الدعوة غير صالح.",
-  INVITATION_CLOSED: "هذه الدعوة استُخدمت أو أُلغيت.",
-  INVITATION_EXPIRED: "انتهت صلاحية الدعوة. اطلب من المسؤول إعادة إرسالها.",
-  INVITATION_EMAIL_MISMATCH: "هذه الدعوة مرسلة إلى بريد إلكتروني آخر. سجّل الدخول بالبريد المدعو.",
-  NOT_AUTHENTICATED: "يجب تسجيل الدخول أولاً.",
-  NOT_MEMBER: "لا تملك وصولاً إلى هذا الجهاز.",
-  INVALID_COMMAND: "هذا الأمر غير مدعوم.",
-  COMMAND_ID_CONFLICT: "تعارض في معرّف الأمر. أعد المحاولة.",
+  DEVICE_NOT_FOUND: t("لا يوجد جهاز بهذا المعرّف. تأكد من Device ID المطبوع على البورد."),
+  INVALID_PIN: t("رمز PIN غير صحيح."),
+  TOO_MANY_ATTEMPTS: t("محاولات خاطئة كثيرة. أعد المحاولة بعد 15 دقيقة."),
+  CLAIMED_BY_OTHER: t("هذا الجهاز مسجّل لحساب آخر. يجب على مالكه الحالي إزالته أولاً."),
+  ALREADY_YOURS: t("هذا الجهاز مضاف إلى حسابك بالفعل."),
+  ENVIRONMENT_MISMATCH: t("هذا الجهاز مخصص لبيئة الاختبار ولا يمكن إضافته في نسخة التشغيل."),
+  NAME_REQUIRED: t("أدخل اسماً للجهاز."),
+  NOT_ADMIN: t("هذه العملية متاحة للمسؤول فقط."),
+  NOT_OWNER: t("هذه العملية متاحة لمالك الجهاز فقط."),
+  DEVICE_OFFLINE: t("البورد غير متصل حالياً، لا يمكن إرسال الأوامر."),
+  INVALID_PAYLOAD: t("بيانات الأمر غير صالحة."),
+  CANNOT_CHANGE_OWNER: t("لا يمكن تغيير صلاحية مالك الجهاز."),
+  CANNOT_REMOVE_OWNER: t("لا يمكن إزالة مالك الجهاز."),
+  OWNER_CANNOT_LEAVE: t("المالك لا يستطيع المغادرة. انقل الملكية أولاً أو أزل الجهاز."),
+  TARGET_NOT_ADMIN: t("يجب أن يكون المستخدم مسؤولاً قبل نقل الملكية إليه."),
+  MEMBER_NOT_FOUND: t("المستخدم غير موجود في قائمة هذا الجهاز."),
+  ALREADY_MEMBER: t("هذا المستخدم لديه وصول إلى الجهاز بالفعل."),
+  INVALID_EMAIL: t("صيغة البريد الإلكتروني غير صحيحة."),
+  INVITATION_INVALID: t("رابط الدعوة غير صالح."),
+  INVITATION_CLOSED: t("هذه الدعوة استُخدمت أو أُلغيت."),
+  INVITATION_EXPIRED: t("انتهت صلاحية الدعوة. اطلب من المسؤول إعادة إرسالها."),
+  INVITATION_EMAIL_MISMATCH: t(
+    "هذه الدعوة مرسلة إلى بريد إلكتروني آخر. سجّل الدخول بالبريد المدعو.",
+  ),
+  NOT_AUTHENTICATED: t("يجب تسجيل الدخول أولاً."),
+  NOT_MEMBER: t("لا تملك وصولاً إلى هذا الجهاز."),
+  INVALID_COMMAND: t("هذا الأمر غير مدعوم."),
+  COMMAND_ID_CONFLICT: t("تعارض في معرّف الأمر. أعد المحاولة."),
 };
 
 const AUTH: [RegExp, string][] = [
-  [/invalid login credentials/i, "البريد الإلكتروني أو كلمة المرور غير صحيحة."],
-  [/email not confirmed/i, "لم يتم تأكيد البريد الإلكتروني بعد. افتح رابط التأكيد المرسل إليك."],
-  [/user already registered/i, "يوجد حساب مسجّل بهذا البريد الإلكتروني."],
-  [/password should be at least/i, "كلمة المرور قصيرة جداً."],
+  [/invalid login credentials/i, t("البريد الإلكتروني أو كلمة المرور غير صحيحة.")],
+  [/email not confirmed/i, t("لم يتم تأكيد البريد الإلكتروني بعد. افتح رابط التأكيد المرسل إليك.")],
+  [/user already registered/i, t("يوجد حساب مسجّل بهذا البريد الإلكتروني.")],
+  [/password should be at least/i, t("كلمة المرور قصيرة جداً.")],
   [
     /rate limit|too many requests|security purposes/i,
-    "طلبات كثيرة خلال وقت قصير. انتظر قليلاً ثم أعد المحاولة.",
+    t("طلبات كثيرة خلال وقت قصير. انتظر قليلاً ثم أعد المحاولة."),
   ],
   [
     /phone.*(disabled|provider)|unsupported phone provider|sms/i,
-    "التحقق من رقم الهاتف عبر SMS غير مفعّل في الخادم بعد.",
+    t("التحقق من رقم الهاتف عبر SMS غير مفعّل في الخادم بعد."),
   ],
-  [/token has expired|otp.*(expired|invalid)|invalid.*otp/i, "الرمز غير صحيح أو انتهت صلاحيته."],
-  [/same.*password|different from the old/i, "كلمة المرور الجديدة يجب أن تختلف عن الحالية."],
-  [/check constraint/i, "إحدى القيم خارج النطاق المسموح."],
-  [/permission denied|row-level security/i, "لا تملك صلاحية تنفيذ هذه العملية."],
+  [/token has expired|otp.*(expired|invalid)|invalid.*otp/i, t("الرمز غير صحيح أو انتهت صلاحيته.")],
+  [/same.*password|different from the old/i, t("كلمة المرور الجديدة يجب أن تختلف عن الحالية.")],
+  [/check constraint/i, t("إحدى القيم خارج النطاق المسموح.")],
+  [/permission denied|row-level security/i, t("لا تملك صلاحية تنفيذ هذه العملية.")],
   [
     /failed to fetch|network|load failed|fetch failed/i,
-    "تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم أعد المحاولة.",
+    t("تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت ثم أعد المحاولة."),
   ],
   [
     /relation .* does not exist|could not find the (function|table)|schema cache/i,
-    "قاعدة البيانات غير مهيأة بعد. شغّل ملف الترحيل في Supabase.",
+    t("قاعدة البيانات غير مهيأة بعد. شغّل ملف الترحيل في Supabase."),
   ],
 ];
 
@@ -66,7 +69,7 @@ export function errorMessage(err: unknown): string {
     if (msg.includes(code)) return CODES[code];
   }
   for (const [re, text] of AUTH) if (re.test(msg)) return text;
-  return msg ? `حدث خطأ غير متوقع: ${msg}` : "حدث خطأ غير متوقع.";
+  return msg ? t("حدث خطأ غير متوقع: {0}", { 0: msg }) : t("حدث خطأ غير متوقع.");
 }
 
 export function isSchemaMissing(err: unknown) {

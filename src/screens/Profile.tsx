@@ -9,6 +9,7 @@ import { EmailCard } from "../features/profile/EmailCard";
 import { NameCard } from "../features/profile/NameCard";
 import { PasswordCard } from "../features/profile/PasswordCard";
 import { PhoneCard } from "../features/profile/PhoneCard";
+import { t } from "../i18n";
 
 export function Profile() {
   const { user, profile, refreshProfile, signOut } = useAuth();
@@ -21,13 +22,15 @@ export function Profile() {
 
   return (
     <div className="pb-10">
-      <ScreenHeader title="الملف الشخصي" onBack={back} />
+      <ScreenHeader title={t("الملف الشخصي")} onBack={back} />
       <div className="space-y-4 px-5">
         <div className="flex flex-col items-center py-2">
           <span className="flex size-20 items-center justify-center rounded-[28px] bg-brand-800 text-3xl font-bold text-white shadow-[0_12px_28px_-12px_rgba(15,45,87,0.8)]">
             {initialOf(profile?.full_name, user?.email)}
           </span>
-          <p className="mt-3 text-[17px] font-bold text-ink">{profile?.full_name || "بدون اسم"}</p>
+          <p className="mt-3 text-[17px] font-bold text-ink">
+            {profile?.full_name || t("بدون اسم")}
+          </p>
           <p className="text-[12px] text-muted" dir="ltr">
             {user?.email}
           </p>
@@ -36,16 +39,17 @@ export function Profile() {
           initial={profile?.full_name ?? ""}
           onSaved={async () => {
             await refreshProfile();
-            pushToast({ kind: "success", title: "تم حفظ الاسم" });
+            pushToast({ kind: "success", title: t("تم حفظ الاسم") });
           }}
         />
         {hasGoogle && (
           <Card className="flex items-start gap-3 p-4">
             <ShieldCheck className="mt-0.5 size-5 shrink-0 text-ok" />
             <p className="text-[12px] leading-6 text-ink-2">
-              تسجّل الدخول بحساب Google
-              {hasPassword ? " وبكلمة مرور أيضاً." : "."} الأمان واستعادة الدخول يديرهما حساب Google
-              {hasPassword ? " عند الدخول به." : "، فلا توجد كلمة مرور خاصة بالتطبيق."}
+              {t("تسجّل الدخول بحساب Google")}
+              {hasPassword ? t(" وبكلمة مرور أيضاً.") : "."}{" "}
+              {t("الأمان واستعادة الدخول يديرهما حساب Google")}
+              {hasPassword ? t(" عند الدخول به.") : t("، فلا توجد كلمة مرور خاصة بالتطبيق.")}
             </p>
           </Card>
         )}
@@ -53,7 +57,7 @@ export function Profile() {
         <PhoneCard onVerified={refreshProfile} />
         {hasPassword && <PasswordCard />}
         <Button variant="danger" full icon={LogOut} onClick={() => void signOut()}>
-          تسجيل الخروج
+          {t("تسجيل الخروج")}
         </Button>
       </div>
     </div>

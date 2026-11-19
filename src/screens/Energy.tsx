@@ -17,6 +17,7 @@ import { cn } from "../lib/cn";
 import { fmtDate, fmtNum, fmtShortDay } from "../lib/format";
 import { addDaysInTz, dayOfMonthInTz, startOfDayInTz } from "../lib/tz";
 import { useActiveDevice, useNow } from "../store/devices";
+import { t } from "../i18n";
 
 type Range = "day" | "week" | "month";
 type Split = Record<SourceId, number>;
@@ -39,7 +40,7 @@ function buildBuckets(range: Range, nowMs: number, tz: string): Bucket[] {
       return {
         key: `h${h}`,
         label: String(h),
-        title: `الساعة ${h}:00 – ${h + 1}:00`,
+        title: t("الساعة {0}:00 – {1}:00", { 0: h, 1: h + 1 }),
         from,
         to: from + 3_600_000,
       };
@@ -104,8 +105,8 @@ export function Energy() {
       <div className="px-5 pt-16">
         <EmptyState
           icon={ChartColumn}
-          title="لا يوجد جهاز"
-          body="أضف جهازاً لعرض إحصائيات الاستهلاك."
+          title={t("لا يوجد جهاز")}
+          body={t("أضف جهازاً لعرض إحصائيات الاستهلاك.")}
         />
       </div>
     );
@@ -114,8 +115,10 @@ export function Energy() {
   return (
     <div className="space-y-4 px-5 pt-4 pb-32">
       <div>
-        <h1 className="text-[22px] font-bold tracking-tight text-ink">الطاقة</h1>
-        <p className="text-[13px] text-muted">إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر</p>
+        <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("الطاقة")}</h1>
+        <p className="text-[13px] text-muted">
+          {t("إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر")}
+        </p>
       </div>
 
       <Segmented
@@ -125,9 +128,9 @@ export function Energy() {
           setSelected(undefined);
         }}
         options={[
-          { value: "day", label: "اليوم" },
-          { value: "week", label: "الأسبوع" },
-          { value: "month", label: "الشهر" },
+          { value: "day", label: t("اليوم") },
+          { value: "week", label: t("الأسبوع") },
+          { value: "month", label: t("الشهر") },
         ]}
       />
 
@@ -142,16 +145,20 @@ export function Energy() {
         <Card className="pt-2">
           <EmptyState
             icon={ChartColumn}
-            title="لا توجد بيانات حالياً"
-            body="تظهر الإحصائيات بعد أن يرسل البورد عدادات الطاقة لكل مصدر خلال هذه الفترة."
+            title={t("لا توجد بيانات حالياً")}
+            body={t("تظهر الإحصائيات بعد أن يرسل البورد عدادات الطاقة لكل مصدر خلال هذه الفترة.")}
           />
         </Card>
       ) : (
         <>
           <Card className="p-4">
             <p className="flex items-center justify-between text-[12px] text-muted">
-              إجمالي الاستهلاك
-              <InfoHint text="مجموع عدادات الطاقة المرسلة من البورد لكل المصادر، مجمّعة كل ساعة على الخادم وبتوقيت الجهاز." />
+              {t("إجمالي الاستهلاك")}
+              <InfoHint
+                text={t(
+                  "مجموع عدادات الطاقة المرسلة من البورد لكل المصادر، مجمّعة كل ساعة على الخادم وبتوقيت الجهاز.",
+                )}
+              />
             </p>
             <p className="num mt-1 text-[28px] leading-tight font-bold text-ink">
               {fmtNum(kwh, 1)} <span className="text-[13px] font-medium text-muted">kWh</span>
@@ -170,13 +177,15 @@ export function Energy() {
                 )}
                 <span className="num">{fmtNum(Math.abs(trend), 0)}%</span>
                 {range === "day"
-                  ? "مقارنة بنفس الفترة أمس"
+                  ? t("مقارنة بنفس الفترة أمس")
                   : range === "week"
-                    ? "مقارنة بالأسبوع السابق"
-                    : "مقارنة بالثلاثين يوماً السابقة"}
+                    ? t("مقارنة بالأسبوع السابق")
+                    : t("مقارنة بالثلاثين يوماً السابقة")}
               </p>
             ) : (
-              <p className="mt-1 text-[12px] text-muted">لا توجد بيانات للفترة السابقة للمقارنة</p>
+              <p className="mt-1 text-[12px] text-muted">
+                {t("لا توجد بيانات للفترة السابقة للمقارنة")}
+              </p>
             )}
           </Card>
 
@@ -184,7 +193,7 @@ export function Energy() {
             <div className="mb-4 flex items-start justify-between gap-3">
               <div>
                 <p className="text-[15px] font-bold text-ink">
-                  الاستهلاك حسب {range === "day" ? "الساعة" : "اليوم"}
+                  {t("الاستهلاك حسب")} {range === "day" ? t("الساعة") : t("اليوم")}
                 </p>
                 {sel !== undefined ? (
                   <p className="text-[12px] text-muted">
@@ -194,7 +203,7 @@ export function Energy() {
                     </span>
                   </p>
                 ) : (
-                  <p className="text-[12px] text-muted">اضغط على عمود لعرض التفاصيل (kWh)</p>
+                  <p className="text-[12px] text-muted">{t("اضغط على عمود لعرض التفاصيل (kWh)")}</p>
                 )}
               </div>
               {sel !== undefined && (
@@ -203,7 +212,7 @@ export function Energy() {
                   onClick={() => setSelected(undefined)}
                   className="text-[12px] font-semibold text-brand-600"
                 >
-                  مسح
+                  {t("مسح")}
                 </button>
               )}
             </div>
@@ -250,7 +259,7 @@ export function Energy() {
           </Card>
 
           <Card className="p-4">
-            <SectionTitle title="توزيع الاستهلاك على المصادر" className="mb-4" />
+            <SectionTitle title={t("توزيع الاستهلاك على المصادر")} className="mb-4" />
             <div className="flex items-center gap-5">
               <Donut
                 segments={SOURCE_ORDER.map((id) => ({

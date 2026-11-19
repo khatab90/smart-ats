@@ -5,6 +5,7 @@ import * as authApi from "../../api/auth";
 import { type View } from "./AuthFlow";
 import { GoogleSignIn } from "./GoogleButton";
 import { FormError } from "./shared";
+import { t } from "../../i18n";
 
 export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
     setError("");
     setUnconfirmed(false);
     const em = email.trim().toLowerCase();
-    if (!em || !password) return setError("أدخل البريد الإلكتروني وكلمة المرور");
+    if (!em || !password) return setError(t("أدخل البريد الإلكتروني وكلمة المرور"));
     setLoading(true);
     const r = await authApi.signIn(em, password);
     setLoading(false);
@@ -38,18 +39,18 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
   return (
     <form onSubmit={submit} className="space-y-4" noValidate>
       <div className="mb-1">
-        <h2 className="text-[22px] font-bold text-ink">تسجيل الدخول</h2>
-        <p className="mt-1 text-[13px] text-muted">سجّل الدخول لمتابعة أجهزتك.</p>
+        <h2 className="text-[22px] font-bold text-ink">{t("تسجيل الدخول")}</h2>
+        <p className="mt-1 text-[13px] text-muted">{t("سجّل الدخول لمتابعة أجهزتك.")}</p>
       </div>
       <GoogleSignIn />
       <FormError msg={error} />
       {unconfirmed && (
         <Button variant="secondary" full onClick={resend} disabled={resent}>
-          {resent ? "تم إرسال رابط التأكيد مجدداً" : "إعادة إرسال رابط التأكيد"}
+          {resent ? t("تم إرسال رابط التأكيد مجدداً") : t("إعادة إرسال رابط التأكيد")}
         </Button>
       )}
       <Field
-        label="البريد الإلكتروني"
+        label={t("البريد الإلكتروني")}
         icon={Mail}
         type="email"
         ltr
@@ -60,7 +61,7 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
       />
       <div>
         <Field
-          label="كلمة المرور"
+          label={t("كلمة المرور")}
           icon={Lock}
           type="password"
           ltr
@@ -74,20 +75,20 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
           onClick={() => onNavigate("forgot")}
           className="mt-2 text-[13px] font-semibold text-brand-600 hover:text-brand-700"
         >
-          نسيت كلمة المرور؟
+          {t("نسيت كلمة المرور؟")}
         </button>
       </div>
       <Button type="submit" size="lg" full loading={loading}>
-        تسجيل الدخول
+        {t("تسجيل الدخول")}
       </Button>
       <p className="pt-2 text-center text-[13px] text-muted">
-        ليس لديك حساب؟{" "}
+        {t("ليس لديك حساب؟")}{" "}
         <button
           type="button"
           onClick={() => onNavigate("signup")}
           className="font-bold text-brand-700"
         >
-          إنشاء حساب جديد
+          {t("إنشاء حساب جديد")}
         </button>
       </p>
     </form>

@@ -13,6 +13,7 @@ import * as api from "../api/notifications";
 import { notificationText } from "../domain/notifications";
 import { useAuth } from "./auth";
 import { useToast } from "./toast";
+import { t } from "../i18n";
 
 const DEFAULT_PREFS: NotificationPrefs = {
   source_outage: true,
@@ -104,7 +105,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       const next = { ...prefsRef.current, ...patch };
       const { error: err } = await api.savePreferences(uid, next);
       if (err !== null) {
-        pushToast({ kind: "error", title: "تعذر حفظ الإعدادات", body: err });
+        pushToast({ kind: "error", title: t("تعذر حفظ الإعدادات"), body: err });
         return;
       }
       setPrefs(next);
@@ -123,14 +124,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     if (!uid) return;
     const at = new Date().toISOString();
     const { error: err } = await api.markAllRead(uid, at);
-    if (err !== null) pushToast({ kind: "error", title: "تعذر تحديث الإشعارات", body: err });
+    if (err !== null) pushToast({ kind: "error", title: t("تعذر تحديث الإشعارات"), body: err });
     else setItems((p) => p.map((n) => ({ ...n, read_at: n.read_at ?? at })));
   }, [uid, pushToast]);
 
   const remove = useCallback(
     async (id: number) => {
       const { error: err } = await api.deleteNotification(id);
-      if (err !== null) pushToast({ kind: "error", title: "تعذر حذف الإشعار", body: err });
+      if (err !== null) pushToast({ kind: "error", title: t("تعذر حذف الإشعار"), body: err });
       else setItems((p) => p.filter((n) => n.id !== id));
     },
     [pushToast],

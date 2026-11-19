@@ -36,6 +36,7 @@ import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useToast } from "../store/toast";
 import { InviteSheet, ROLES, RoleOption } from "../features/users/InviteSheet";
+import { t, uiStart } from "../i18n";
 
 export type Pending =
   | { kind: "role"; member: MemberRow; role: Role }
@@ -63,7 +64,8 @@ export function Users() {
     setBusy(false);
     setPending(null);
     setSelected(null);
-    if (err !== null) return pushToast({ kind: "error", title: "تعذر تنفيذ العملية", body: err });
+    if (err !== null)
+      return pushToast({ kind: "error", title: t("تعذر تنفيذ العملية"), body: err });
     pushToast({ kind: "success", title: success });
     await Promise.all([reload(), refresh()]);
   };
@@ -73,41 +75,45 @@ export function Users() {
     if (pending.kind === "role")
       return run(
         () => membersApi.setRole(device.id, pending.member.user_id, pending.role),
-        "تم تغيير الصلاحية",
+        t("تم تغيير الصلاحية"),
       );
     if (pending.kind === "remove")
       return run(
         () => membersApi.removeMember(device.id, pending.member.user_id),
-        "تمت إزالة المستخدم",
+        t("تمت إزالة المستخدم"),
       );
     if (pending.kind === "owner")
       return run(
         () => membersApi.transferOwnership(device.id, pending.member.user_id),
-        "تم نقل الملكية",
+        t("تم نقل الملكية"),
       );
-    if (pending.kind === "leave") return run(() => leaveDevice(device.id), "غادرت الجهاز");
-    return run(() => membersApi.revokeInvitation(pending.invitation.id), "تم إلغاء الدعوة");
+    if (pending.kind === "leave") return run(() => leaveDevice(device.id), t("غادرت الجهاز"));
+    return run(() => membersApi.revokeInvitation(pending.invitation.id), t("تم إلغاء الدعوة"));
   };
 
   const resend = async (inv: InvitationRow) => {
     const { data: res, error: err } = await membersApi.resendInvitation(inv.id);
-    if (err !== null) return pushToast({ kind: "error", title: "تعذر إعادة الإرسال", body: err });
+    if (err !== null) return pushToast({ kind: "error", title: t("تعذر إعادة الإرسال"), body: err });
     const mail = await membersApi.sendInvitationEmail(res.email, res.token);
     if (mail.error !== null)
       return pushToast({
         kind: "error",
-        title: "تم تجديد الدعوة لكن تعذر إرسال البريد",
+        title: t("تم تجديد الدعوة لكن تعذر إرسال البريد"),
         body: mail.error,
       });
-    pushToast({ kind: "success", title: "أُعيد إرسال الدعوة", body: res.email });
+    pushToast({ kind: "success", title: t("أُعيد إرسال الدعوة"), body: res.email });
     await reload();
   };
 
   if (!device) {
     return (
       <div className="pb-10">
-        <ScreenHeader title="المستخدمون والصلاحيات" onBack={back} />
-        <EmptyState icon={UsersIcon} title="لا يوجد جهاز" body="أضف جهازاً أولاً لإدارة المستخدمين." />
+        <ScreenHeader title={t("المستخدمون والصلاحيات")} onBack={back} />
+        <EmptyState
+          icon={UsersIcon}
+          title={t("لا يوجد جهاز")}
+          body={t("أضف جهازاً أولاً لإدارة المستخدمين.")}
+        />
       </div>
     );
   }
@@ -115,18 +121,18 @@ export function Users() {
   return (
     <div className="pb-10">
       <ScreenHeader
-        title="المستخدمون والصلاحيات"
-        subtitle={`الوصول إلى «${device.name || device.id}»`}
+        title={t("المستخدمون والصلاحيات")}
+        subtitle={t("الوصول إلى «{0}»", { 0: device.name || device.id })}
         onBack={back}
       />
       <div className="space-y-4 px-5">
         {isAdmin ? (
           <Button full icon={UserPlus} onClick={() => setInviteOpen(true)}>
-            دعوة مستخدم
+            {t("دعوة مستخدم")}
           </Button>
         ) : (
           <p className="rounded-2xl bg-canvas px-4 py-3 text-[12px] text-muted">
-            صلاحيتك «مشاهد»: يمكنك عرض القائمة فقط.
+            {t("صلاحيتك «مشاهد»: يمكنك عرض القائمة فقط.")}
           </p>
         )}
 
@@ -138,7 +144,7 @@ export function Users() {
             {members.map((m) => {
               const isMe = m.user_id === user?.id;
               const isDeviceOwner = m.user_id === ownerId;
-              const name = m.full_name || m.email || "مستخدم";
+              const name = m.full_name || m.email || t("مستخدم");
               const canManage = isAdmin && !isDeviceOwner && !isMe;
               return (
                 <button
@@ -154,15 +160,15 @@ export function Users() {
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[14px] font-semibold text-ink">{name}</span>
-                      {isMe && <span className="text-[11px] text-muted">(أنت)</span>}
+                      {isMe && <span className="text-[11px] text-muted">{t("(أنت)")}</span>}
                       {isDeviceOwner && (
-                        <Crown className="size-3.5 text-warn" aria-label="المالك" />
+                        <Crown className="size-3.5 text-warn" aria-label={t("المالك")} />
                       )}
                     </span>
                     <span
                       className="block truncate text-[11px] text-muted"
                       dir="ltr"
-                      style={{ textAlign: "right" }}
+                      style={{ textAlign: uiStart() }}
                     >
                       {m.email}
                     </span>
@@ -174,7 +180,7 @@ export function Users() {
                       ROLE_META[m.role].text,
                     )}
                   >
-                    {isDeviceOwner ? "مالك" : ROLE_META[m.role].label}
+                    {isDeviceOwner ? t("مالك") : ROLE_META[m.role].label}
                   </span>
                 </button>
               );
@@ -184,7 +190,7 @@ export function Users() {
 
         {isAdmin && invitations.length > 0 && (
           <div>
-            <SectionTitle title="دعوات بانتظار القبول" />
+            <SectionTitle title={t("دعوات بانتظار القبول")} />
             <Card className="divide-y divide-line">
               {invitations.map((inv) => {
                 const expired = Date.parse(inv.expires_at) < Date.now();
@@ -197,7 +203,7 @@ export function Users() {
                       <p
                         className="truncate text-[13px] font-semibold text-ink"
                         dir="ltr"
-                        style={{ textAlign: "right" }}
+                        style={{ textAlign: uiStart() }}
                       >
                         {inv.email}
                       </p>
@@ -210,13 +216,13 @@ export function Users() {
                         <Clock3 className="size-3" />
                         {ROLE_META[inv.role].label} •{" "}
                         {expired
-                          ? "انتهت الصلاحية"
-                          : `صالحة حتى ${fmtDateTime(Date.parse(inv.expires_at))}`}
+                          ? t("انتهت الصلاحية")
+                          : t("صالحة حتى {0}", { 0: fmtDateTime(Date.parse(inv.expires_at)) })}
                       </p>
                     </div>
                     <button
                       type="button"
-                      aria-label="إعادة إرسال"
+                      aria-label={t("إعادة إرسال")}
                       onClick={() => void resend(inv)}
                       className="rounded-xl p-2 text-brand-600 hover:bg-brand-50"
                     >
@@ -224,7 +230,7 @@ export function Users() {
                     </button>
                     <button
                       type="button"
-                      aria-label="إلغاء الدعوة"
+                      aria-label={t("إلغاء الدعوة")}
                       onClick={() => setPending({ kind: "revoke", invitation: inv })}
                       className="rounded-xl p-2 text-muted hover:bg-danger-soft hover:text-danger"
                     >
@@ -239,10 +245,10 @@ export function Users() {
 
         <Card className="overflow-hidden">
           <div className="p-4 pb-2">
-            <SectionTitle title="الصلاحيات" className="mb-0" />
+            <SectionTitle title={t("الصلاحيات")} className="mb-0" />
           </div>
           <div className="grid grid-cols-[1fr_repeat(2,56px)] items-center px-4 pb-2 text-center text-[11px] font-semibold text-muted">
-            <span className="text-start">الصلاحية</span>
+            <span className="text-start">{t("الصلاحية")}</span>
             {ROLES.map((r) => (
               <span key={r}>{ROLE_META[r].label}</span>
             ))}
@@ -265,7 +271,7 @@ export function Users() {
             ))}
           </div>
           <p className="px-4 py-3 text-[11px] text-muted">
-            الصلاحيات خاصة بهذا الجهاز، وتُفرض في قاعدة البيانات وليس في الواجهة فقط.
+            {t("الصلاحيات خاصة بهذا الجهاز، وتُفرض في قاعدة البيانات وليس في الواجهة فقط.")}
           </p>
         </Card>
       </div>
@@ -277,11 +283,11 @@ export function Users() {
         onSent={reload}
       />
 
-      <Sheet open={!!selected} onClose={() => setSelected(null)} title="إدارة المستخدم">
+      <Sheet open={!!selected} onClose={() => setSelected(null)} title={t("إدارة المستخدم")}>
         {selected && (
           <div className="space-y-3">
             <p className="text-[13px] text-muted">
-              {selected.full_name || "مستخدم"} • <span dir="ltr">{selected.email}</span>
+              {selected.full_name || t("مستخدم")} • <span dir="ltr">{selected.email}</span>
             </p>
             {isAdmin && selected.user_id !== ownerId && selected.user_id !== user?.id && (
               <>
@@ -302,7 +308,7 @@ export function Users() {
                     icon={Crown}
                     onClick={() => setPending({ kind: "owner", member: selected })}
                   >
-                    نقل الملكية إلى هذا المستخدم
+                    {t("نقل الملكية إلى هذا المستخدم")}
                   </Button>
                 )}
                 <Button
@@ -311,7 +317,7 @@ export function Users() {
                   icon={Trash2}
                   onClick={() => setPending({ kind: "remove", member: selected })}
                 >
-                  إزالة المستخدم
+                  {t("إزالة المستخدم")}
                 </Button>
               </>
             )}
@@ -322,7 +328,7 @@ export function Users() {
                 icon={LogOut}
                 onClick={() => setPending({ kind: "leave" })}
               >
-                مغادرة هذا الجهاز
+                {t("مغادرة هذا الجهاز")}
               </Button>
             )}
           </div>
@@ -338,29 +344,37 @@ export function Users() {
         }
         title={
           pending?.kind === "role"
-            ? "تأكيد تغيير الصلاحية"
+            ? t("تأكيد تغيير الصلاحية")
             : pending?.kind === "owner"
-              ? "تأكيد نقل الملكية"
+              ? t("تأكيد نقل الملكية")
               : pending?.kind === "leave"
-                ? "مغادرة الجهاز"
+                ? t("مغادرة الجهاز")
                 : pending?.kind === "revoke"
-                  ? "إلغاء الدعوة"
-                  : "إزالة المستخدم"
+                  ? t("إلغاء الدعوة")
+                  : t("إزالة المستخدم")
         }
-        confirmLabel="تأكيد"
+        confirmLabel={t("تأكيد")}
         onConfirm={() => void confirmPending()}
       >
         <p className="text-[13px] leading-6 text-ink-2">
           {pending?.kind === "role" &&
-            `سيصبح «${pending.member.full_name || pending.member.email}» ${ROLE_META[pending.role].label}: ${ROLE_META[pending.role].desc}.`}
+            t("سيصبح «{0}» {1}: {2}.", {
+              0: pending.member.full_name || pending.member.email,
+              1: ROLE_META[pending.role].label,
+              2: ROLE_META[pending.role].desc,
+            })}
           {pending?.kind === "remove" &&
-            `سيفقد «${pending.member.full_name || pending.member.email}» الوصول إلى هذا الجهاز فوراً.`}
+            t("سيفقد «{0}» الوصول إلى هذا الجهاز فوراً.", {
+              0: pending.member.full_name || pending.member.email,
+            })}
           {pending?.kind === "owner" &&
-            `سيصبح «${pending.member.full_name || pending.member.email}» مالك الجهاز، وتبقى أنت مسؤولاً يمكنه المالك الجديد إزالته.`}
+            t("سيصبح «{0}» مالك الجهاز، وتبقى أنت مسؤولاً يمكنه المالك الجديد إزالته.", {
+              0: pending.member.full_name || pending.member.email,
+            })}
           {pending?.kind === "leave" &&
-            "ستفقد الوصول إلى هذا الجهاز وإشعاراته. يحتاج المسؤول إلى دعوتك مجدداً للعودة."}
+            t("ستفقد الوصول إلى هذا الجهاز وإشعاراته. يحتاج المسؤول إلى دعوتك مجدداً للعودة.")}
           {pending?.kind === "revoke" &&
-            `لن يعمل رابط الدعوة المرسل إلى ${pending.invitation.email} بعد الآن.`}
+            t("لن يعمل رابط الدعوة المرسل إلى {0} بعد الآن.", { 0: pending.invitation.email })}
         </p>
       </ConfirmSheet>
     </div>

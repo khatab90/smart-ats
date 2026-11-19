@@ -1,7 +1,7 @@
 {
   "name": "smart-ats",
   "private": true,
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Smart ATS — monitoring and control app for a 3-source automatic transfer switch (grid / solar / generator) driven by an ESP32 board.",
   "type": "module",
   "engines": {
@@ -21,7 +21,8 @@
     "db:bundle": "node tools/bundle-migrations.mjs",
     "emulator": "node tools/device-emulator/cli.mjs",
     "emulator:bundle": "node tools/device-emulator/bundle.mjs",
-    "check": "npm run typecheck && npm run lint && npm run test && vite build"
+    "i18n": "node tools/i18n/raw.mjs && node tools/i18n/keys.mjs",
+    "check": "npm run typecheck && npm run lint && npm run i18n && npm run test && vite build"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "^5.2.5",

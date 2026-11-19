@@ -15,10 +15,11 @@ import { initialOf } from "../lib/format";
 import { PendingInvitations } from "../features/dashboard/PendingInvitations";
 import { StatusBanners } from "../features/dashboard/StatusBanners";
 import { TodayStats } from "../features/dashboard/TodayStats";
+import { t, uiStart } from "../i18n";
 
 export function greeting() {
   const h = new Date().getHours();
-  return h >= 5 && h < 12 ? "صباح الخير" : "مساء الخير";
+  return h >= 5 && h < 12 ? t("صباح الخير") : t("مساء الخير");
 }
 
 export function Dashboard() {
@@ -38,11 +39,11 @@ export function Dashboard() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[12px] text-muted">{greeting()}</p>
-          <p className="truncate text-[17px] font-bold text-ink">{firstName || "مرحباً"}</p>
+          <p className="truncate text-[17px] font-bold text-ink">{firstName || t("مرحباً")}</p>
         </div>
         <IconButton
           icon={Bell}
-          label="الإشعارات"
+          label={t("الإشعارات")}
           badge={unreadCount}
           onClick={() => push("notifications")}
         />
@@ -62,11 +63,13 @@ export function Dashboard() {
         <Card className="pt-4">
           <EmptyState
             icon={Router}
-            title="لا يوجد جهاز مرتبط بحسابك"
-            body="أضف بورد Smart ATS باستخدام معرّف الجهاز ورمز PIN، أو اطلب من مسؤول جهاز موجود دعوتك."
+            title={t("لا يوجد جهاز مرتبط بحسابك")}
+            body={t(
+              "أضف بورد Smart ATS باستخدام معرّف الجهاز ورمز PIN، أو اطلب من مسؤول جهاز موجود دعوتك.",
+            )}
             action={
               <Button icon={Plus} onClick={() => push("addDevice")}>
-                إضافة جهاز
+                {t("إضافة جهاز")}
               </Button>
             }
           />
@@ -86,7 +89,7 @@ export function Dashboard() {
               <span
                 className="num block text-[11px] text-muted"
                 dir="ltr"
-                style={{ textAlign: "right" }}
+                style={{ textAlign: uiStart() }}
               >
                 {ad.device?.id}
               </span>

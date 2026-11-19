@@ -9,6 +9,7 @@ import { latestBefore } from "../../lib/timeline";
 import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
 import { useActiveDevice, useNow } from "../../store/devices";
 import { StatTile, num } from "./StatTile";
+import { t, uiStart } from "../../i18n";
 
 export const SWITCH_TYPES = [
   "transfer_completed",
@@ -119,7 +120,7 @@ export function SwitchLog() {
         <div className="flex items-stretch gap-3">
           <div className="min-w-0 flex-1 rounded-2xl bg-ok-soft/60 p-3">
             <p className="text-[11px] font-semibold text-ok-strong">
-              {live ? "المصدر الحالي" : "آخر مصدر معروف"}
+              {live ? t("المصدر الحالي") : t("آخر مصدر معروف")}
             </p>
             {current ? (
               <div className="mt-2 flex items-center gap-2">
@@ -131,7 +132,7 @@ export function SwitchLog() {
                   <p
                     className="num text-[11px] text-muted"
                     dir="ltr"
-                    style={{ textAlign: "right" }}
+                    style={{ textAlign: uiStart() }}
                   >
                     {live && activeSince ? fmtClock(serverNow() - activeSince) : "—"}
                   </p>
@@ -139,15 +140,15 @@ export function SwitchLog() {
               </div>
             ) : (
               <p className="mt-2 text-[13px] font-bold text-ink">
-                {live && status?.system_state === "no_source" ? "لا يوجد مصدر" : "—"}
+                {live && status?.system_state === "no_source" ? t("لا يوجد مصدر") : "—"}
               </p>
             )}
           </div>
           <div className="flex items-center text-faint">
-            <ArrowLeft className="size-4 rotate-180" />
+            <ArrowLeft className="size-4 rtl:rotate-180" />
           </div>
           <div className="min-w-0 flex-1 rounded-2xl bg-canvas p-3">
-            <p className="text-[11px] font-semibold text-muted">المصدر السابق</p>
+            <p className="text-[11px] font-semibold text-muted">{t("المصدر السابق")}</p>
             {last?.from_source ? (
               <div className="mt-2 flex items-center gap-2">
                 <SourceIcon source={last.from_source} size="sm" />
@@ -156,7 +157,7 @@ export function SwitchLog() {
                     {SOURCE_META[last.from_source].short}
                   </p>
                   <p className="text-[11px] text-muted">
-                    {prevRanMs !== null ? `عمل ${fmtDuration(prevRanMs)}` : "—"}
+                    {prevRanMs !== null ? t("عمل {0}", { 0: fmtDuration(prevRanMs) }) : "—"}
                   </p>
                 </div>
               </div>
@@ -168,7 +169,7 @@ export function SwitchLog() {
         {last && (
           <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2 text-[12px]">
             <span className="truncate text-muted">
-              آخر تحويل
+              {t("آخر تحويل")}
               {lastReason && (
                 <>
                   : <b className="text-ink">{lastReason}</b>
@@ -186,25 +187,31 @@ export function SwitchLog() {
 
       <div className="grid grid-cols-2 gap-3">
         <StatTile
-          label="تحويلات اليوم"
+          label={t("تحويلات اليوم")}
           value={loading ? null : String(todayCount)}
-          hint="عدد التحويلات الناجحة منذ منتصف الليل بتوقيت الجهاز. المحاولات الفاشلة لا تُحتسب هنا."
+          hint={t(
+            "عدد التحويلات الناجحة منذ منتصف الليل بتوقيت الجهاز. المحاولات الفاشلة لا تُحتسب هنا.",
+          )}
         />
         <StatTile
-          label="محاولات فاشلة (7 أيام)"
+          label={t("محاولات فاشلة (7 أيام)")}
           value={loading ? null : String(failedWeek)}
           tone={failedWeek ? "danger" : undefined}
-          hint="عدد مرات تعذّر فيها الانتقال إلى المصدر البديل خلال آخر 7 أيام."
+          hint={t("عدد مرات تعذّر فيها الانتقال إلى المصدر البديل خلال آخر 7 أيام.")}
         />
         <StatTile
-          label="متوسط زمن الانقطاع"
+          label={t("متوسط زمن الانقطاع")}
           value={loading ? null : avg(dead) === null ? "—" : fmtMs(avg(dead)!)}
-          hint="متوسط المدة الفعلية بين فصل المصدر القديم وتوصيل الجديد كما قاسها البورد، لكل المصادر بما فيها المولد، خلال آخر 7 أيام."
+          hint={t(
+            "متوسط المدة الفعلية بين فصل المصدر القديم وتوصيل الجديد كما قاسها البورد، لكل المصادر بما فيها المولد، خلال آخر 7 أيام.",
+          )}
         />
         <StatTile
-          label="متوسط زمن الكشف"
+          label={t("متوسط زمن الكشف")}
           value={loading ? null : avg(detect) === null ? "—" : fmtMs(avg(detect)!)}
-          hint="متوسط المدة بين خروج المصدر عن الحدود وبدء التحويل كما قاسها البورد، خلال آخر 7 أيام."
+          hint={t(
+            "متوسط المدة بين خروج المصدر عن الحدود وبدء التحويل كما قاسها البورد، خلال آخر 7 أيام.",
+          )}
         />
       </div>
 
@@ -212,15 +219,15 @@ export function SwitchLog() {
         value={filter}
         onChange={setFilter}
         options={[
-          { value: "all", label: "الكل" },
-          { value: "smart", label: "الوضع الذكي" },
-          { value: "manual", label: "يدوي" },
+          { value: "all", label: t("الكل") },
+          { value: "smart", label: t("الوضع الذكي") },
+          { value: "manual", label: t("يدوي") },
           {
             value: "failed",
-            label: "فاشلة",
+            label: t("فاشلة"),
             count: data.filter((e) => e.type === "transfer_failed").length,
           },
-          { value: "no_source", label: "انقطاع كلي" },
+          { value: "no_source", label: t("انقطاع كلي") },
         ]}
       />
 
@@ -230,8 +237,8 @@ export function SwitchLog() {
         <Card className="pt-2">
           <EmptyState
             icon={History}
-            title="لا توجد بيانات حالياً"
-            body={`لم يسجّل البورد أي عملية مطابقة خلال آخر ${days} أيام.`}
+            title={t("لا توجد بيانات حالياً")}
+            body={t("لم يسجّل البورد أي عملية مطابقة خلال آخر {0} أيام.", { 0: days })}
           />
         </Card>
       ) : (
@@ -239,7 +246,9 @@ export function SwitchLog() {
           <div key={day}>
             <div className="mb-2 flex items-center justify-between">
               <p className="text-[13px] font-bold text-ink">{fmtDayLabel(day, now, tz)}</p>
-              <span className="text-[11px] text-muted">{events.length} سجل</span>
+              <span className="text-[11px] text-muted">
+                {events.length} {t("سجل")}
+              </span>
             </div>
             <Card className="divide-y divide-line">
               {events.map((e) => (
@@ -256,7 +265,7 @@ export function SwitchLog() {
           onClick={() => setDays((d) => d + 7)}
           className="w-full rounded-2xl border border-dashed border-line py-3 text-[13px] font-semibold text-brand-600 hover:border-brand-200"
         >
-          عرض أيام أقدم
+          {t("عرض أيام أقدم")}
         </button>
       )}
     </>
@@ -281,12 +290,15 @@ export function SwitchRow({
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-danger-strong">
-            انقطاع كلي — لا يوجد مصدر متاح
+            {t("انقطاع كلي — لا يوجد مصدر متاح")}
           </p>
           <p className="text-[11px] text-muted">
             {noSourceEnd
-              ? `المدة ${fmtDuration(noSourceEnd - at)} • انتهى ${fmtTime(noSourceEnd, tz)}`
-              : "مستمر أو لم يصل حدث انتهائه بعد"}
+              ? t("المدة {0} • انتهى {1}", {
+                  0: fmtDuration(noSourceEnd - at),
+                  1: fmtTime(noSourceEnd, tz),
+                })
+              : t("مستمر أو لم يصل حدث انتهائه بعد")}
           </p>
         </div>
         <p className="num text-[12px] font-semibold text-ink-2">{fmtTime(at, tz)}</p>
@@ -296,7 +308,7 @@ export function SwitchRow({
   const failed = e.type === "transfer_failed";
   const detect = num(e.data.detect_ms);
   const dead = num(e.data.dead_ms);
-  const reason = transferReasonText(e.data.reason) ?? (failed ? "سبب غير محدد" : null);
+  const reason = transferReasonText(e.data.reason) ?? (failed ? t("سبب غير محدد") : null);
   const restored = !failed && !isSwitch(e);
   return (
     <div className="flex items-center gap-3 p-3.5">
@@ -306,7 +318,7 @@ export function SwitchRow({
         ) : (
           <span className="size-8" />
         )}
-        <ArrowLeft className="mx-0.5 size-3.5 text-faint" />
+        <ArrowLeft className="mx-0.5 size-3.5 text-faint ltr:rotate-180" />
         {e.to_source ? (
           <SourceIcon source={e.to_source} size="sm" muted={failed} />
         ) : (
@@ -317,38 +329,41 @@ export function SwitchRow({
         <p className="flex items-center gap-1.5 truncate text-[13px] font-semibold text-ink">
           {isManual(e) && <Hand className="size-3.5 shrink-0 text-brand-500" />}
           {failed
-            ? `فشل التحويل إلى ${e.to_source ? SOURCE_META[e.to_source].short : "المصدر البديل"}`
-            : `إلى ${e.to_source ? SOURCE_META[e.to_source].name : "—"}`}
+            ? t("فشل التحويل إلى {0}", {
+                0: e.to_source ? SOURCE_META[e.to_source].short : t("المصدر البديل"),
+              })
+            : t("إلى {0}", { 0: e.to_source ? SOURCE_META[e.to_source].name : "—" })}
         </p>
         <p className="text-[11px] leading-5 text-muted">
           {reason}
           {restored
             ? dead !== null && (
                 <>
-                  {reason && " • "}مدة الانقطاع{" "}
-                  <bdi className="whitespace-nowrap">{fmtDuration(dead)}</bdi>
+                  {reason && " • "}
+                  {t("مدة الانقطاع")} <bdi className="whitespace-nowrap">{fmtDuration(dead)}</bdi>
                 </>
               )
             : !failed &&
               (detect !== null || dead !== null) && (
                 <>
-                  {reason && " • "}كشف{" "}
-                  <bdi className="whitespace-nowrap">{detect !== null ? fmtMs(detect) : "—"}</bdi> •
-                  انقطاع{" "}
+                  {reason && " • "}
+                  {t("كشف")}{" "}
+                  <bdi className="whitespace-nowrap">{detect !== null ? fmtMs(detect) : "—"}</bdi>{" "}
+                  {t("• انقطاع")}{" "}
                   <bdi className="whitespace-nowrap">{dead !== null ? fmtMs(dead) : "—"}</bdi>
                 </>
               )}
         </p>
       </div>
-      <div className="text-left">
+      <div className="text-end">
         <p className="num text-[12px] font-semibold text-ink-2">{fmtTime(at, tz)}</p>
         {failed ? (
           <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-danger">
-            <CircleX className="size-3" /> فشل
+            <CircleX className="size-3" /> {t("فشل")}
           </span>
         ) : (
           <span className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-ok">
-            <CircleCheck className="size-3" /> ناجح
+            <CircleCheck className="size-3" /> {t("ناجح")}
           </span>
         )}
       </div>

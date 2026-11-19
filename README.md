@@ -39,7 +39,8 @@ To point the app at another Supabase project, copy `.env.example` to `.env.local
 | `npm run build` | Type-check and build to `dist/` (relative paths: works on any host or in a Capacitor WebView) |
 | `npm run build:web` | Public build for hosting (no source maps); see [docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md) |
 | `npm test` | All tests (unit, components, database on PGlite, board ↔ database) |
-| `npm run check` | Type-check + lint + tests + build — the CI gate |
+| `npm run i18n` | Fails if an Arabic text is not wrapped in `t()` or has no English in `src/i18n/en.ts` |
+| `npm run check` | Type-check + lint + i18n + tests + build — the CI gate |
 | `npm run gen:types` | Regenerate `src/data/database.types.ts` after changing a migration |
 | `npm run db:bundle` | Regenerate `supabase/dist/full_install.sql` |
 | `npm run emulator` / `emulator:bundle` | Run / package the board emulator |
@@ -52,6 +53,13 @@ To point the app at another Supabase project, copy `.env.example` to `.env.local
 - [Supabase setup](docs/SUPABASE_SETUP.md) — database, auth, devices, emulator (Arabic)
 - [Web deploy](docs/WEB_DEPLOY.md) — permanent link on Netlify (Arabic)
 - [Changelog](CHANGELOG.md)
+
+## Texts and languages
+
+The app is written in Arabic; English is a translation. Every UI text is
+`t("النص العربي")`, and `src/i18n/en.ts` maps that Arabic text to English
+(`{0}` for values). When you add or change a text, add its English line, then
+run `npm run i18n`. Numbers are always Western in both languages.
 
 ## Changing the database
 

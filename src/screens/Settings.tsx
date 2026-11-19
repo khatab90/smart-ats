@@ -29,6 +29,7 @@ import { SolarScheduleEditor } from "../features/settings/SolarScheduleEditor";
 import { useActiveDevice } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useToast } from "../store/toast";
+import { t } from "../i18n";
 
 export function Settings() {
   const { device, settings, isAdmin, settingsApplied, status, loading, error, refresh } =
@@ -68,8 +69,8 @@ export function Settings() {
     if (err !== null) return setFormError(err);
     pushToast({
       kind: "info",
-      title: "تم حفظ الإعدادات",
-      body: "ستُطبَّق بعد أن يتحقق منها البورد ويؤكدها.",
+      title: t("تم حفظ الإعدادات"),
+      body: t("ستُطبَّق بعد أن يتحقق منها البورد ويؤكدها."),
     });
     await refresh();
     setEdits({});
@@ -82,13 +83,13 @@ export function Settings() {
   return (
     <div className="pb-6">
       <ScreenHeader
-        title="إعدادات الجهاز"
+        title={t("إعدادات الجهاز")}
         subtitle={device ? device.name || device.id : undefined}
         onBack={back}
       />
       <div className="space-y-4 px-5">
         {!device ? (
-          <EmptyState icon={Settings2} title="لا يوجد جهاز" body="أضف جهازاً أولاً." />
+          <EmptyState icon={Settings2} title={t("لا يوجد جهاز")} body={t("أضف جهازاً أولاً.")} />
         ) : error ? (
           <ErrorState message={error} onRetry={refresh} />
         ) : loading || !draft || !settings ? (
@@ -103,25 +104,25 @@ export function Settings() {
               )}
               <div className="flex-1">
                 <p className="text-[13px] font-semibold text-ink">
-                  الإصدار {settings.version}{" "}
-                  {settingsApplied ? "مطبَّق على البورد" : "بانتظار تأكيد البورد"}
+                  {t("الإصدار")} {settings.version}{" "}
+                  {settingsApplied ? t("مطبَّق على البورد") : t("بانتظار تأكيد البورد")}
                 </p>
                 <p className="num text-[11px] text-muted">
-                  آخر تعديل {fmtDateTime(Date.parse(settings.updated_at), settings.timezone)} •
-                  إصدار البورد {status?.config_version ?? "—"}
+                  {t("آخر تعديل")} {fmtDateTime(Date.parse(settings.updated_at), settings.timezone)}{" "}
+                  {t("• إصدار البورد")} {status?.config_version ?? "—"}
                 </p>
               </div>
             </Card>
             {readOnly && (
               <p className="rounded-2xl bg-canvas px-4 py-3 text-[12px] text-muted">
-                صلاحيتك «مشاهد»: الإعدادات للعرض فقط.
+                {t("صلاحيتك «مشاهد»: الإعدادات للعرض فقط.")}
               </p>
             )}
 
             <Card className="space-y-4 p-4">
-              <p className="text-[15px] font-bold text-ink">القيم الاسمية</p>
+              <p className="text-[15px] font-bold text-ink">{t("القيم الاسمية")}</p>
               <div>
-                <p className="mb-1.5 text-[12px] font-medium text-ink-2">الجهد الاسمي</p>
+                <p className="mb-1.5 text-[12px] font-medium text-ink-2">{t("الجهد الاسمي")}</p>
                 <Segmented
                   value={String(draft.nominal_voltage ?? "")}
                   onChange={(v) => set("nominal_voltage", Number(v))}
@@ -133,7 +134,7 @@ export function Settings() {
                 />
               </div>
               <div>
-                <p className="mb-1.5 text-[12px] font-medium text-ink-2">التردد الاسمي</p>
+                <p className="mb-1.5 text-[12px] font-medium text-ink-2">{t("التردد الاسمي")}</p>
                 <Segmented
                   value={String(draft.nominal_frequency ?? "")}
                   onChange={(v) => set("nominal_frequency", Number(v))}
@@ -146,13 +147,15 @@ export function Settings() {
               </div>
               {(!draft.nominal_voltage || !draft.nominal_frequency) && (
                 <p className="text-[11px] text-warn-strong">
-                  يجب تحديد الجهد والتردد الاسميين حسب شبكة موقع التركيب.
+                  {t("يجب تحديد الجهد والتردد الاسميين حسب شبكة موقع التركيب.")}
                 </p>
               )}
             </Card>
 
             <Card className="p-4">
-              <p className="mb-3 text-[15px] font-bold text-ink">أولوية المصادر (الوضع الذكي)</p>
+              <p className="mb-3 text-[15px] font-bold text-ink">
+                {t("أولوية المصادر (الوضع الذكي)")}
+              </p>
               <PriorityList
                 value={draft.priority}
                 installed={installedSources(status)}
@@ -185,18 +188,18 @@ export function Settings() {
                     />
                   ))}
                 </div>
-                {g.title === "حدود الجهد" && draft.nominal_voltage && (
+                {g.title === t("حدود الجهد") && draft.nominal_voltage && (
                   <p className="num mt-3 rounded-xl bg-canvas px-3 py-2 text-[11px] text-ink-2">
-                    النطاق المسموح:{" "}
+                    {t("النطاق المسموح:")}{" "}
                     <span dir="ltr">
                       {Math.round(draft.nominal_voltage * (1 - draft.uv_trip_pct / 100))}–
                       {Math.round(draft.nominal_voltage * (1 + draft.ov_trip_pct / 100))} V
                     </span>
                   </p>
                 )}
-                {g.title === "حدود التردد" && draft.nominal_frequency && (
+                {g.title === t("حدود التردد") && draft.nominal_frequency && (
                   <p className="num mt-3 rounded-xl bg-canvas px-3 py-2 text-[11px] text-ink-2">
-                    النطاق المسموح:{" "}
+                    {t("النطاق المسموح:")}{" "}
                     <span dir="ltr">
                       {(draft.nominal_frequency * (1 - draft.uf_trip_pct / 100)).toFixed(1)}–
                       {(draft.nominal_frequency * (1 + draft.of_trip_pct / 100)).toFixed(1)} Hz
@@ -207,16 +210,16 @@ export function Settings() {
             ))}
 
             <Card className="p-4">
-              <p className="text-[15px] font-bold text-ink">المنطقة الزمنية</p>
+              <p className="text-[15px] font-bold text-ink">{t("المنطقة الزمنية")}</p>
               <p className="mt-0.5 text-[11px] text-muted">
-                تحدد منتصف الليل لعدّادات «اليوم» وأوقات السجل.
+                {t("تحدد منتصف الليل لعدّادات «اليوم» وأوقات السجل.")}
               </p>
               <input
                 dir="ltr"
                 disabled={readOnly}
                 value={draft.timezone}
                 onChange={(e) => set("timezone", e.target.value.trim())}
-                className="mt-3 h-11 w-full rounded-2xl border border-line bg-surface px-4 text-right text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas"
+                className="mt-3 h-11 w-full rounded-2xl border border-line bg-surface px-4 text-start text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas"
               />
             </Card>
           </>
@@ -232,7 +235,8 @@ export function Settings() {
           )}
           <div className="flex gap-2">
             <Button className="flex-1" icon={Save} loading={saving} onClick={save}>
-              حفظ ({Object.keys(changed).length})
+              {t("حفظ (")}
+              {Object.keys(changed).length})
             </Button>
             <Button
               variant="secondary"
@@ -242,7 +246,7 @@ export function Settings() {
                 setFormError("");
               }}
             >
-              تراجع
+              {t("تراجع")}
             </Button>
           </div>
         </div>
@@ -278,7 +282,7 @@ function NumberRow({
         inputMode="decimal"
         disabled={readOnly}
         value={text}
-        placeholder={field.optional ? "غير محدد" : undefined}
+        placeholder={field.optional ? t("غير محدد") : undefined}
         onChange={(e) => {
           const t = e.target.value.replace(",", ".");
           setText(t);
@@ -286,7 +290,7 @@ function NumberRow({
           else onChange(Number(t));
         }}
         className={cn(
-          "num mt-1 h-11 w-full rounded-2xl border bg-surface px-4 text-right text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas",
+          "num mt-1 h-11 w-full rounded-2xl border bg-surface px-4 text-start text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas",
           invalid ? "border-danger" : "border-line",
         )}
       />
@@ -295,7 +299,7 @@ function NumberRow({
       )}
       {invalid && (
         <span className="mt-1 block text-[11px] text-danger">
-          المسموح من {field.min} إلى {field.max}
+          {t("المسموح من")} {field.min} {t("إلى")} {field.max}
         </span>
       )}
     </label>

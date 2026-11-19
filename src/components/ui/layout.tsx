@@ -1,6 +1,7 @@
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { type ReactNode } from "react";
 import { cn } from "../../lib/cn";
+import { t } from "../../i18n";
 
 export function ScreenHeader({
   title,
@@ -19,10 +20,10 @@ export function ScreenHeader({
         <button
           type="button"
           onClick={onBack}
-          aria-label="رجوع"
+          aria-label={t("رجوع")}
           className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface text-ink-2 transition hover:text-brand-700 active:scale-95"
         >
-          <ChevronRight className="size-5" />
+          <ChevronRight className="size-5 ltr:rotate-180" />
         </button>
       )}
       <div className="min-w-0 flex-1">
@@ -87,7 +88,7 @@ export function Row({
         {subtitle && <span className="block truncate text-[12px] text-muted">{subtitle}</span>}
       </span>
       {right}
-      {chevron && <ChevronRight className="size-[18px] shrink-0 rotate-180 text-faint" />}
+      {chevron && <ChevronRight className="size-[18px] shrink-0 text-faint rtl:rotate-180" />}
     </button>
   );
 }

@@ -1,5 +1,6 @@
 import { Logo } from "../../components/Shell";
 import { cn } from "../../lib/cn";
+import { t } from "../../i18n";
 
 export function AuthHero({ compact }: { compact: boolean }) {
   return (
@@ -16,19 +17,19 @@ export function AuthHero({ compact }: { compact: boolean }) {
           <p className="text-lg leading-tight font-bold tracking-tight" dir="ltr">
             Smart ATS
           </p>
-          <p className="text-[12px] text-white/60">نظام التحويل التلقائي الذكي</p>
+          <p className="text-[12px] text-white/60">{t("نظام التحويل التلقائي الذكي")}</p>
         </div>
       </div>
       {!compact && (
         <>
           <FlowIllustration />
           <h1 className="relative mt-2 text-[26px] leading-tight font-bold tracking-tight">
-            طاقة مستمرة،
+            {t("طاقة مستمرة،")}
             <br />
-            <span className="text-brand-200">تحويل بلا انقطاع.</span>
+            <span className="text-brand-200">{t("تحويل بلا انقطاع.")}</span>
           </h1>
           <p className="relative mt-2 max-w-[290px] text-[13px] leading-6 text-white/65">
-            راقب الشبكة والطاقة الشمسية والمولد وتحكم بالتحويل بينها من مكان واحد.
+            {t("راقب الشبكة والطاقة الشمسية والمولد وتحكم بالتحويل بينها من مكان واحد.")}
           </p>
         </>
       )}
@@ -38,9 +39,9 @@ export function AuthHero({ compact }: { compact: boolean }) {
 
 export function FlowIllustration() {
   const nodes = [
-    { x: 40, y: 20, c: "#5b9bff", l: "الشبكة" },
-    { x: 40, y: 62, c: "#f5c542", l: "الشمسية" },
-    { x: 40, y: 104, c: "#a48bff", l: "المولد" },
+    { x: 40, y: 20, c: "#5b9bff", l: t("الشبكة") },
+    { x: 40, y: 62, c: "#f5c542", l: t("الشمسية") },
+    { x: 40, y: 104, c: "#a48bff", l: t("المولد") },
   ];
   return (
     <svg viewBox="0 0 320 124" className="relative my-4 h-[110px] w-full" aria-hidden="true">

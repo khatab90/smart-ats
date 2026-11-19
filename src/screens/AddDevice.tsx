@@ -5,6 +5,7 @@ import { claimDevice } from "../api/devices";
 import { APP_ENV } from "../config/supabase";
 import { errorMessage } from "../lib/errors";
 import { useDevices } from "../store/devices";
+import { t } from "../i18n";
 
 /**
  * Claims a factory-registered board with its Device ID and the PIN printed
@@ -26,9 +27,9 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
     setError("");
     const id = deviceId.trim().toUpperCase();
     if (!/^[A-Z0-9][A-Z0-9-]{3,31}$/.test(id))
-      return setError("معرّف الجهاز غير صالح. انسخه كما هو مطبوع على البورد.");
-    if (pin.trim().length < 6) return setError("رمز PIN يتكون من 6 أرقام على الأقل.");
-    if (name.trim().length < 2) return setError("أدخل اسماً للجهاز.");
+      return setError(t("معرّف الجهاز غير صالح. انسخه كما هو مطبوع على البورد."));
+    if (pin.trim().length < 6) return setError(t("رمز PIN يتكون من 6 أرقام على الأقل."));
+    if (name.trim().length < 2) return setError(t("أدخل اسماً للجهاز."));
     setLoading(true);
     const { data: res, error: err } = await claimDevice({
       deviceId: id,
@@ -50,16 +51,16 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
     <div className="flex h-full flex-col bg-canvas">
       <header className="flex items-center gap-3 px-5 pt-4 pb-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[12px] text-muted">إضافة جهاز</p>
+          <p className="text-[12px] text-muted">{t("إضافة جهاز")}</p>
           <h1 className="text-xl font-bold text-ink">
-            {done ? "تمت إضافة الجهاز" : "ربط بورد Smart ATS"}
+            {done ? t("تمت إضافة الجهاز") : t("ربط بورد Smart ATS")}
           </h1>
         </div>
         {!done && (
           <button
             type="button"
             onClick={onClose}
-            aria-label="إغلاق"
+            aria-label={t("إغلاق")}
             className="flex size-10 items-center justify-center rounded-2xl border border-line bg-surface text-ink-2"
           >
             <X className="size-5" />
@@ -73,7 +74,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
             <span className="flex size-20 items-center justify-center rounded-[28px] bg-ok text-white shadow-[0_16px_32px_-12px_rgba(18,183,106,0.7)]">
               <Check className="size-10" strokeWidth={2.5} />
             </span>
-            <p className="mt-4 text-[13px] text-muted">تم ربط الجهاز بحسابك كمالك ومسؤول:</p>
+            <p className="mt-4 text-[13px] text-muted">{t("تم ربط الجهاز بحسابك كمالك ومسؤول:")}</p>
             <p
               className="num mt-2 rounded-2xl border border-dashed border-brand-200 bg-brand-50 px-5 py-2.5 text-xl font-bold tracking-wider text-brand-800"
               dir="ltr"
@@ -81,8 +82,9 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
               {done}
             </p>
             <p className="mt-4 max-w-[300px] text-[12px] leading-6 text-muted">
-              ستظهر الحالة والقراءات فور وصول أول بيانات من البورد. أكمل إعدادات الجهاز (الجهد
-              والتردد الاسميين) من «المزيد ← إعدادات الجهاز».
+              {t(
+                "ستظهر الحالة والقراءات فور وصول أول بيانات من البورد. أكمل إعدادات الجهاز (الجهد والتردد الاسميين) من «المزيد ← إعدادات الجهاز».",
+              )}
             </p>
           </div>
         ) : (
@@ -92,8 +94,9 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
                 <Router className="size-5" />
               </span>
               <p className="text-[12px] leading-6 text-ink-2">
-                أدخل معرّف الجهاز (Device ID) ورمز PIN المطبوعين على ملصق البورد. يتحقق الخادم من
-                الرمز لإثبات حيازتك للجهاز، ولا يمكن إضافة جهاز مسجّل لحساب آخر.
+                {t(
+                  "أدخل معرّف الجهاز (Device ID) ورمز PIN المطبوعين على ملصق البورد. يتحقق الخادم من الرمز لإثبات حيازتك للجهاز، ولا يمكن إضافة جهاز مسجّل لحساب آخر.",
+                )}
               </p>
             </Card>
             {error && (
@@ -102,7 +105,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
               </p>
             )}
             <Field
-              label="معرّف الجهاز (Device ID)"
+              label={t("معرّف الجهاز (Device ID)")}
               icon={Hash}
               ltr
               placeholder="ATS-XXXXXX"
@@ -111,7 +114,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
               autoCapitalize="characters"
             />
             <Field
-              label="رمز PIN"
+              label={t("رمز PIN")}
               icon={KeyRound}
               type="password"
               ltr
@@ -121,21 +124,22 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
               onChange={(e) => setPin(e.target.value.replace(/\s/g, ""))}
             />
             <Field
-              label="اسم الجهاز"
-              placeholder="مثال: المنزل"
+              label={t("اسم الجهاز")}
+              placeholder={t("مثال: المنزل")}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <Field
-              label="الموقع (اختياري)"
+              label={t("الموقع (اختياري)")}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
             <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface p-4">
               <Bluetooth className="mt-0.5 size-5 shrink-0 text-faint" />
               <p className="text-[11px] leading-5 text-muted">
-                إعداد شبكة Wi-Fi للبورد عبر Bluetooth غير متاح في نسخة الويب، وينتظر التطبيق الأصلي.
-                يجب أن يكون البورد متصلاً بالإنترنت ليرسل بياناته بعد الإضافة.
+                {t(
+                  "إعداد شبكة Wi-Fi للبورد عبر Bluetooth غير متاح في نسخة الويب، وينتظر التطبيق الأصلي. يجب أن يكون البورد متصلاً بالإنترنت ليرسل بياناته بعد الإضافة.",
+                )}
               </p>
             </div>
           </form>
@@ -145,11 +149,11 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
       <div className="border-t border-line bg-surface/80 px-5 pt-3 pb-5 backdrop-blur">
         {done ? (
           <Button size="lg" full onClick={onClose}>
-            الذهاب إلى لوحة التحكم
+            {t("الذهاب إلى لوحة التحكم")}
           </Button>
         ) : (
           <Button size="lg" full type="submit" form="claim" loading={loading}>
-            إضافة الجهاز
+            {t("إضافة الجهاز")}
           </Button>
         )}
       </div>

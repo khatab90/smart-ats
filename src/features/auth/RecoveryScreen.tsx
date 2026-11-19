@@ -5,6 +5,7 @@ import * as authApi from "../../api/auth";
 import { useAuth } from "../../store/auth";
 import { AuthHero } from "./AuthHero";
 import { FormError } from "./shared";
+import { t } from "../../i18n";
 
 /** Shown after opening a password recovery link. */
 export function RecoveryScreen() {
@@ -18,8 +19,8 @@ export function RecoveryScreen() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-    if (password.length < 8) return setError("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
-    if (password !== confirm) return setError("كلمتا المرور غير متطابقتين");
+    if (password.length < 8) return setError(t("كلمة المرور يجب أن تكون 8 أحرف على الأقل"));
+    if (password !== confirm) return setError(t("كلمتا المرور غير متطابقتين"));
     setLoading(true);
     const { error: err } = await authApi.setPassword(password);
     setLoading(false);
@@ -36,17 +37,17 @@ export function RecoveryScreen() {
             <span className="flex size-20 items-center justify-center rounded-[28px] bg-ok-soft text-ok">
               <Check className="size-9" />
             </span>
-            <h2 className="mt-5 text-[22px] font-bold text-ink">تم تعيين كلمة المرور</h2>
+            <h2 className="mt-5 text-[22px] font-bold text-ink">{t("تم تعيين كلمة المرور")}</h2>
             <Button className="mt-8" size="lg" full onClick={clearRecovery}>
-              متابعة
+              {t("متابعة")}
             </Button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4" noValidate>
-            <h2 className="text-[22px] font-bold text-ink">تعيين كلمة مرور جديدة</h2>
+            <h2 className="text-[22px] font-bold text-ink">{t("تعيين كلمة مرور جديدة")}</h2>
             <FormError msg={error} />
             <Field
-              label="كلمة المرور الجديدة"
+              label={t("كلمة المرور الجديدة")}
               icon={Lock}
               type="password"
               ltr
@@ -55,7 +56,7 @@ export function RecoveryScreen() {
               autoComplete="new-password"
             />
             <Field
-              label="تأكيد كلمة المرور"
+              label={t("تأكيد كلمة المرور")}
               icon={KeyRound}
               type="password"
               ltr
@@ -64,7 +65,7 @@ export function RecoveryScreen() {
               autoComplete="new-password"
             />
             <Button type="submit" size="lg" full loading={loading}>
-              حفظ كلمة المرور
+              {t("حفظ كلمة المرور")}
             </Button>
           </form>
         )}

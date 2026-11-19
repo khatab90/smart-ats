@@ -2,49 +2,51 @@ import { Badge, type Tone } from "./ui";
 import { UNAVAILABLE_REASON } from "../data/meta";
 import type { SourceReport } from "../data/types";
 import type { LinkState } from "../lib/link";
+import { t } from "../i18n";
 
 export function sourceBadge(
   report: SourceReport | undefined,
   active: boolean,
 ): { label: string; tone: Tone } {
-  if (active) return { label: "فعّال", tone: "ok" };
-  if (!report) return { label: "لا توجد بيانات", tone: "neutral" };
+  if (active) return { label: t("فعّال"), tone: "ok" };
+  if (!report) return { label: t("لا توجد بيانات"), tone: "neutral" };
   if (report.qualified && report.allowed === false)
     return { label: UNAVAILABLE_REASON.outside_schedule, tone: "neutral" };
-  if (report.qualified) return { label: "متاح", tone: "info" };
+  if (report.qualified) return { label: t("متاح"), tone: "info" };
   if (report.reason === "qualifying" || (report.available && !report.qualified)) {
     const done = report.q_elapsed_s ?? null;
     const need = report.q_required_s ?? null;
     return {
-      label: done !== null && need ? `قيد التأهيل ${done}/${need} ث` : "قيد التأهيل",
+      label:
+        done !== null && need ? t("قيد التأهيل {0}/{1} ث", { 0: done, 1: need }) : t("قيد التأهيل"),
       tone: "warn",
     };
   }
-  return { label: UNAVAILABLE_REASON[report.reason ?? ""] ?? "غير متاح", tone: "danger" };
+  return { label: UNAVAILABLE_REASON[report.reason ?? ""] ?? t("غير متاح"), tone: "danger" };
 }
 
 export function LinkBadge({ link }: { link: LinkState }) {
   if (link === "live")
     return (
       <Badge tone="ok" dot pulse>
-        متصل
+        {t("متصل")}
       </Badge>
     );
   if (link === "stale")
     return (
       <Badge tone="warn" dot>
-        بيانات متأخرة
+        {t("بيانات متأخرة")}
       </Badge>
     );
   if (link === "offline")
     return (
       <Badge tone="danger" dot>
-        غير متصل
+        {t("غير متصل")}
       </Badge>
     );
   return (
     <Badge tone="neutral" dot>
-      لا توجد بيانات
+      {t("لا توجد بيانات")}
     </Badge>
   );
 }

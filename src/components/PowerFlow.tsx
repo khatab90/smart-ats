@@ -2,6 +2,7 @@ import { House, LoaderCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SOURCE_META } from "../data/meta";
 import type { DeviceStatus, SourceId } from "../data/types";
+import { isRtl } from "../i18n";
 import { cn } from "../lib/cn";
 import { installedSources } from "../domain/sources";
 import { fmtKw } from "../lib/format";
@@ -12,7 +13,14 @@ const VH = 132;
 const SRC_X = 290;
 const ATS = { x: 160, y: 66 };
 const HOME = { x: 34, y: 66 };
-const pct = (x: number, y: number) => ({ left: `${(x / VW) * 100}%`, top: `${(y / VH) * 100}%` });
+/**
+ * The drawing is laid out right-to-left (sources → ATS → house). In English
+ * it is mirrored so the energy flows left-to-right with the reading.
+ */
+const pct = (x: number, y: number) => ({
+  left: `${((isRtl() ? x : VW - x) / VW) * 100}%`,
+  top: `${(y / VH) * 100}%`,
+});
 
 /** Vertical slots for 1–3 installed sources, centred on the ATS line. */
 const SLOTS: Record<number, number[]> = { 1: [66], 2: [40, 92], 3: [22, 66, 110] };
@@ -76,7 +84,7 @@ export function PowerFlow({ status, live }: { status: DeviceStatus | null; live:
       <svg
         viewBox={`0 0 ${VW} ${VH}`}
         preserveAspectRatio="none"
-        className="absolute inset-0 size-full"
+        className={cn("absolute inset-0 size-full", !isRtl() && "-scale-x-100")}
       >
         {shown.map((id) => {
           const y = SRC_Y[id];

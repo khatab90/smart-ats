@@ -6,6 +6,7 @@ import { ROLE_META } from "../../data/meta";
 import { useAuth } from "../../store/auth";
 import { useDevices } from "../../store/devices";
 import { useToast } from "../../store/toast";
+import { t } from "../../i18n";
 
 /**
  * Invitations sent to the signed-in user's verified email. Someone who signs
@@ -41,8 +42,8 @@ export function PendingInvitations() {
     setActiveId(data.device_id);
     pushToast({
       kind: "success",
-      title: "تم قبول الدعوة",
-      body: `أصبح لديك وصول إلى «${inv.device_name}».`,
+      title: t("تم قبول الدعوة"),
+      body: t("أصبح لديك وصول إلى «{0}».", { 0: inv.device_name }),
     });
   };
 
@@ -61,10 +62,12 @@ export function PendingInvitations() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-bold text-brand-900">
-                دعوة للانضمام إلى «{inv.device_name}»
+                {t("دعوة للانضمام إلى «")}
+                {inv.device_name}»
               </p>
               <p className="mt-0.5 text-[12px] leading-5 text-brand-900/80">
-                {inv.inviter_name ? `من ${inv.inviter_name}، ` : ""}بصلاحية «
+                {inv.inviter_name ? t("من {0}، ", { 0: inv.inviter_name }) : ""}
+                {t("بصلاحية «")}
                 {ROLE_META[inv.role]?.label ?? inv.role}».
               </p>
             </div>
@@ -76,14 +79,14 @@ export function PendingInvitations() {
               disabled={busy !== null}
               onClick={() => void accept(inv)}
             >
-              قبول الدعوة
+              {t("قبول الدعوة")}
             </Button>
             <Button
               variant="secondary"
               disabled={busy !== null}
               onClick={() => setItems((list) => list.filter((x) => x.id !== inv.id))}
             >
-              لاحقاً
+              {t("لاحقاً")}
             </Button>
           </div>
         </Card>

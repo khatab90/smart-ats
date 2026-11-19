@@ -15,6 +15,7 @@ import { PHASE_LABEL, type CommandState } from "../hooks/useCommand";
 import { cn } from "../lib/cn";
 import { ALL_SOURCES, mergePriority, movePriority, visiblePriority } from "../domain/sources";
 import { SourceIcon } from "./ui";
+import { t } from "../i18n";
 
 /** Inline lifecycle of the last command (A8). */
 export function CommandProgress({
@@ -56,13 +57,13 @@ export function CommandProgress({
         <span className="font-semibold">{PHASE_LABEL[state.phase]}</span>
         {state.message && <span className="block opacity-90">{state.message}</span>}
         {timeout && (
-          <span className="block opacity-90">تحقق من حالة النظام قبل إعادة المحاولة.</span>
+          <span className="block opacity-90">{t("تحقق من حالة النظام قبل إعادة المحاولة.")}</span>
         )}
       </span>
       {terminal && (
         <button
           type="button"
-          aria-label="إخفاء"
+          aria-label={t("إخفاء")}
           onClick={onDismiss}
           className="rounded-lg p-0.5 opacity-70 hover:opacity-100"
         >
@@ -121,7 +122,7 @@ export function PriorityList({
   const preview = drag ? movePriority(value, drag.index, drag.over) : value;
 
   return (
-    <ol ref={listRef} className="space-y-2" aria-label="ترتيب أولوية المصادر">
+    <ol ref={listRef} className="space-y-2" aria-label={t("ترتيب أولوية المصادر")}>
       {preview.map((id, i) => {
         const dragging = drag !== null && value[drag.index] === id;
         return (
@@ -134,7 +135,7 @@ export function PriorityList({
           >
             <button
               type="button"
-              aria-label={`اسحب لإعادة ترتيب ${SOURCE_META[id].name}`}
+              aria-label={t("اسحب لإعادة ترتيب {0}", { 0: SOURCE_META[id].name })}
               disabled={disabled}
               onPointerDown={onPointerDown(value.indexOf(id))}
               onPointerMove={onPointerMove}
@@ -154,7 +155,7 @@ export function PriorityList({
             <span className="flex">
               <button
                 type="button"
-                aria-label={`رفع أولوية ${SOURCE_META[id].name}`}
+                aria-label={t("رفع أولوية {0}", { 0: SOURCE_META[id].name })}
                 disabled={disabled || i === 0}
                 onClick={() => onChange(movePriority(value, i, i - 1))}
                 className="rounded-lg p-1.5 text-muted hover:bg-canvas disabled:opacity-30"
@@ -163,7 +164,7 @@ export function PriorityList({
               </button>
               <button
                 type="button"
-                aria-label={`خفض أولوية ${SOURCE_META[id].name}`}
+                aria-label={t("خفض أولوية {0}", { 0: SOURCE_META[id].name })}
                 disabled={disabled || i === preview.length - 1}
                 onClick={() => onChange(movePriority(value, i, i + 1))}
                 className="rounded-lg p-1.5 text-muted hover:bg-canvas disabled:opacity-30"

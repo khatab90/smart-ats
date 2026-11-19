@@ -9,6 +9,7 @@ import { cn } from "../../lib/cn";
 import { updateSettings } from "../../api/settings";
 import { useActiveDevice } from "../../store/devices";
 import { useToast } from "../../store/toast";
+import { t } from "../../i18n";
 
 export function PrioritySection({
   priority,
@@ -33,15 +34,20 @@ export function PrioritySection({
     setSaving(true);
     const { error } = await updateSettings(device.id, { priority: draft });
     setSaving(false);
-    if (error !== null) return pushToast({ kind: "error", title: "تعذر حفظ الترتيب", body: error });
+    if (error !== null)
+      return pushToast({ kind: "error", title: t("تعذر حفظ الترتيب"), body: error });
     setDraft(null);
-    pushToast({ kind: "info", title: "تم حفظ ترتيب الأولوية", body: "سيُطبَّق بعد تأكيد البورد." });
+    pushToast({
+      kind: "info",
+      title: t("تم حفظ ترتيب الأولوية"),
+      body: t("سيُطبَّق بعد تأكيد البورد."),
+    });
   };
 
   return (
     <div className="mt-4">
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-[13px] font-bold text-ink">ترتيب أولوية المصادر</p>
+        <p className="text-[13px] font-bold text-ink">{t("ترتيب أولوية المصادر")}</p>
         {!dirty && link !== "never" && (
           <span
             className={cn(
@@ -49,7 +55,7 @@ export function PrioritySection({
               applied ? "text-ok-strong" : "text-warn-strong",
             )}
           >
-            {applied ? "مطبَّق على البورد" : "بانتظار تأكيد البورد"}
+            {applied ? t("مطبَّق على البورد") : t("بانتظار تأكيد البورد")}
           </span>
         )}
       </div>
@@ -61,22 +67,24 @@ export function PrioritySection({
       />
       {schedule?.enabled && installed.includes("solar") && (
         <p className="mt-2 rounded-2xl bg-solar-soft px-3 py-2 text-[11px] leading-5 text-ink-2">
-          <span className="font-semibold">{SOURCE_META.solar.name}</span> تُستخدم في الوضع الذكي فقط
-          في: {schedule.periods.map(describePeriod).join("، ")}. خارج هذه الأوقات لا يستخدمها البورد
-          حتى لو لم يتوفر مصدر آخر.
+          <span className="font-semibold">{SOURCE_META.solar.name}</span>{" "}
+          {t("تُستخدم في الوضع الذكي فقط في:")} {schedule.periods.map(describePeriod).join(t("، "))}
+          {t(". خارج هذه الأوقات لا يستخدمها البورد حتى لو لم يتوفر مصدر آخر.")}
         </p>
       )}
       <p className="mt-2 text-[11px] leading-5 text-muted">
-        {editable ? "اسحب المصادر لإعادة ترتيبها. " : ""}يعتمد البورد على المصدر الأول إذا كان مستوفياً
-        لشروط التشغيل، وإلا ينتقل إلى التالي، ويعود إلى الأعلى أولوية بعد استقراره.
+        {editable ? t("اسحب المصادر لإعادة ترتيبها. ") : ""}
+        {t(
+          "يعتمد البورد على المصدر الأول إذا كان مستوفياً لشروط التشغيل، وإلا ينتقل إلى التالي، ويعود إلى الأعلى أولوية بعد استقراره.",
+        )}
       </p>
       {dirty && (
         <div className="mt-3 flex gap-2">
           <Button size="sm" className="flex-1" loading={saving} onClick={save}>
-            حفظ الترتيب
+            {t("حفظ الترتيب")}
           </Button>
           <Button size="sm" variant="secondary" className="flex-1" onClick={() => setDraft(null)}>
-            تراجع
+            {t("تراجع")}
           </Button>
         </div>
       )}

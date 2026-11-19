@@ -21,6 +21,7 @@ import { fetchLinkSummaries, leaveDevice, releaseDevice, renameDevice } from "..
 import { useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useToast } from "../store/toast";
+import { t, uiStart } from "../i18n";
 
 type StatusLite = Pick<DeviceStatus, "online" | "last_seen_at" | "interval_ms">;
 
@@ -61,8 +62,8 @@ export function Devices() {
     setSaving(true);
     const { error: err } = await renameDevice(edit.device.id, name.trim(), location.trim() || null);
     setSaving(false);
-    if (err !== null) return pushToast({ kind: "error", title: "تعذر الحفظ", body: err });
-    pushToast({ kind: "success", title: "تم حفظ بيانات الجهاز" });
+    if (err !== null) return pushToast({ kind: "error", title: t("تعذر الحفظ"), body: err });
+    pushToast({ kind: "success", title: t("تم حفظ بيانات الجهاز") });
     setEdit(null);
     await refresh();
   };
@@ -75,10 +76,11 @@ export function Devices() {
     setBusy(false);
     setConfirm(null);
     setEdit(null);
-    if (err !== null) return pushToast({ kind: "error", title: "تعذر تنفيذ العملية", body: err });
+    if (err !== null)
+      return pushToast({ kind: "error", title: t("تعذر تنفيذ العملية"), body: err });
     pushToast({
       kind: "success",
-      title: confirm.kind === "release" ? "تمت إزالة الجهاز من حسابك" : "غادرت الجهاز",
+      title: confirm.kind === "release" ? t("تمت إزالة الجهاز من حسابك") : t("غادرت الجهاز"),
     });
     await refresh();
   };
@@ -86,14 +88,14 @@ export function Devices() {
   return (
     <div className="pb-10">
       <ScreenHeader
-        title="أجهزتي"
-        subtitle="بوردات Smart ATS التي يمكنك الوصول إليها"
+        title={t("أجهزتي")}
+        subtitle={t("بوردات Smart ATS التي يمكنك الوصول إليها")}
         onBack={back}
         right={
           <button
             type="button"
             onClick={() => push("addDevice")}
-            aria-label="إضافة جهاز"
+            aria-label={t("إضافة جهاز")}
             className="flex size-11 items-center justify-center rounded-2xl bg-brand-800 text-white"
           >
             <Plus className="size-5" />
@@ -107,11 +109,11 @@ export function Devices() {
         ) : memberships.length === 0 ? (
           <EmptyState
             icon={Router}
-            title="لا توجد أجهزة"
-            body="أضف بورد Smart ATS لبدء المراقبة."
+            title={t("لا توجد أجهزة")}
+            body={t("أضف بورد Smart ATS لبدء المراقبة.")}
             action={
               <Button icon={Plus} onClick={() => push("addDevice")}>
-                إضافة جهاز
+                {t("إضافة جهاز")}
               </Button>
             }
           />
@@ -140,9 +142,11 @@ export function Devices() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <p className="truncate text-[15px] font-bold text-ink">{d.name || d.id}</p>
-                      {selected && <Badge tone="info">الحالي</Badge>}
+                      {selected && <Badge tone="info">{t("الحالي")}</Badge>}
                     </div>
-                    <p className="truncate text-[12px] text-muted">{d.location || "بدون موقع"}</p>
+                    <p className="truncate text-[12px] text-muted">
+                      {d.location || t("بدون موقع")}
+                    </p>
                   </div>
                   <Badge
                     tone={!st ? "neutral" : online ? "ok" : "danger"}
@@ -152,23 +156,25 @@ export function Devices() {
                     {!st
                       ? "…"
                       : link.state === "never"
-                        ? "لم يتصل بعد"
+                        ? t("لم يتصل بعد")
                         : online
-                          ? "متصل"
-                          : "غير متصل"}
+                          ? t("متصل")
+                          : t("غير متصل")}
                   </Badge>
                 </div>
                 <dl className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
                   {[
                     { k: "Device ID", v: d.id, ltr: true },
                     {
-                      k: "صلاحيتك",
-                      v: m.isOwner ? `مالك • ${ROLE_META[m.role].label}` : ROLE_META[m.role].label,
+                      k: t("صلاحيتك"),
+                      v: m.isOwner
+                        ? t("مالك • {0}", { 0: ROLE_META[m.role].label })
+                        : ROLE_META[m.role].label,
                     },
-                    { k: "آخر اتصال", v: seen ? fmtAgo(seen, Date.now() + clockOffsetMs) : "—" },
-                    { k: "البرنامج الثابت", v: d.firmware ?? "—", ltr: true },
+                    { k: t("آخر اتصال"), v: seen ? fmtAgo(seen, Date.now() + clockOffsetMs) : "—" },
+                    { k: t("البرنامج الثابت"), v: d.firmware ?? "—", ltr: true },
                     {
-                      k: "تاريخ الإضافة",
+                      k: t("تاريخ الإضافة"),
                       v: d.claimed_at ? fmtFullDate(Date.parse(d.claimed_at)) : "—",
                     },
                   ].map((x) => (
@@ -177,7 +183,7 @@ export function Devices() {
                       <dd
                         className="num mt-0.5 truncate font-semibold text-ink"
                         dir={x.ltr ? "ltr" : undefined}
-                        style={x.ltr ? { textAlign: "right" } : undefined}
+                        style={x.ltr ? { textAlign: uiStart() } : undefined}
                       >
                         {x.v}
                       </dd>
@@ -187,7 +193,7 @@ export function Devices() {
                 <div className="mt-3 flex gap-2">
                   {!selected && (
                     <Button size="sm" className="flex-1" onClick={() => setActiveId(d.id)}>
-                      تفعيل
+                      {t("تفعيل")}
                     </Button>
                   )}
                   <Button
@@ -197,17 +203,18 @@ export function Devices() {
                     icon={Pencil}
                     onClick={() => openEdit(m)}
                   >
-                    إدارة
+                    {t("إدارة")}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     icon={Copy}
-                    aria-label="نسخ Device ID"
+                    aria-label={t("نسخ Device ID")}
                     onClick={() => {
                       void navigator.clipboard?.writeText(d.id).then(
-                        () => pushToast({ kind: "success", title: "تم نسخ Device ID", body: d.id }),
-                        () => pushToast({ kind: "error", title: "تعذر النسخ" }),
+                        () =>
+                          pushToast({ kind: "success", title: t("تم نسخ Device ID"), body: d.id }),
+                        () => pushToast({ kind: "error", title: t("تعذر النسخ") }),
                       );
                     }}
                   />
@@ -218,24 +225,28 @@ export function Devices() {
         )}
       </div>
 
-      <Sheet open={!!edit} onClose={() => setEdit(null)} title="إدارة الجهاز">
+      <Sheet open={!!edit} onClose={() => setEdit(null)} title={t("إدارة الجهاز")}>
         {edit && (
           <div className="space-y-4">
             {edit.role === "admin" ? (
               <>
-                <Field label="اسم الجهاز" value={name} onChange={(e) => setName(e.target.value)} />
                 <Field
-                  label="الموقع (اختياري)"
+                  label={t("اسم الجهاز")}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <Field
+                  label={t("الموقع (اختياري)")}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
                 <Button full loading={saving} disabled={name.trim().length < 2} onClick={save}>
-                  حفظ
+                  {t("حفظ")}
                 </Button>
               </>
             ) : (
               <p className="rounded-2xl bg-canvas p-3 text-[12px] text-muted">
-                تعديل بيانات الجهاز متاح للمسؤول فقط.
+                {t("تعديل بيانات الجهاز متاح للمسؤول فقط.")}
               </p>
             )}
             {edit.isOwner ? (
@@ -245,7 +256,7 @@ export function Devices() {
                 icon={Trash2}
                 onClick={() => setConfirm({ kind: "release", m: edit })}
               >
-                إزالة الجهاز من الحساب
+                {t("إزالة الجهاز من الحساب")}
               </Button>
             ) : (
               <Button
@@ -254,13 +265,13 @@ export function Devices() {
                 icon={LogOut}
                 onClick={() => setConfirm({ kind: "leave", m: edit })}
               >
-                مغادرة الجهاز
+                {t("مغادرة الجهاز")}
               </Button>
             )}
             {edit.isOwner && (
               <p className="flex items-start gap-1.5 text-[11px] leading-5 text-muted">
-                <Crown className="mt-0.5 size-3.5 shrink-0 text-warn" /> أنت المالك. لنقل الملكية
-                لمسؤول آخر استخدم شاشة المستخدمين والصلاحيات.
+                <Crown className="mt-0.5 size-3.5 shrink-0 text-warn" />{" "}
+                {t("أنت المالك. لنقل الملكية لمسؤول آخر استخدم شاشة المستخدمين والصلاحيات.")}
               </p>
             )}
           </div>
@@ -270,16 +281,18 @@ export function Devices() {
       <ConfirmSheet
         open={confirm !== null}
         onClose={() => setConfirm(null)}
-        title={confirm?.kind === "release" ? "إزالة الجهاز" : "مغادرة الجهاز"}
-        confirmLabel="تأكيد"
+        title={confirm?.kind === "release" ? t("إزالة الجهاز") : t("مغادرة الجهاز")}
+        confirmLabel={t("تأكيد")}
         danger
         loading={busy}
         onConfirm={() => void doConfirm()}
       >
         <p className="text-[13px] leading-6 text-ink-2">
           {confirm?.kind === "release"
-            ? "سيُفصل الجهاز عن حسابك وعن جميع المستخدمين، وتُحذف سجلاته وقراءاته المخزنة حتى لا يراها أي مالك لاحق. لإعادة إضافته ستحتاج إلى معرّف الجهاز ورمز PIN."
-            : "ستفقد الوصول إلى هذا الجهاز وإشعاراته."}
+            ? t(
+                "سيُفصل الجهاز عن حسابك وعن جميع المستخدمين، وتُحذف سجلاته وقراءاته المخزنة حتى لا يراها أي مالك لاحق. لإعادة إضافته ستحتاج إلى معرّف الجهاز ورمز PIN.",
+              )
+            : t("ستفقد الوصول إلى هذا الجهاز وإشعاراته.")}
         </p>
       </ConfirmSheet>
     </div>

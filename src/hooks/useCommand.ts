@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { CommandRow, CommandStatus, CommandType } from "../data/types";
 import * as commandsApi from "../api/commands";
 import { useDeviceMeta } from "../store/devices";
+import { t } from "../i18n";
 
 /**
  * Sends a command and tracks its lifecycle (A8). Success is reported only when
@@ -95,15 +96,15 @@ export function useCommand() {
 
 export const PHASE_LABEL: Record<CommandPhase, string> = {
   idle: "",
-  sending: "جارٍ إرسال الأمر…",
-  pending: "بانتظار استلام البورد…",
-  delivered: "وصل الأمر إلى البورد…",
-  accepted: "قبل البورد الأمر…",
-  executing: "قيد التنفيذ…",
-  completed: "نفّذ البورد الأمر بنجاح",
-  rejected: "رفض البورد الأمر",
-  failed: "فشل تنفيذ الأمر",
-  expired: "انتهت صلاحية الأمر قبل استلامه",
-  timeout: "لم يصل تأكيد من البورد خلال المهلة",
-  error: "تعذر إرسال الأمر",
+  sending: t("جارٍ إرسال الأمر…"),
+  pending: t("بانتظار استلام البورد…"),
+  delivered: t("وصل الأمر إلى البورد…"),
+  accepted: t("قبل البورد الأمر…"),
+  executing: t("قيد التنفيذ…"),
+  completed: t("نفّذ البورد الأمر بنجاح"),
+  rejected: t("رفض البورد الأمر"),
+  failed: t("فشل تنفيذ الأمر"),
+  expired: t("انتهت صلاحية الأمر قبل استلامه"),
+  timeout: t("لم يصل تأكيد من البورد خلال المهلة"),
+  error: t("تعذر إرسال الأمر"),
 };

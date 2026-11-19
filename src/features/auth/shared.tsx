@@ -1,6 +1,7 @@
 import { ArrowRight, MailCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui";
+import { t } from "../../i18n";
 
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -46,10 +47,10 @@ export function BackHeader({
       <button
         type="button"
         onClick={onBack}
-        aria-label="رجوع"
+        aria-label={t("رجوع")}
         className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface text-ink-2"
       >
-        <ArrowRight className="size-5" />
+        <ArrowRight className="size-5 ltr:rotate-180" />
       </button>
       <div>
         <h2 className="text-[22px] font-bold text-ink">{title}</h2>
@@ -95,7 +96,7 @@ export function SentScreen({
       )}
       <div className="mt-8 w-full space-y-3">
         <Button size="lg" full onClick={onBack}>
-          العودة لتسجيل الدخول
+          {t("العودة لتسجيل الدخول")}
         </Button>
         <Button
           variant="ghost"
@@ -110,7 +111,7 @@ export function SentScreen({
             else setCooldown(30);
           }}
         >
-          {cooldown > 0 ? `إعادة الإرسال بعد ${cooldown} ث` : "إعادة الإرسال"}
+          {cooldown > 0 ? t("إعادة الإرسال بعد {0} ث", { 0: cooldown }) : t("إعادة الإرسال")}
         </Button>
       </div>
     </div>

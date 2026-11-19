@@ -4,6 +4,7 @@ import { useActiveDevice } from "../store/devices";
 import { useNav } from "../store/nav";
 import { RuntimeLog } from "../features/logs/RuntimeLog";
 import { SwitchLog } from "../features/logs/SwitchLog";
+import { t } from "../i18n";
 
 export function Logs() {
   const { view, setView } = useNav();
@@ -14,22 +15,22 @@ export function Logs() {
   if (!device) {
     return (
       <div className="px-5 pt-16">
-        <EmptyState icon={History} title="لا يوجد جهاز" body="أضف جهازاً لعرض السجل." />
+        <EmptyState icon={History} title={t("لا يوجد جهاز")} body={t("أضف جهازاً لعرض السجل.")} />
       </div>
     );
   }
   return (
     <div className="space-y-4 px-5 pt-4 pb-32">
       <div>
-        <h1 className="text-[22px] font-bold tracking-tight text-ink">السجل</h1>
-        <p className="text-[13px] text-muted">عمليات التحويل وساعات تشغيل المصادر</p>
+        <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("السجل")}</h1>
+        <p className="text-[13px] text-muted">{t("عمليات التحويل وساعات تشغيل المصادر")}</p>
       </div>
       <Segmented
         value={tab}
         onChange={setView}
         options={[
-          { value: "switch", label: "التحويلات" },
-          { value: "runtime", label: "ساعات التشغيل" },
+          { value: "switch", label: t("التحويلات") },
+          { value: "runtime", label: t("ساعات التشغيل") },
         ]}
       />
       {tab === "switch" ? <SwitchLog /> : <RuntimeLog />}

@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 /**
  * Reads the result of an email link (confirmation, recovery, invitation) or
  * of Google sign-in from the page address.
@@ -29,12 +30,12 @@ function params(part: string): URLSearchParams {
 
 export function linkErrorText(code: string | null, description: string | null): string {
   if (code === "access_denied" && /cancel|denied by user/i.test(description ?? "")) {
-    return "أُلغي تسجيل الدخول بـ Google.";
+    return t("أُلغي تسجيل الدخول بـ Google.");
   }
   if (code === "otp_expired" || /expired|invalid/i.test(description ?? "")) {
-    return "انتهت صلاحية الرابط أو سبق استخدامه. اطلب رابطاً جديداً.";
+    return t("انتهت صلاحية الرابط أو سبق استخدامه. اطلب رابطاً جديداً.");
   }
-  return "تعذر فتح الرابط. حاول مرة أخرى أو اطلب رابطاً جديداً.";
+  return t("تعذر فتح الرابط. حاول مرة أخرى أو اطلب رابطاً جديداً.");
 }
 
 export function parseAuthLink(url: string): AuthLink {

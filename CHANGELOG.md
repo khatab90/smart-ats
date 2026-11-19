@@ -1,10 +1,25 @@
 # Changelog
 
+## 2.4.0 — 2026-11-19
+
+### Added
+- **Language: Arabic or English**, chosen in More → App settings. The whole app follows it: every text, dates and times, plurals, and the layout direction (right-to-left for Arabic, left-to-right for English, including the power flow, charts, arrows and switches). Changing it reloads the app. Arabic stays the default.
+- Every Arabic text in the code now goes through `t()` with its English in `src/i18n/en.ts`. `npm run i18n` (part of `npm run check`) fails if a text is not wrapped or has no translation; a unit test checks placeholders and that no Arabic is left in the English texts.
+
+### Removed
+- **Arabic-Indic digits option** (from 2.3.0) and all its code. Numbers are always Western (12355) in both languages.
+
+### Fixed
+- The notification badge now reads "9+" in Arabic too (it showed "+9").
+
+### Notes
+- Emails sent by Supabase (invitations, confirmation, password reset) are server templates and stay in Arabic. Texts the database writes into notifications are rebuilt by the app in the chosen language.
+
 ## 2.3.0 — 2026-11-19
 
 ### Added
 - **Dark theme**: automatic (follows the phone), light or dark, chosen in More → App settings. Built on semantic colour tokens (`surface`, `track`, …) so every screen adapts; applied before the first paint, so there is no flash.
-- **Arabic-Indic digits** (١٢٣) as an option next to Western digits. Every number on screen follows it, fixed texts included; device IDs, emails, firmware and input fields stay Western.
+- **Arabic-Indic digits** (١٢٣) as an option next to Western digits (removed in 2.4.0).
 - **Animated power flow** on the home screen: dots travel from the feeding source through the ATS to the house, faster when the house draws more power; still when offline, switching or without a source, and off when the phone asks for reduced motion.
 
 ## 2.2.0 — 2026-11-19

@@ -1,5 +1,5 @@
 import { Bell, LogOut, Plus, Router, Settings2, ShieldCheck, UserRound, Users } from "lucide-react";
-import { arCount, initialOf, num } from "../lib/format";
+import { arCount, initialOf } from "../lib/format";
 import { Badge, Card, Row } from "../components/ui";
 import { ROLE_META } from "../data/meta";
 import { AppPrefsCard } from "../features/settings/AppPrefsCard";
@@ -7,13 +7,14 @@ import { useAuth } from "../store/auth";
 import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
+import { t, uiStart } from "../i18n";
 
 const DEVICE_COUNT = {
-  one: "جهاز واحد",
-  two: "جهازان",
-  few: "أجهزة",
-  many: "جهازاً",
-  base: "جهاز",
+  one: t("جهاز واحد"),
+  two: t("جهازان"),
+  few: t("أجهزة"),
+  many: t("جهازاً"),
+  base: t("جهاز"),
 };
 
 export function More() {
@@ -24,7 +25,7 @@ export function More() {
   const { push } = useNav();
   return (
     <div className="space-y-5 px-5 pt-4 pb-32">
-      <h1 className="text-[22px] font-bold tracking-tight text-ink">المزيد</h1>
+      <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("المزيد")}</h1>
 
       <Card onClick={() => push("profile")} className="flex items-center gap-3 p-4">
         <span className="flex size-14 items-center justify-center rounded-[20px] bg-brand-800 text-xl font-bold text-white">
@@ -32,73 +33,73 @@ export function More() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[16px] font-bold text-ink">
-            {profile?.full_name || "بدون اسم"}
+            {profile?.full_name || t("بدون اسم")}
           </p>
-          <p className="truncate text-[12px] text-muted" dir="ltr" style={{ textAlign: "right" }}>
+          <p className="truncate text-[12px] text-muted" dir="ltr" style={{ textAlign: uiStart() }}>
             {user?.email}
           </p>
           {membership && (
             <Badge tone="info" className="mt-1.5">
-              {membership.isOwner ? "مالك • " : ""}
-              {ROLE_META[membership.role].label} في {device?.name || device?.id}
+              {membership.isOwner ? t("مالك • ") : ""}
+              {ROLE_META[membership.role].label} {t("في")} {device?.name || device?.id}
             </Badge>
           )}
         </div>
       </Card>
 
-      <Group title="الأجهزة">
+      <Group title={t("الأجهزة")}>
         <Row
           icon={Router}
-          title="أجهزتي"
+          title={t("أجهزتي")}
           subtitle={
             memberships.length
-              ? `المرتبطة بحسابك: ${arCount(memberships.length, DEVICE_COUNT)}`
-              : "لا توجد أجهزة مرتبطة بحسابك"
+              ? t("المرتبطة بحسابك: {0}", { 0: arCount(memberships.length, DEVICE_COUNT) })
+              : t("لا توجد أجهزة مرتبطة بحسابك")
           }
           onClick={() => push("devices")}
         />
         <Row
           icon={Plus}
-          title="إضافة جهاز جديد"
-          subtitle="بمعرّف الجهاز ورمز PIN"
+          title={t("إضافة جهاز جديد")}
+          subtitle={t("بمعرّف الجهاز ورمز PIN")}
           onClick={() => push("addDevice")}
         />
         {device && (
           <Row
             icon={Settings2}
-            title="إعدادات الجهاز"
-            subtitle="الحدود والمؤقتات والأولوية وأوقات الشمسية"
+            title={t("إعدادات الجهاز")}
+            subtitle={t("الحدود والمؤقتات والأولوية وأوقات الشمسية")}
             onClick={() => push("settings")}
           />
         )}
       </Group>
 
-      <Group title="الحساب">
+      <Group title={t("الحساب")}>
         <Row
           icon={UserRound}
-          title="الملف الشخصي"
-          subtitle="الاسم والبريد والهاتف وكلمة المرور"
+          title={t("الملف الشخصي")}
+          subtitle={t("الاسم والبريد والهاتف وكلمة المرور")}
           onClick={() => push("profile")}
         />
         {device && (
           <Row
             icon={Users}
-            title="المستخدمون والصلاحيات"
-            subtitle="المسؤولون والمشاهدون والدعوات"
+            title={t("المستخدمون والصلاحيات")}
+            subtitle={t("المسؤولون والمشاهدون والدعوات")}
             onClick={() => push("users")}
           />
         )}
         <Row
           icon={Bell}
-          title="الإشعارات"
-          subtitle="الانقطاع والتحويل والخلل الكهربائي والاتصال"
+          title={t("الإشعارات")}
+          subtitle={t("الانقطاع والتحويل والخلل الكهربائي والاتصال")}
           onClick={() => push("notifications")}
-          right={unreadCount ? <Badge tone="danger">{num(unreadCount)}</Badge> : undefined}
+          right={unreadCount ? <Badge tone="danger">{unreadCount}</Badge> : undefined}
         />
       </Group>
 
       <div>
-        <p className="mb-2 px-1 text-[12px] font-semibold text-muted">إعدادات التطبيق</p>
+        <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{t("إعدادات التطبيق")}</p>
         <AppPrefsCard />
       </div>
 
@@ -107,12 +108,11 @@ export function More() {
         onClick={() => void signOut()}
         className="flex w-full items-center justify-center gap-2 rounded-2xl border border-danger/20 bg-surface py-3.5 text-[14px] font-bold text-danger transition hover:bg-danger-soft"
       >
-        <LogOut className="size-[18px]" /> تسجيل الخروج
+        <LogOut className="size-[18px]" /> {t("تسجيل الخروج")}
       </button>
 
       <p className="flex items-center justify-center gap-1.5 text-[11px] text-faint">
-        <ShieldCheck className="size-3.5" /> Smart ATS • الإصدار{" "}
-        <span data-latin>{__APP_VERSION__}</span>
+        <ShieldCheck className="size-3.5" /> {t("Smart ATS • الإصدار")} {__APP_VERSION__}
       </p>
     </div>
   );

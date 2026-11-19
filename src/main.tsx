@@ -8,9 +8,11 @@ import "@fontsource/ibm-plex-sans-arabic/700.css";
 import "./index.css";
 import { parseAuthLink } from "./lib/authLink";
 import { captureInviteFromUrl } from "./lib/invite";
+import { applyLanguageToDocument } from "./i18n";
 import { applyStoredPrefs } from "./lib/prefs";
 import { reloadForNewVersion } from "./lib/staleBuild";
 
+applyLanguageToDocument();
 applyStoredPrefs();
 captureInviteFromUrl();
 

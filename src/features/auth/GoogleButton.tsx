@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as authApi from "../../api/auth";
 import { getPendingInvite } from "../../lib/invite";
 import { FormError } from "./shared";
+import { t } from "../../i18n";
 
 /** Google's "G" mark, as required on Google sign-in buttons. */
 function GoogleMark() {
@@ -28,7 +29,7 @@ function GoogleMark() {
 }
 
 /** "Continue with Google", then an "or" divider before the email form. */
-export function GoogleSignIn({ label = "المتابعة بحساب Google" }: { label?: string }) {
+export function GoogleSignIn({ label = t("المتابعة بحساب Google") }: { label?: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const go = async () => {
@@ -51,11 +52,11 @@ export function GoogleSignIn({ label = "المتابعة بحساب Google" }: {
         className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border border-line bg-surface text-[15px] font-semibold text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition hover:bg-canvas disabled:opacity-60"
       >
         <GoogleMark />
-        {loading ? "جارٍ التحويل إلى Google…" : label}
+        {loading ? t("جارٍ التحويل إلى Google…") : label}
       </button>
       <div className="flex items-center gap-3 text-[12px] text-faint">
         <span className="h-px flex-1 bg-line" />
-        أو بالبريد الإلكتروني
+        {t("أو بالبريد الإلكتروني")}
         <span className="h-px flex-1 bg-line" />
       </div>
     </div>

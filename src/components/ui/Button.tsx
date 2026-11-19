@@ -83,7 +83,7 @@ export function IconButton({
     >
       <Icon className="size-5" strokeWidth={1.8} />
       {badge ? (
-        <span className="num absolute -top-1 -left-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-canvas">
+        <span dir="ltr" className="num absolute -top-1 -end-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white ring-2 ring-canvas">
           {badge > 9 ? "9+" : badge}
         </span>
       ) : null}

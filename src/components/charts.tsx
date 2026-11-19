@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from "react";
+import { isRtl } from "../i18n";
 import { cn } from "../lib/cn";
 import { formatTick, niceStep, ticksFor } from "../lib/series";
 
@@ -43,7 +44,10 @@ export function LineChart({
   const H = height;
   const span = Math.max(1, to - from);
   const ySpan = Math.max(1e-6, yMax - yMin);
-  const x = (t: number) => W - ((t - from) / span) * W;
+  // Time runs with the reading direction: newest at the start side's end
+  // (left in Arabic, right in English), as in the bar charts.
+  const rtl = isRtl();
+  const x = (t: number) => (rtl ? W - ((t - from) / span) * W : ((t - from) / span) * W);
   const y = (v: number) => H - 4 - ((v - yMin) / ySpan) * (H - 8);
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
   const ticks = ticksFor(yMin, yMax, 3);
@@ -55,7 +59,7 @@ export function LineChart({
         {ticks.map((v) => (
           <span
             key={v}
-            className="absolute right-0 -translate-y-1/2"
+            className="absolute end-0 -translate-y-1/2"
             style={{ top: `${(y(v) / H) * 100}%` }}
           >
             {formatTick(v, step)}
@@ -214,7 +218,7 @@ export function BarChart({
         {[3, 2, 1, 0].map((k) => (
           <span
             key={k}
-            className="absolute right-0 -translate-y-1/2"
+            className="absolute end-0 -translate-y-1/2"
             style={{ top: `${((3 - k) / 3) * 100}%` }}
           >
             {formatTick(step * k, step)}

@@ -41,6 +41,7 @@ import {
 import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
 import { installedSources } from "../../domain/sources";
 import { useActiveDevice, useNow } from "../../store/devices";
+import { t, uiStart } from "../../i18n";
 
 /** The state before the window comes from the last state-changing event. */
 const STATE_TYPES = [
@@ -123,7 +124,7 @@ export function RuntimeLog() {
         <div className="hero-grid absolute inset-0" />
         <div className="relative flex items-center justify-between">
           <p className="flex items-center gap-2 text-[12px] text-white/60">
-            <Timer className="size-4" /> مدة تشغيل المصدر الحالي
+            <Timer className="size-4" /> {t("مدة تشغيل المصدر الحالي")}
           </p>
           {current && (
             <span
@@ -137,22 +138,25 @@ export function RuntimeLog() {
         <p
           className="num relative mt-3 text-[40px] leading-none font-bold tracking-tight"
           dir="ltr"
-          style={{ textAlign: "right" }}
+          style={{ textAlign: uiStart() }}
         >
           {current && activeSince ? fmtClock(serverNow() - activeSince) : "--:--:--"}
         </p>
         <p className="relative mt-2 text-[12px] text-white/55">
           {!live
-            ? "غير متاح أثناء عدم اتصال البورد"
+            ? t("غير متاح أثناء عدم اتصال البورد")
             : current && activeSince
-              ? `بدأ ${fmtDayLabel(activeSince, serverNow(), tz)} الساعة ${fmtTime(activeSince, tz)}`
-              : "لا يوجد مصدر فعّال حالياً"}
+              ? t("بدأ {0} الساعة {1}", {
+                  0: fmtDayLabel(activeSince, serverNow(), tz),
+                  1: fmtTime(activeSince, tz),
+                })
+              : t("لا يوجد مصدر فعّال حالياً")}
         </p>
       </section>
 
       <Card className="p-4">
         <SectionTitle
-          title="ساعات التشغيل التراكمية"
+          title={t("ساعات التشغيل التراكمية")}
           action={
             isAdmin && runtime ? (
               <Button
@@ -162,14 +166,16 @@ export function RuntimeLog() {
                 disabled={!canReset}
                 onClick={() => setConfirm([...installed])}
               >
-                تصفير الكل
+                {t("تصفير الكل")}
               </Button>
             ) : undefined
           }
         />
         {!runtime ? (
           <p className="py-4 text-center text-[13px] text-muted">
-            {link === "never" ? "لا توجد بيانات حالياً." : "لم يرسل البورد عدادات ساعات التشغيل بعد."}
+            {link === "never"
+              ? t("لا توجد بيانات حالياً.")
+              : t("لم يرسل البورد عدادات ساعات التشغيل بعد.")}
           </p>
         ) : (
           <div className="space-y-3">
@@ -184,17 +190,18 @@ export function RuntimeLog() {
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-semibold text-ink">{SOURCE_META[id].name}</p>
                     <p className="text-[11px] text-muted">
-                      بدء العد: {r?.since ? fmtFullDate(Date.parse(r.since), tz) : "غير متوفر"}
+                      {t("بدء العد:")}{" "}
+                      {r?.since ? fmtFullDate(Date.parse(r.since), tz) : t("غير متوفر")}
                     </p>
                   </div>
                   <p className="num text-[15px] font-bold text-ink">
                     {r ? fmtHours(r.s) : "—"}{" "}
-                    <span className="text-[11px] font-medium text-muted">س</span>
+                    <span className="text-[11px] font-medium text-muted">{t("س")}</span>
                   </p>
                   {isAdmin && (
                     <button
                       type="button"
-                      aria-label={`تصفير ساعات ${SOURCE_META[id].name}`}
+                      aria-label={t("تصفير ساعات {0}", { 0: SOURCE_META[id].name })}
                       disabled={!canReset}
                       onClick={() => setConfirm([id])}
                       className="rounded-xl p-2 text-muted hover:bg-canvas hover:text-danger disabled:opacity-30"
@@ -209,16 +216,17 @@ export function RuntimeLog() {
         )}
         <CommandProgress state={cmd} onDismiss={reset} />
         <p className="mt-3 text-[11px] leading-5 text-muted">
-          تُحسب الساعات في ذاكرة البورد فقط عندما يكون المصدر هو المصدر الفعّال الذي يغذي الحمل. وقت
-          التحويل والانقطاع الكلي لا يُحتسب لأي مصدر.
-          {isAdmin && link !== "live" ? " التصفير متاح فقط أثناء اتصال البورد." : ""}
+          {t(
+            "تُحسب الساعات في ذاكرة البورد فقط عندما يكون المصدر هو المصدر الفعّال الذي يغذي الحمل. وقت التحويل والانقطاع الكلي لا يُحتسب لأي مصدر.",
+          )}
+          {isAdmin && link !== "live" ? t(" التصفير متاح فقط أثناء اتصال البورد.") : ""}
         </p>
       </Card>
 
       <Card className="p-4">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="text-[15px] font-bold text-ink">سجل التشغيل اليومي</p>
+            <p className="text-[15px] font-bold text-ink">{t("سجل التشغيل اليومي")}</p>
             <p className="num text-[12px] text-muted">
               {fmtDate(days[0], tz)} – {fmtDate(days[6], tz)}
             </p>
@@ -226,21 +234,21 @@ export function RuntimeLog() {
           <div className="flex gap-1.5">
             <button
               type="button"
-              aria-label="الأسبوع السابق"
+              aria-label={t("الأسبوع السابق")}
               disabled={weekOffset >= 12}
               onClick={() => setWeekOffset((w) => w + 1)}
               className="flex size-9 items-center justify-center rounded-xl border border-line text-ink-2 disabled:opacity-30"
             >
-              <ChevronRight className="size-4" />
+              <ChevronRight className="size-4 ltr:rotate-180" />
             </button>
             <button
               type="button"
-              aria-label="الأسبوع التالي"
+              aria-label={t("الأسبوع التالي")}
               disabled={weekOffset === 0}
               onClick={() => setWeekOffset((w) => w - 1)}
               className="flex size-9 items-center justify-center rounded-xl border border-line text-ink-2 disabled:opacity-30"
             >
-              <ChevronLeft className="size-4" />
+              <ChevronLeft className="size-4 ltr:rotate-180" />
             </button>
           </div>
         </div>
@@ -251,8 +259,8 @@ export function RuntimeLog() {
         ) : events.data.length === 0 && initial === "unknown" ? (
           <EmptyState
             icon={History}
-            title="لا توجد بيانات حالياً"
-            body="لا توجد أحداث تحويل مسجلة لهذه الفترة."
+            title={t("لا توجد بيانات حالياً")}
+            body={t("لا توجد أحداث تحويل مسجلة لهذه الفترة.")}
           />
         ) : (
           <>
@@ -262,14 +270,14 @@ export function RuntimeLog() {
               maxValue={24}
               selected={selIndex >= 0 ? selIndex : undefined}
               onSelect={(i) => setSelectedDay(days[i])}
-              unit="ساعة"
+              unit={t("ساعة")}
             />
             <div className="mt-4 border-t border-line pt-4">
               <div className="flex items-center justify-between">
                 <p className="text-[14px] font-bold text-ink">
                   {fmtWeekday(selDay, tz)} {fmtDate(selDay, tz)}
                 </p>
-                <Badge tone="info">{selDay === today ? "حتى الآن" : "24 ساعة"}</Badge>
+                <Badge tone="info">{selDay === today ? t("حتى الآن") : t("24 ساعة")}</Badge>
               </div>
               <DayStrip timeline={timeline} from={selDay} to={addDaysInTz(selDay, 1, tz)} />
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -291,7 +299,7 @@ export function RuntimeLog() {
                   </div>
                 ))}
                 <div className="rounded-2xl bg-danger-soft p-3">
-                  <p className="text-[11px] font-semibold text-danger">بلا مصدر / تحويل</p>
+                  <p className="text-[11px] font-semibold text-danger">{t("بلا مصدر / تحويل")}</p>
                   <p className="num mt-1 text-[14px] font-bold text-ink">
                     {fmtDuration(selDur.none)}
                   </p>
@@ -299,11 +307,11 @@ export function RuntimeLog() {
               </div>
               {selDur.unknown > 60_000 && (
                 <p className="mt-2 text-[11px] text-muted">
-                  {fmtDuration(selDur.unknown)} غير معروفة (قبل أول حدث مسجّل).
+                  {fmtDuration(selDur.unknown)} {t("غير معروفة (قبل أول حدث مسجّل).")}
                 </p>
               )}
               <p className="mt-2 text-[10px] text-faint">
-                محسوب من سجل أحداث التحويل. العدادات التراكمية أعلاه من ذاكرة البورد.
+                {t("محسوب من سجل أحداث التحويل. العدادات التراكمية أعلاه من ذاكرة البورد.")}
               </p>
             </div>
           </>
@@ -313,8 +321,8 @@ export function RuntimeLog() {
       <ConfirmSheet
         open={confirm !== null}
         onClose={() => setConfirm(null)}
-        title={confirm && confirm.length > 1 ? "تصفير جميع العدادات" : "تصفير عداد المصدر"}
-        confirmLabel="تأكيد التصفير"
+        title={confirm && confirm.length > 1 ? t("تصفير جميع العدادات") : t("تصفير عداد المصدر")}
+        confirmLabel={t("تأكيد التصفير")}
         danger
         onConfirm={() => {
           if (confirm) void send("reset_runtime", { sources: confirm });
@@ -323,9 +331,11 @@ export function RuntimeLog() {
       >
         {confirm && (
           <p className="text-[13px] leading-6 text-ink-2">
-            سيتم تصفير ساعات التشغيل في البورد لـ{" "}
-            <b>{confirm.map((s) => SOURCE_META[s].name).join("، ")}</b>، ويبدأ العد من جديد بتاريخ
-            اليوم. لا يمكن التراجع عن هذه العملية، وستُسجَّل باسمك في سجل الأحداث.
+            {t("سيتم تصفير ساعات التشغيل في البورد لـ")}{" "}
+            <b>{confirm.map((s) => SOURCE_META[s].name).join(t("، "))}</b>
+            {t(
+              "، ويبدأ العد من جديد بتاريخ اليوم. لا يمكن التراجع عن هذه العملية، وستُسجَّل باسمك في سجل الأحداث.",
+            )}
           </p>
         )}
       </ConfirmSheet>
@@ -354,7 +364,7 @@ export function DayStrip({
             key={i}
             className="absolute inset-y-0"
             style={{
-              right: `${((p.a - from) / span) * 100}%`,
+              insetInlineStart: `${((p.a - from) / span) * 100}%`,
               width: `${((p.b - p.a) / span) * 100}%`,
               background: STATE_COLOR[p.state],
             }}
@@ -366,7 +376,9 @@ export function DayStrip({
           <span key={h}>{h}</span>
         ))}
       </div>
-      <p className="sr-only">{fmtNum(parts.length)} فترات</p>
+      <p className="sr-only">
+        {fmtNum(parts.length)} {t("فترات")}
+      </p>
     </div>
   );
 }

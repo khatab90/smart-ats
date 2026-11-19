@@ -7,6 +7,7 @@ import { fmtAgo } from "../../lib/format";
 import { fetchLinkSummaries } from "../../api/devices";
 import { useDevices } from "../../store/devices";
 import { useNav } from "../../store/nav";
+import { t } from "../../i18n";
 
 export function DeviceSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { memberships, activeId, setActiveId, clockOffsetMs } = useDevices();
@@ -25,7 +26,7 @@ export function DeviceSheet({ open, onClose }: { open: boolean; onClose: () => v
   }, [open, memberships]);
 
   return (
-    <Sheet open={open} onClose={onClose} title="أجهزتي">
+    <Sheet open={open} onClose={onClose} title={t("أجهزتي")}>
       <div className="space-y-2">
         {memberships.map((m) => {
           const selected = m.device.id === activeId;
@@ -62,10 +63,10 @@ export function DeviceSheet({ open, onClose }: { open: boolean; onClose: () => v
                   {!s
                     ? "…"
                     : online
-                      ? "متصل"
+                      ? t("متصل")
                       : seen
-                        ? `غير متصل • ${fmtAgo(seen, Date.now() + clockOffsetMs)}`
-                        : "لم يتصل بعد"}
+                        ? t("غير متصل • {0}", { 0: fmtAgo(seen, Date.now() + clockOffsetMs) })
+                        : t("لم يتصل بعد")}
                 </span>
               </span>
               <StatusDot tone={online ? "ok" : "danger"} />
@@ -82,7 +83,7 @@ export function DeviceSheet({ open, onClose }: { open: boolean; onClose: () => v
             push("addDevice");
           }}
         >
-          إضافة جهاز
+          {t("إضافة جهاز")}
         </Button>
         <Button
           full
@@ -92,7 +93,7 @@ export function DeviceSheet({ open, onClose }: { open: boolean; onClose: () => v
             push("devices");
           }}
         >
-          إدارة الأجهزة
+          {t("إدارة الأجهزة")}
         </Button>
       </div>
     </Sheet>
