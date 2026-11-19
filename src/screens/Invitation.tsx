@@ -59,7 +59,7 @@ export function InvitationScreen({ token, onDone }: { token: string; onDone: () 
   };
 
   return (
-    <div className="no-scrollbar flex h-full flex-col overflow-y-auto bg-canvas px-5 pt-10 pb-8">
+    <div className="no-scrollbar flex h-full flex-col overflow-y-auto bg-canvas px-5 pt-10 pb-8 md:px-[max(1.25rem,calc((100%-28rem)/2))] md:pt-16">
       <span className="mx-auto flex size-16 items-center justify-center rounded-3xl bg-brand-50 text-brand-600">
         <MailPlus className="size-7" />
       </span>

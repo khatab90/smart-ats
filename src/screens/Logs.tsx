@@ -20,12 +20,13 @@ export function Logs() {
     );
   }
   return (
-    <div className="space-y-4 px-5 pt-4 pb-32">
+    <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
       <div>
         <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("السجل")}</h1>
         <p className="text-[13px] text-muted">{t("عمليات التحويل وساعات تشغيل المصادر")}</p>
       </div>
       <Segmented
+        className="lg:max-w-md"
         value={tab}
         onChange={setView}
         options={[

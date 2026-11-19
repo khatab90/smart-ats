@@ -113,7 +113,7 @@ export function Energy() {
   }
 
   return (
-    <div className="space-y-4 px-5 pt-4 pb-32">
+    <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
       <div>
         <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("الطاقة")}</h1>
         <p className="text-[13px] text-muted">
@@ -122,6 +122,7 @@ export function Energy() {
       </div>
 
       <Segmented
+        className="lg:max-w-md"
         value={range}
         onChange={(r) => {
           setRange(r);
@@ -189,112 +190,116 @@ export function Energy() {
             )}
           </Card>
 
-          <Card className="p-4">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[15px] font-bold text-ink">
-                  {t("الاستهلاك حسب")} {range === "day" ? t("الساعة") : t("اليوم")}
-                </p>
-                {sel !== undefined ? (
-                  <p className="text-[12px] text-muted">
-                    {buckets[sel].title} •{" "}
-                    <span className="num font-semibold text-ink">
-                      {fmtNum(total(splits[sel]), 2)} kWh
-                    </span>
+          <div className="space-y-4 lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start lg:gap-5 lg:space-y-0">
+            <Card className="p-4">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[15px] font-bold text-ink">
+                    {t("الاستهلاك حسب")} {range === "day" ? t("الساعة") : t("اليوم")}
                   </p>
-                ) : (
-                  <p className="text-[12px] text-muted">{t("اضغط على عمود لعرض التفاصيل (kWh)")}</p>
+                  {sel !== undefined ? (
+                    <p className="text-[12px] text-muted">
+                      {buckets[sel].title} •{" "}
+                      <span className="num font-semibold text-ink">
+                        {fmtNum(total(splits[sel]), 2)} kWh
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="text-[12px] text-muted">
+                      {t("اضغط على عمود لعرض التفاصيل (kWh)")}
+                    </p>
+                  )}
+                </div>
+                {sel !== undefined && (
+                  <button
+                    type="button"
+                    onClick={() => setSelected(undefined)}
+                    className="text-[12px] font-semibold text-brand-600"
+                  >
+                    {t("مسح")}
+                  </button>
                 )}
               </div>
-              {sel !== undefined && (
-                <button
-                  type="button"
-                  onClick={() => setSelected(undefined)}
-                  className="text-[12px] font-semibold text-brand-600"
-                >
-                  {t("مسح")}
-                </button>
-              )}
-            </div>
-            <BarChart
-              bars={bars}
-              selected={sel}
-              onSelect={(i) => setSelected(i === sel ? undefined : i)}
-              labelEvery={range === "day" ? 4 : range === "week" ? 1 : 5}
-              unit="kWh"
-            />
-            {sel !== undefined ? (
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {SOURCE_ORDER.map((id) => (
-                  <div
-                    key={id}
-                    className="rounded-xl px-2.5 py-2"
-                    style={{ background: SOURCE_META[id].soft }}
-                  >
-                    <p
-                      className="text-[10px] font-semibold"
-                      style={{ color: SOURCE_META[id].color }}
+              <BarChart
+                bars={bars}
+                selected={sel}
+                onSelect={(i) => setSelected(i === sel ? undefined : i)}
+                labelEvery={range === "day" ? 4 : range === "week" ? 1 : 5}
+                unit="kWh"
+              />
+              {sel !== undefined ? (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {SOURCE_ORDER.map((id) => (
+                    <div
+                      key={id}
+                      className="rounded-xl px-2.5 py-2"
+                      style={{ background: SOURCE_META[id].soft }}
                     >
-                      {SOURCE_META[id].short}
-                    </p>
-                    <p className="num text-[13px] font-bold text-ink">
-                      {fmtNum(splits[sel][id], 2)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-4 flex justify-center gap-4">
-                {SOURCE_ORDER.map((id) => (
-                  <span key={id} className="flex items-center gap-1.5 text-[11px] text-muted">
-                    <span
-                      className="size-2.5 rounded-[3px]"
-                      style={{ background: SOURCE_META[id].color }}
-                    />
-                    {SOURCE_META[id].short}
-                  </span>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          <Card className="p-4">
-            <SectionTitle title={t("توزيع الاستهلاك على المصادر")} className="mb-4" />
-            <div className="flex items-center gap-5">
-              <Donut
-                segments={SOURCE_ORDER.map((id) => ({
-                  value: totals[id],
-                  color: SOURCE_META[id].color,
-                }))}
-              >
-                <p className="num text-[20px] leading-none font-bold text-ink">
-                  {fmtNum(kwh, kwh < 100 ? 1 : 0)}
-                </p>
-                <p className="mt-1 text-[10px] text-muted">kWh</p>
-              </Donut>
-              <div className="min-w-0 flex-1 space-y-3">
-                {SOURCE_ORDER.map((id) => (
-                  <div key={id}>
-                    <div className="flex items-center justify-between text-[12px]">
-                      <span className="flex items-center gap-1.5 font-semibold text-ink-2">
-                        <span
-                          className="size-2.5 rounded-[3px]"
-                          style={{ background: SOURCE_META[id].color }}
-                        />
+                      <p
+                        className="text-[10px] font-semibold"
+                        style={{ color: SOURCE_META[id].color }}
+                      >
                         {SOURCE_META[id].short}
-                      </span>
-                      <span className="num font-bold text-ink">
-                        {kwh > 0 ? fmtNum((totals[id] / kwh) * 100) : 0}%
-                      </span>
+                      </p>
+                      <p className="num text-[13px] font-bold text-ink">
+                        {fmtNum(splits[sel][id], 2)}
+                      </p>
                     </div>
-                    <p className="num mt-0.5 text-[11px] text-muted">
-                      <bdi>{fmtNum(totals[id], 1)} kWh</bdi>
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-4 flex justify-center gap-4">
+                  {SOURCE_ORDER.map((id) => (
+                    <span key={id} className="flex items-center gap-1.5 text-[11px] text-muted">
+                      <span
+                        className="size-2.5 rounded-[3px]"
+                        style={{ background: SOURCE_META[id].color }}
+                      />
+                      {SOURCE_META[id].short}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="p-4">
+              <SectionTitle title={t("توزيع الاستهلاك على المصادر")} className="mb-4" />
+              <div className="flex items-center gap-5">
+                <Donut
+                  segments={SOURCE_ORDER.map((id) => ({
+                    value: totals[id],
+                    color: SOURCE_META[id].color,
+                  }))}
+                >
+                  <p className="num text-[20px] leading-none font-bold text-ink">
+                    {fmtNum(kwh, kwh < 100 ? 1 : 0)}
+                  </p>
+                  <p className="mt-1 text-[10px] text-muted">kWh</p>
+                </Donut>
+                <div className="min-w-0 flex-1 space-y-3">
+                  {SOURCE_ORDER.map((id) => (
+                    <div key={id}>
+                      <div className="flex items-center justify-between text-[12px]">
+                        <span className="flex items-center gap-1.5 font-semibold text-ink-2">
+                          <span
+                            className="size-2.5 rounded-[3px]"
+                            style={{ background: SOURCE_META[id].color }}
+                          />
+                          {SOURCE_META[id].short}
+                        </span>
+                        <span className="num font-bold text-ink">
+                          {kwh > 0 ? fmtNum((totals[id] / kwh) * 100) : 0}%
+                        </span>
+                      </div>
+                      <p className="num mt-0.5 text-[11px] text-muted">
+                        <bdi>{fmtNum(totals[id], 1)} kWh</bdi>
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </>
       )}
     </div>

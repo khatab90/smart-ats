@@ -23,8 +23,6 @@ export const EN: Record<string, string> = {
     "An unexpected error occurred while displaying it. You can try again.",
   "إعادة المحاولة": "Try again",
   "نظام التحويل التلقائي الذكي": "Smart automatic transfer switch",
-  "مراقبة وتحكم بمفتاح التحويل التلقائي. القراءات والحالات تأتي من بورد ESP32 فقط، وتُخزَّن في Supabase.":
-    "Monitoring and control of the automatic transfer switch. Readings and states come only from the ESP32 board and are stored in Supabase.",
   "الشبكة الوطنية": "National grid",
   "الطاقة الشمسية": "Solar",
   المولد: "Generator",

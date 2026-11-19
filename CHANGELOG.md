@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.6.0 — 2026-11-20
+
+Fits every screen: phone, tablet (iPad) and laptop.
+
+### Changed
+- **No more phone mockup on large screens**: the app fills the whole window on every device.
+- **Navigation adapts**: phones keep the bottom bar; tablets get a side rail (icons with short labels); laptops get a sidebar with the app name, full labels and the signed-in user (opens the profile). It sits on the right in Arabic and on the left in English.
+- **Two-column layouts on laptops**: Home (live status, today and sources beside mode and board connection — the phone order is unchanged), Monitor (reading beside the four values), Energy (hourly chart beside the split by source), Log (summary beside the statistics; runtime beside the daily chart) and More.
+- Tablets show one comfortable column; settings, profile and other inner screens open in a centered column on large screens.
+- **Sign-in** on laptops: brand panel beside the form; on tablets the form is centered.
+- Bottom sheets become centered windows on tablets and laptops; notifications appear at the top corner.
+
 ## 2.5.0 — 2026-11-19
 
 Design pass: every setting on its own screen, and a confirmation before

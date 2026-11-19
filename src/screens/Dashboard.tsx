@@ -32,7 +32,7 @@ export function Dashboard() {
   const firstName = profile?.full_name.split(" ")[0] ?? "";
 
   return (
-    <div className="space-y-5 px-5 pt-4 pb-32">
+    <div className="space-y-5 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
       <div className="flex items-center gap-3">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-brand-800 text-[15px] font-bold text-white">
           {initialOf(profile?.full_name, user?.email)}
@@ -79,7 +79,7 @@ export function Dashboard() {
           <button
             type="button"
             onClick={() => setDeviceSheet(true)}
-            className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface px-3.5 py-2.5 text-start transition hover:border-brand-200"
+            className="flex w-full items-center gap-3 rounded-2xl border border-line bg-surface px-3.5 py-2.5 text-start transition hover:border-brand-200 lg:max-w-md"
           >
             <Router className="size-[18px] text-brand-600" />
             <span className="min-w-0 flex-1">
@@ -116,14 +116,32 @@ export function DeviceBody() {
       </div>
     );
   }
+  // Phones: one column in reading order. Laptops: two columns — what is
+  // happening (hero, today, sources) and what you control (mode, board).
   return (
     <>
       <StatusBanners />
-      <Hero />
-      <ModeCard />
-      <TodayStats />
-      <SourcesCard />
-      <ConnectionCard />
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start">
+        <div className="contents lg:flex lg:flex-col lg:gap-5">
+          <div className="order-1 lg:order-none">
+            <Hero />
+          </div>
+          <div className="order-3 lg:order-none">
+            <TodayStats />
+          </div>
+          <div className="order-4 lg:order-none">
+            <SourcesCard />
+          </div>
+        </div>
+        <div className="contents lg:flex lg:flex-col lg:gap-5">
+          <div className="order-2 lg:order-none">
+            <ModeCard />
+          </div>
+          <div className="order-5 lg:order-none">
+            <ConnectionCard />
+          </div>
+        </div>
+      </div>
     </>
   );
 }

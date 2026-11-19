@@ -28,7 +28,7 @@ export function Sheet({
   const host = document.getElementById("sheet-root");
   const node = (
     <div
-      className="pointer-events-auto absolute inset-0 z-50 flex flex-col justify-end"
+      className="pointer-events-auto absolute inset-0 z-50 flex flex-col justify-end md:items-center md:justify-center md:p-6"
       role="dialog"
       aria-modal="true"
     >
@@ -38,8 +38,8 @@ export function Sheet({
         onClick={onClose}
         className="absolute inset-0 animate-fade-in bg-brand-950/45 backdrop-blur-[2px]"
       />
-      <div className="relative flex max-h-[88%] animate-sheet-in flex-col rounded-t-[28px] bg-surface">
-        <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line" />
+      <div className="relative flex max-h-[88%] animate-sheet-in flex-col rounded-t-[28px] bg-surface md:max-h-[85%] md:w-full md:max-w-lg md:animate-dialog-in md:rounded-[28px] md:shadow-[0_24px_60px_-20px_rgba(10,25,50,0.55)]">
+        <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line md:hidden" />
         {title && (
           <div className="flex items-center justify-between px-5 pt-3 pb-2">
             <h2 className="text-[17px] font-bold text-ink">{title}</h2>
@@ -109,7 +109,7 @@ export function ConfirmDialog({
         onClick={onClose}
         className="absolute inset-0 animate-fade-in bg-brand-950/50 backdrop-blur-[3px]"
       />
-      <div className="relative flex max-h-full w-full animate-dialog-in flex-col overflow-hidden rounded-[28px] bg-surface shadow-[0_24px_60px_-20px_rgba(10,25,50,0.55)]">
+      <div className="relative flex max-h-full w-full max-w-sm animate-dialog-in flex-col overflow-hidden rounded-[28px] bg-surface md:max-w-md shadow-[0_24px_60px_-20px_rgba(10,25,50,0.55)]">
         <div className="overflow-y-auto px-5 pt-6 pb-5 text-center">
           {Icon && (
             <span

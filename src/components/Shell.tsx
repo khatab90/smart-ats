@@ -1,14 +1,11 @@
 import {
   Activity,
-  BatteryFull,
   ChartColumn,
   CircleAlert,
   CircleCheck,
   History,
   House,
   LayoutGrid,
-  Signal,
-  Wifi,
   WifiOff,
   Zap,
   ZapOff,
@@ -16,8 +13,6 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "../lib/cn";
-import { fmtTime } from "../lib/format";
-import { useNow } from "../store/devices";
 import { useNav, type Tab } from "../store/nav";
 import { useToast, type Toast } from "../store/toast";
 import { t, textDir } from "../i18n";
@@ -50,57 +45,15 @@ export function Logo({ size = 40, className }: { size?: number; className?: stri
   );
 }
 
-export function PhoneFrame({ children }: { children: ReactNode }) {
+/**
+ * The app fills the whole screen on every device: phone, tablet or laptop.
+ * Sheets and dialogs mount in #sheet-root, above everything.
+ */
+export function AppFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center gap-16 bg-[radial-gradient(120%_80%_at_80%_0%,#c9dcfb_0%,#dfe6f1_45%,#d4dcea_100%)] dark:bg-[radial-gradient(120%_80%_at_80%_0%,#13233f_0%,#0b1220_45%,#060b14_100%)] sm:p-6">
-      <aside className="hidden max-w-[300px] lg:block" dir={textDir()}>
-        <div className="flex items-center gap-3">
-          <Logo size={48} />
-          <div>
-            <p className="text-2xl font-bold tracking-tight text-brand-900">Smart ATS</p>
-            <p className="text-sm text-muted">{t("نظام التحويل التلقائي الذكي")}</p>
-          </div>
-        </div>
-        <p className="mt-6 text-[15px] leading-8 text-ink-2">
-          {t(
-            "مراقبة وتحكم بمفتاح التحويل التلقائي. القراءات والحالات تأتي من بورد ESP32 فقط، وتُخزَّن في Supabase.",
-          )}
-        </p>
-        <div className="mt-6 flex flex-wrap gap-2 text-[12px] font-semibold">
-          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-grid">
-            {t("الشبكة الوطنية")}
-          </span>
-          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-solar">
-            {t("الطاقة الشمسية")}
-          </span>
-          <span className="rounded-full bg-surface/70 px-3 py-1.5 text-gen">{t("المولد")}</span>
-        </div>
-      </aside>
-      <div
-        dir={textDir()}
-        className="relative flex h-dvh w-full flex-col overflow-hidden bg-canvas sm:h-[min(880px,calc(100dvh-48px))] sm:max-w-[400px] sm:rounded-[46px] sm:phone-shadow"
-      >
-        <StatusBar />
-        <div className="relative min-h-0 flex-1">{children}</div>
-        <div id="sheet-root" className="pointer-events-none absolute inset-0 z-50" />
-      </div>
-    </div>
-  );
-}
-
-function StatusBar() {
-  const now = useNow(30_000);
-  return (
-    <div
-      className="hidden h-11 shrink-0 items-center justify-between bg-transparent px-7 pt-1 text-[13px] font-semibold text-ink sm:flex"
-      dir="ltr"
-    >
-      <span className="num">{fmtTime(now).replace(/[^\d:]/g, "")}</span>
-      <span className="flex items-center gap-1.5">
-        <Signal className="size-3.5" strokeWidth={2.5} />
-        <Wifi className="size-3.5" strokeWidth={2.5} />
-        <BatteryFull className="size-[18px]" strokeWidth={2} />
-      </span>
+    <div dir={textDir()} className="relative flex h-dvh w-full flex-col overflow-hidden bg-canvas">
+      <div className="relative min-h-0 flex-1">{children}</div>
+      <div id="sheet-root" className="pointer-events-none absolute inset-0 z-50" />
     </div>
   );
 }
@@ -118,7 +71,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label={t("التنقل الرئيسي")}
-      className="absolute inset-x-3 bottom-3 z-30 flex rounded-[26px] border border-line/80 bg-surface/95 p-1.5 shadow-[0_12px_32px_-12px_rgba(10,31,61,0.35)] backdrop-blur-md"
+      className="absolute inset-x-3 bottom-3 z-30 flex rounded-[26px] md:hidden border border-line/80 bg-surface/95 p-1.5 shadow-[0_12px_32px_-12px_rgba(10,31,61,0.35)] backdrop-blur-md"
     >
       {TABS.map((t) => {
         const active = tab === t.id;
@@ -150,6 +103,53 @@ export function BottomNav() {
   );
 }
 
+/**
+ * Tablets: a rail of icons with short labels. Laptops: a sidebar with the
+ * app name, full labels and the signed-in user.
+ */
+export function SideNav({ footer }: { footer?: ReactNode }) {
+  const { tab, setTab } = useNav();
+  return (
+    <nav
+      aria-label={t("التنقل الرئيسي")}
+      className="hidden w-[92px] shrink-0 flex-col border-e border-line bg-surface px-3 pt-6 pb-4 md:flex lg:w-[260px] lg:px-4"
+    >
+      <div className="flex items-center justify-center gap-3 lg:justify-start lg:px-2">
+        <Logo size={42} />
+        <div className="hidden min-w-0 lg:block">
+          <p className="text-[17px] leading-tight font-bold tracking-tight text-ink" dir="ltr">
+            Smart ATS
+          </p>
+          <p className="text-[11px] leading-4 text-muted">{t("نظام التحويل التلقائي الذكي")}</p>
+        </div>
+      </div>
+      <div className="mt-8 flex flex-col gap-1.5">
+        {TABS.map((item) => {
+          const active = tab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 transition lg:flex-row lg:gap-3 lg:px-3.5 lg:py-3",
+                active
+                  ? "bg-brand-800 text-white shadow-[0_8px_20px_-10px_rgba(10,31,61,0.7)]"
+                  : "text-muted hover:bg-canvas hover:text-ink",
+              )}
+            >
+              <item.icon className="size-5 shrink-0" strokeWidth={active ? 2.1 : 1.8} />
+              <span className="text-[11px] font-semibold lg:text-[14px]">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+      {footer && <div className="mt-auto">{footer}</div>}
+    </nav>
+  );
+}
+
 const TOAST_ICON: Record<Toast["kind"], { icon: LucideIcon; cls: string }> = {
   source_outage: { icon: ZapOff, cls: "bg-danger-soft text-danger" },
   transfer: { icon: Zap, cls: "bg-brand-100 text-brand-600" },
@@ -165,7 +165,7 @@ export function ToastHost() {
   const { toasts, dismissToast } = useToast();
   return (
     <div
-      className="pointer-events-none absolute inset-x-3 top-3 z-[60] flex flex-col gap-2"
+      className="pointer-events-none absolute inset-x-3 top-3 z-[60] flex flex-col gap-2 md:inset-x-auto md:end-6 md:top-6 md:w-[380px]"
       aria-live="polite"
     >
       {toasts.map((t) => {

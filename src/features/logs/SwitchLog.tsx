@@ -100,105 +100,106 @@ export function SwitchLog() {
 
   return (
     <>
-      <Card className="p-4">
-        <div className="flex items-stretch gap-3">
-          <div className="min-w-0 flex-1 rounded-2xl bg-ok-soft/60 p-3">
-            <p className="text-[11px] font-semibold text-ok-strong">
-              {live ? t("المصدر الحالي") : t("آخر مصدر معروف")}
-            </p>
-            {current ? (
-              <div className="mt-2 flex items-center gap-2">
-                <SourceIcon source={current} size="sm" />
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-bold text-ink">
-                    {SOURCE_META[current].short}
-                  </p>
-                  <p
-                    className="num text-[11px] text-muted"
-                    dir="ltr"
-                    style={{ textAlign: uiStart() }}
-                  >
-                    {live && activeSince ? fmtClock(serverNow() - activeSince) : "—"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <p className="mt-2 text-[13px] font-bold text-ink">
-                {live && status?.system_state === "no_source" ? t("لا يوجد مصدر") : "—"}
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5 lg:space-y-0">
+        <Card className="p-4">
+          <div className="flex items-stretch gap-3">
+            <div className="min-w-0 flex-1 rounded-2xl bg-ok-soft/60 p-3">
+              <p className="text-[11px] font-semibold text-ok-strong">
+                {live ? t("المصدر الحالي") : t("آخر مصدر معروف")}
               </p>
-            )}
-          </div>
-          <div className="flex items-center text-faint">
-            <ArrowLeft className="size-4 rtl:rotate-180" />
-          </div>
-          <div className="min-w-0 flex-1 rounded-2xl bg-canvas p-3">
-            <p className="text-[11px] font-semibold text-muted">{t("المصدر السابق")}</p>
-            {last?.from_source ? (
-              <div className="mt-2 flex items-center gap-2">
-                <SourceIcon source={last.from_source} size="sm" />
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-bold text-ink">
-                    {SOURCE_META[last.from_source].short}
-                  </p>
-                  <p className="text-[11px] text-muted">
-                    {prevRanMs !== null ? t("عمل {0}", { 0: fmtDuration(prevRanMs) }) : "—"}
-                  </p>
+              {current ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <SourceIcon source={current} size="sm" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-bold text-ink">
+                      {SOURCE_META[current].short}
+                    </p>
+                    <p
+                      className="num text-[11px] text-muted"
+                      dir="ltr"
+                      style={{ textAlign: uiStart() }}
+                    >
+                      {live && activeSince ? fmtClock(serverNow() - activeSince) : "—"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <p className="mt-2 text-[13px] text-muted">—</p>
-            )}
-          </div>
-        </div>
-        {last && (
-          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2 text-[12px]">
-            <span className="truncate text-muted">
-              {t("آخر تحويل")}
-              {lastReason && (
-                <>
-                  : <b className="text-ink">{lastReason}</b>
-                </>
+              ) : (
+                <p className="mt-2 text-[13px] font-bold text-ink">
+                  {live && status?.system_state === "no_source" ? t("لا يوجد مصدر") : "—"}
+                </p>
               )}
-            </span>
-            <span className="num shrink-0 text-muted">
-              {Date.parse(last.occurred_at) >= today
-                ? fmtTime(Date.parse(last.occurred_at), tz)
-                : fmtDateTime(Date.parse(last.occurred_at), tz)}
-            </span>
+            </div>
+            <div className="flex items-center text-faint">
+              <ArrowLeft className="size-4 rtl:rotate-180" />
+            </div>
+            <div className="min-w-0 flex-1 rounded-2xl bg-canvas p-3">
+              <p className="text-[11px] font-semibold text-muted">{t("المصدر السابق")}</p>
+              {last?.from_source ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <SourceIcon source={last.from_source} size="sm" />
+                  <div className="min-w-0">
+                    <p className="truncate text-[13px] font-bold text-ink">
+                      {SOURCE_META[last.from_source].short}
+                    </p>
+                    <p className="text-[11px] text-muted">
+                      {prevRanMs !== null ? t("عمل {0}", { 0: fmtDuration(prevRanMs) }) : "—"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-2 text-[13px] text-muted">—</p>
+              )}
+            </div>
           </div>
-        )}
-      </Card>
+          {last && (
+            <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2 text-[12px]">
+              <span className="truncate text-muted">
+                {t("آخر تحويل")}
+                {lastReason && (
+                  <>
+                    : <b className="text-ink">{lastReason}</b>
+                  </>
+                )}
+              </span>
+              <span className="num shrink-0 text-muted">
+                {Date.parse(last.occurred_at) >= today
+                  ? fmtTime(Date.parse(last.occurred_at), tz)
+                  : fmtDateTime(Date.parse(last.occurred_at), tz)}
+              </span>
+            </div>
+          )}
+        </Card>
 
-      <div className="grid grid-cols-2 gap-3">
-        <StatTile
-          label={t("تحويلات اليوم")}
-          value={loading ? null : String(todayCount)}
-          hint={t(
-            "عدد التحويلات الناجحة منذ منتصف الليل بتوقيت الجهاز. المحاولات الفاشلة لا تُحتسب هنا.",
-          )}
-        />
-        <StatTile
-          label={t("محاولات فاشلة (7 أيام)")}
-          value={loading ? null : String(failedWeek)}
-          tone={failedWeek ? "danger" : undefined}
-          hint={t("عدد مرات تعذّر فيها الانتقال إلى المصدر البديل خلال آخر 7 أيام.")}
-        />
-        <StatTile
-          label={t("متوسط زمن الانقطاع")}
-          value={loading ? null : avg(dead) === null ? "—" : fmtMs(avg(dead)!)}
-          hint={t(
-            "متوسط المدة الفعلية بين فصل المصدر القديم وتوصيل الجديد كما قاسها البورد، لكل المصادر بما فيها المولد، خلال آخر 7 أيام.",
-          )}
-        />
-        <StatTile
-          label={t("متوسط زمن الكشف")}
-          value={loading ? null : avg(detect) === null ? "—" : fmtMs(avg(detect)!)}
-          hint={t(
-            "متوسط المدة بين خروج المصدر عن الحدود وبدء التحويل كما قاسها البورد، خلال آخر 7 أيام.",
-          )}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <StatTile
+            label={t("تحويلات اليوم")}
+            value={loading ? null : String(todayCount)}
+            hint={t(
+              "عدد التحويلات الناجحة منذ منتصف الليل بتوقيت الجهاز. المحاولات الفاشلة لا تُحتسب هنا.",
+            )}
+          />
+          <StatTile
+            label={t("محاولات فاشلة (7 أيام)")}
+            value={loading ? null : String(failedWeek)}
+            tone={failedWeek ? "danger" : undefined}
+            hint={t("عدد مرات تعذّر فيها الانتقال إلى المصدر البديل خلال آخر 7 أيام.")}
+          />
+          <StatTile
+            label={t("متوسط زمن الانقطاع")}
+            value={loading ? null : avg(dead) === null ? "—" : fmtMs(avg(dead)!)}
+            hint={t(
+              "متوسط المدة الفعلية بين فصل المصدر القديم وتوصيل الجديد كما قاسها البورد، لكل المصادر بما فيها المولد، خلال آخر 7 أيام.",
+            )}
+          />
+          <StatTile
+            label={t("متوسط زمن الكشف")}
+            value={loading ? null : avg(detect) === null ? "—" : fmtMs(avg(detect)!)}
+            hint={t(
+              "متوسط المدة بين خروج المصدر عن الحدود وبدء التحويل كما قاسها البورد، خلال آخر 7 أيام.",
+            )}
+          />
+        </div>
       </div>
-
       <RowGroup>
         <Row
           icon={History}

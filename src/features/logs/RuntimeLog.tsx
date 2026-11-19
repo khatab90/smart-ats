@@ -120,208 +120,210 @@ export function RuntimeLog() {
 
   return (
     <>
-      <section className="hero-surface relative overflow-hidden rounded-[24px] p-5 text-white">
-        <div className="hero-grid absolute inset-0" />
-        <div className="relative flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[12px] text-white/60">
-            <Timer className="size-4" /> {t("مدة تشغيل المصدر الحالي")}
-          </p>
-          {current && (
-            <span
-              className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-              style={{ background: `${SOURCE_META[current].color}33` }}
-            >
-              {SOURCE_META[current].name}
-            </span>
-          )}
-        </div>
-        <p
-          className="num relative mt-3 text-[40px] leading-none font-bold tracking-tight"
-          dir="ltr"
-          style={{ textAlign: uiStart() }}
-        >
-          {current && activeSince ? fmtClock(serverNow() - activeSince) : "--:--:--"}
-        </p>
-        <p className="relative mt-2 text-[12px] text-white/55">
-          {!live
-            ? t("غير متاح أثناء عدم اتصال البورد")
-            : current && activeSince
-              ? t("بدأ {0} الساعة {1}", {
-                  0: fmtDayLabel(activeSince, serverNow(), tz),
-                  1: fmtTime(activeSince, tz),
-                })
-              : t("لا يوجد مصدر فعّال حالياً")}
-        </p>
-      </section>
-
-      <Card className="p-4">
-        <SectionTitle
-          title={t("ساعات التشغيل التراكمية")}
-          action={
-            isAdmin && runtime ? (
-              <Button
-                size="sm"
-                variant="secondary"
-                icon={RotateCcw}
-                disabled={!canReset}
-                onClick={() => setConfirm([...installed])}
-              >
-                {t("تصفير الكل")}
-              </Button>
-            ) : undefined
-          }
-        />
-        {!runtime ? (
-          <p className="py-4 text-center text-[13px] text-muted">
-            {link === "never"
-              ? t("لا توجد بيانات حالياً.")
-              : t("لم يرسل البورد عدادات ساعات التشغيل بعد.")}
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {installed.map((id) => {
-              const r = runtime[id];
-              return (
-                <div
-                  key={id}
-                  className="flex items-center gap-3 rounded-2xl border border-line p-3"
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5 lg:space-y-0">
+        <div className="space-y-4">
+          <section className="hero-surface relative overflow-hidden rounded-[24px] p-5 text-white">
+            <div className="hero-grid absolute inset-0" />
+            <div className="relative flex items-center justify-between">
+              <p className="flex items-center gap-2 text-[12px] text-white/60">
+                <Timer className="size-4" /> {t("مدة تشغيل المصدر الحالي")}
+              </p>
+              {current && (
+                <span
+                  className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                  style={{ background: `${SOURCE_META[current].color}33` }}
                 >
-                  <SourceIcon source={id} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-semibold text-ink">{SOURCE_META[id].name}</p>
-                    <p className="text-[11px] text-muted">
-                      {t("بدء العد:")}{" "}
-                      {r?.since ? fmtFullDate(Date.parse(r.since), tz) : t("غير متوفر")}
-                    </p>
-                  </div>
-                  <p className="num text-[15px] font-bold text-ink">
-                    {r ? fmtHours(r.s) : "—"}{" "}
-                    <span className="text-[11px] font-medium text-muted">{t("س")}</span>
-                  </p>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      aria-label={t("تصفير ساعات {0}", { 0: SOURCE_META[id].name })}
-                      disabled={!canReset}
-                      onClick={() => setConfirm([id])}
-                      className="rounded-xl p-2 text-muted hover:bg-canvas hover:text-danger disabled:opacity-30"
-                    >
-                      <RotateCcw className="size-4" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        <CommandProgress state={cmd} onDismiss={reset} />
-        <p className="mt-3 text-[11px] leading-5 text-muted">
-          {t(
-            "تُحسب الساعات في ذاكرة البورد فقط عندما يكون المصدر هو المصدر الفعّال الذي يغذي الحمل. وقت التحويل والانقطاع الكلي لا يُحتسب لأي مصدر.",
-          )}
-        </p>
-        {isAdmin && runtime && link !== "live" && (
-          <p className="mt-3 rounded-xl bg-warn-soft px-3 py-2 text-[12px] font-medium text-warn-strong">
-            {t("التصفير متاح فقط أثناء اتصال البورد.")}
-          </p>
-        )}
-      </Card>
-
-      <Card className="p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <p className="text-[15px] font-bold text-ink">{t("سجل التشغيل اليومي")}</p>
-            <p className="num text-[12px] text-muted">
-              {fmtDate(days[0], tz)} – {fmtDate(days[6], tz)}
-            </p>
-          </div>
-          <div className="flex gap-1.5">
-            <button
-              type="button"
-              aria-label={t("الأسبوع السابق")}
-              disabled={weekOffset >= 12}
-              onClick={() => setWeekOffset((w) => w + 1)}
-              className="flex size-9 items-center justify-center rounded-xl border border-line text-ink-2 disabled:opacity-30"
-            >
-              <ChevronRight className="size-4 ltr:rotate-180" />
-            </button>
-            <button
-              type="button"
-              aria-label={t("الأسبوع التالي")}
-              disabled={weekOffset === 0}
-              onClick={() => setWeekOffset((w) => w - 1)}
-              className="flex size-9 items-center justify-center rounded-xl border border-line text-ink-2 disabled:opacity-30"
-            >
-              <ChevronLeft className="size-4 ltr:rotate-180" />
-            </button>
-          </div>
-        </div>
-        {events.error ? (
-          <ErrorState message={events.error} onRetry={events.reload} />
-        ) : events.loading || initial === null ? (
-          <Skeleton className="h-[170px]" />
-        ) : events.data.length === 0 && initial === "unknown" ? (
-          <EmptyState
-            icon={History}
-            title={t("لا توجد بيانات حالياً")}
-            body={t("لا توجد أحداث تحويل مسجلة لهذه الفترة.")}
-          />
-        ) : (
-          <>
-            <BarChart
-              bars={bars}
-              height={140}
-              maxValue={24}
-              selected={selIndex >= 0 ? selIndex : undefined}
-              onSelect={(i) => setSelectedDay(days[i])}
-              unit={t("ساعة")}
-            />
-            <div className="mt-4 border-t border-line pt-4">
-              <div className="flex items-center justify-between">
-                <p className="text-[14px] font-bold text-ink">
-                  {fmtWeekday(selDay, tz)} {fmtDate(selDay, tz)}
-                </p>
-                <Badge tone="info">{selDay === today ? t("حتى الآن") : t("24 ساعة")}</Badge>
-              </div>
-              <DayStrip timeline={timeline} from={selDay} to={addDaysInTz(selDay, 1, tz)} />
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {installed.map((id) => (
-                  <div
-                    key={id}
-                    className="rounded-2xl p-3"
-                    style={{ background: SOURCE_META[id].soft }}
-                  >
-                    <p
-                      className="text-[11px] font-semibold"
-                      style={{ color: SOURCE_META[id].color }}
-                    >
-                      {SOURCE_META[id].short}
-                    </p>
-                    <p className="num mt-1 text-[14px] font-bold text-ink">
-                      {fmtDuration(selDur[id])}
-                    </p>
-                  </div>
-                ))}
-                <div className="rounded-2xl bg-danger-soft p-3">
-                  <p className="text-[11px] font-semibold text-danger">{t("بلا مصدر / تحويل")}</p>
-                  <p className="num mt-1 text-[14px] font-bold text-ink">
-                    {fmtDuration(selDur.none)}
-                  </p>
-                </div>
-              </div>
-              {selDur.unknown > 60_000 && (
-                <p className="mt-2 text-[11px] text-muted">
-                  {fmtDuration(selDur.unknown)} {t("غير معروفة (قبل أول حدث مسجّل).")}
-                </p>
+                  {SOURCE_META[current].name}
+                </span>
               )}
-              <p className="mt-2 text-[10px] text-faint">
-                {t("محسوب من سجل أحداث التحويل. العدادات التراكمية أعلاه من ذاكرة البورد.")}
+            </div>
+            <p
+              className="num relative mt-3 text-[40px] leading-none font-bold tracking-tight"
+              dir="ltr"
+              style={{ textAlign: uiStart() }}
+            >
+              {current && activeSince ? fmtClock(serverNow() - activeSince) : "--:--:--"}
+            </p>
+            <p className="relative mt-2 text-[12px] text-white/55">
+              {!live
+                ? t("غير متاح أثناء عدم اتصال البورد")
+                : current && activeSince
+                  ? t("بدأ {0} الساعة {1}", {
+                      0: fmtDayLabel(activeSince, serverNow(), tz),
+                      1: fmtTime(activeSince, tz),
+                    })
+                  : t("لا يوجد مصدر فعّال حالياً")}
+            </p>
+          </section>
+
+          <Card className="p-4">
+            <SectionTitle
+              title={t("ساعات التشغيل التراكمية")}
+              action={
+                isAdmin && runtime ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={RotateCcw}
+                    disabled={!canReset}
+                    onClick={() => setConfirm([...installed])}
+                  >
+                    {t("تصفير الكل")}
+                  </Button>
+                ) : undefined
+              }
+            />
+            {!runtime ? (
+              <p className="py-4 text-center text-[13px] text-muted">
+                {link === "never"
+                  ? t("لا توجد بيانات حالياً.")
+                  : t("لم يرسل البورد عدادات ساعات التشغيل بعد.")}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {installed.map((id) => {
+                  const r = runtime[id];
+                  return (
+                    <div
+                      key={id}
+                      className="flex items-center gap-3 rounded-2xl border border-line p-3"
+                    >
+                      <SourceIcon source={id} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold text-ink">{SOURCE_META[id].name}</p>
+                        <p className="text-[11px] text-muted">
+                          {t("بدء العد:")}{" "}
+                          {r?.since ? fmtFullDate(Date.parse(r.since), tz) : t("غير متوفر")}
+                        </p>
+                      </div>
+                      <p className="num text-[15px] font-bold text-ink">
+                        {r ? fmtHours(r.s) : "—"}{" "}
+                        <span className="text-[11px] font-medium text-muted">{t("س")}</span>
+                      </p>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          aria-label={t("تصفير ساعات {0}", { 0: SOURCE_META[id].name })}
+                          disabled={!canReset}
+                          onClick={() => setConfirm([id])}
+                          className="rounded-xl p-2 text-muted hover:bg-canvas hover:text-danger disabled:opacity-30"
+                        >
+                          <RotateCcw className="size-4" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <CommandProgress state={cmd} onDismiss={reset} />
+            <p className="mt-3 text-[11px] leading-5 text-muted">
+              {t(
+                "تُحسب الساعات في ذاكرة البورد فقط عندما يكون المصدر هو المصدر الفعّال الذي يغذي الحمل. وقت التحويل والانقطاع الكلي لا يُحتسب لأي مصدر.",
+              )}
+            </p>
+            {isAdmin && runtime && link !== "live" && (
+              <p className="mt-3 rounded-xl bg-warn-soft px-3 py-2 text-[12px] font-medium text-warn-strong">
+                {t("التصفير متاح فقط أثناء اتصال البورد.")}
+              </p>
+            )}
+          </Card>
+        </div>
+        <Card className="p-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[15px] font-bold text-ink">{t("سجل التشغيل اليومي")}</p>
+              <p className="num text-[12px] text-muted">
+                {fmtDate(days[0], tz)} – {fmtDate(days[6], tz)}
               </p>
             </div>
-          </>
-        )}
-      </Card>
-
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                aria-label={t("الأسبوع السابق")}
+                disabled={weekOffset >= 12}
+                onClick={() => setWeekOffset((w) => w + 1)}
+                className="flex size-9 items-center justify-center rounded-xl border border-line text-ink-2 disabled:opacity-30"
+              >
+                <ChevronRight className="size-4 ltr:rotate-180" />
+              </button>
+              <button
+                type="button"
+                aria-label={t("الأسبوع التالي")}
+                disabled={weekOffset === 0}
+                onClick={() => setWeekOffset((w) => w - 1)}
+                className="flex size-9 items-center justify-center rounded-xl border border-line text-ink-2 disabled:opacity-30"
+              >
+                <ChevronLeft className="size-4 ltr:rotate-180" />
+              </button>
+            </div>
+          </div>
+          {events.error ? (
+            <ErrorState message={events.error} onRetry={events.reload} />
+          ) : events.loading || initial === null ? (
+            <Skeleton className="h-[170px]" />
+          ) : events.data.length === 0 && initial === "unknown" ? (
+            <EmptyState
+              icon={History}
+              title={t("لا توجد بيانات حالياً")}
+              body={t("لا توجد أحداث تحويل مسجلة لهذه الفترة.")}
+            />
+          ) : (
+            <>
+              <BarChart
+                bars={bars}
+                height={140}
+                maxValue={24}
+                selected={selIndex >= 0 ? selIndex : undefined}
+                onSelect={(i) => setSelectedDay(days[i])}
+                unit={t("ساعة")}
+              />
+              <div className="mt-4 border-t border-line pt-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-[14px] font-bold text-ink">
+                    {fmtWeekday(selDay, tz)} {fmtDate(selDay, tz)}
+                  </p>
+                  <Badge tone="info">{selDay === today ? t("حتى الآن") : t("24 ساعة")}</Badge>
+                </div>
+                <DayStrip timeline={timeline} from={selDay} to={addDaysInTz(selDay, 1, tz)} />
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {installed.map((id) => (
+                    <div
+                      key={id}
+                      className="rounded-2xl p-3"
+                      style={{ background: SOURCE_META[id].soft }}
+                    >
+                      <p
+                        className="text-[11px] font-semibold"
+                        style={{ color: SOURCE_META[id].color }}
+                      >
+                        {SOURCE_META[id].short}
+                      </p>
+                      <p className="num mt-1 text-[14px] font-bold text-ink">
+                        {fmtDuration(selDur[id])}
+                      </p>
+                    </div>
+                  ))}
+                  <div className="rounded-2xl bg-danger-soft p-3">
+                    <p className="text-[11px] font-semibold text-danger">{t("بلا مصدر / تحويل")}</p>
+                    <p className="num mt-1 text-[14px] font-bold text-ink">
+                      {fmtDuration(selDur.none)}
+                    </p>
+                  </div>
+                </div>
+                {selDur.unknown > 60_000 && (
+                  <p className="mt-2 text-[11px] text-muted">
+                    {fmtDuration(selDur.unknown)} {t("غير معروفة (قبل أول حدث مسجّل).")}
+                  </p>
+                )}
+                <p className="mt-2 text-[10px] text-faint">
+                  {t("محسوب من سجل أحداث التحويل. العدادات التراكمية أعلاه من ذاكرة البورد.")}
+                </p>
+              </div>
+            </>
+          )}
+        </Card>
+      </div>
       <ConfirmSheet
         open={confirm !== null}
         onClose={() => setConfirm(null)}

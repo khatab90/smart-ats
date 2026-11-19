@@ -6,8 +6,10 @@ export function AuthHero({ compact }: { compact: boolean }) {
   return (
     <div
       className={cn(
-        "hero-surface relative shrink-0 overflow-hidden px-6 text-white transition-all",
+        "hero-surface relative shrink-0 overflow-hidden px-6 text-white transition-all md:px-[max(1.5rem,calc((100%-28rem)/2))]",
         compact ? "pt-6 pb-14" : "pt-8 pb-16",
+        // Laptops: a full-height brand panel beside the form.
+        "lg:flex lg:w-[46%] lg:max-w-[680px] lg:flex-col lg:justify-center lg:px-14 lg:py-14",
       )}
     >
       <div className="hero-grid absolute inset-0" />
@@ -20,19 +22,19 @@ export function AuthHero({ compact }: { compact: boolean }) {
           <p className="text-[12px] text-white/60">{t("نظام التحويل التلقائي الذكي")}</p>
         </div>
       </div>
-      {!compact && (
+      <div className={cn("relative", compact && "hidden lg:block")}>
         <>
           <FlowIllustration />
-          <h1 className="relative mt-2 text-[26px] leading-tight font-bold tracking-tight">
+          <h1 className="relative mt-2 text-[26px] leading-tight font-bold tracking-tight lg:text-[38px]">
             {t("طاقة مستمرة،")}
             <br />
             <span className="text-brand-200">{t("تحويل بلا انقطاع.")}</span>
           </h1>
-          <p className="relative mt-2 max-w-[290px] text-[13px] leading-6 text-white/65">
+          <p className="relative mt-2 max-w-[290px] text-[13px] leading-6 text-white/65 lg:max-w-[400px] lg:text-[15px] lg:leading-7">
             {t("راقب الشبكة والطاقة الشمسية والمولد وتحكم بالتحويل بينها من مكان واحد.")}
           </p>
         </>
-      )}
+      </div>
     </div>
   );
 }

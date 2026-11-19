@@ -154,7 +154,7 @@ export function Live() {
   }
 
   return (
-    <div className="space-y-4 px-5 pt-4 pb-32">
+    <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("المراقبة")}</h1>
@@ -175,90 +175,92 @@ export function Live() {
         ]}
       />
 
-      <section className="hero-surface relative overflow-hidden rounded-[28px] px-5 py-5 text-white">
-        <div className="hero-grid absolute inset-0" />
-        <div className="relative flex items-center justify-between">
-          <p className="flex items-center gap-2 text-[13px] font-semibold text-white/80">
-            <span className="size-2 rounded-full" style={{ background: color }} />
-            {channel === "load"
-              ? t("القدرة المسحوبة")
-              : t("قدرة {0}", { 0: SOURCE_META[channel].name })}
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-5 lg:space-y-0">
+        <section className="hero-surface relative overflow-hidden rounded-[28px] px-5 py-5 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="hero-grid absolute inset-0" />
+          <div className="relative flex items-center justify-between">
+            <p className="flex items-center gap-2 text-[13px] font-semibold text-white/80">
+              <span className="size-2 rounded-full" style={{ background: color }} />
+              {channel === "load"
+                ? t("القدرة المسحوبة")
+                : t("قدرة {0}", { 0: SOURCE_META[channel].name })}
+            </p>
+            <span className="num text-[11px] text-white/50" dir="ltr">
+              {live && status?.device_ts ? fmtTimeSec(Date.parse(status.device_ts), tz) : "—"}
+            </span>
+          </div>
+          <p
+            className={cn(
+              "num relative mt-5 text-center text-[46px] leading-none font-bold tracking-tight",
+              current.kw === null && "text-white/45",
+            )}
+            dir="ltr"
+          >
+            {fmtReading(current.kw, 2)}
+            <span className="ms-1 text-base font-medium text-white/60">kW</span>
           </p>
-          <span className="num text-[11px] text-white/50" dir="ltr">
-            {live && status?.device_ts ? fmtTimeSec(Date.parse(status.device_ts), tz) : "—"}
-          </span>
-        </div>
-        <p
-          className={cn(
-            "num relative mt-5 text-center text-[46px] leading-none font-bold tracking-tight",
-            current.kw === null && "text-white/45",
-          )}
-          dir="ltr"
-        >
-          {fmtReading(current.kw, 2)}
-          <span className="ms-1 text-base font-medium text-white/60">kW</span>
-        </p>
-        <p className="relative mt-2 text-center text-[12px] text-white/55">
-          {!live ? (
-            link === "never" ? (
-              t("لا توجد بيانات حالياً")
+          <p className="relative mt-2 text-center text-[12px] text-white/55">
+            {!live ? (
+              link === "never" ? (
+                t("لا توجد بيانات حالياً")
+              ) : (
+                t("البورد غير متصل — لا توجد قراءات حية")
+              )
+            ) : feedingNote ? (
+              t("هذا المصدر لا يغذي الحمل حالياً")
             ) : (
-              t("البورد غير متصل — لا توجد قراءات حية")
-            )
-          ) : feedingNote ? (
-            t("هذا المصدر لا يغذي الحمل حالياً")
-          ) : (
-            <span dir="ltr">{fmtReading(current.f, 2)} Hz</span>
-          )}
-        </p>
-      </section>
+              <span dir="ltr">{fmtReading(current.f, 2)} Hz</span>
+            )}
+          </p>
+        </section>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Tile icon={Zap} label={t("الجهد")} value={fmtReading(current.v)} unit="V" color={color}>
-          <p className="text-[10px] text-muted">
-            {range ? (
-              <>
-                {t("النطاق المسموح")}{" "}
-                <bdi>
-                  {range.min}–{range.max} V
-                </bdi>
-              </>
-            ) : (
-              t("لم يُضبط الجهد الاسمي في الإعدادات")
-            )}
-          </p>
-        </Tile>
-        <Tile
-          icon={Waves}
-          label={t("التيار")}
-          value={fmtReading(current.a, 1)}
-          unit="A"
-          color={color}
-        />
-        <Tile
-          icon={Gauge}
-          label={t("القدرة")}
-          value={fmtReading(current.kw, 2)}
-          unit="kW"
-          color={color}
-        />
-        <Tile
-          icon={Activity}
-          label={t("التردد")}
-          value={fmtReading(current.f, 2)}
-          unit="Hz"
-          color={color}
-        >
-          <p className="text-[10px] text-muted">
-            {settings?.nominal_frequency ? (
-              <>
-                {t("الاسمي")} <span dir="ltr">{settings.nominal_frequency} Hz</span>
-              </>
-            ) : (
-              t("لم يُضبط التردد الاسمي")
-            )}
-          </p>
-        </Tile>
+        <div className="grid grid-cols-2 gap-3">
+          <Tile icon={Zap} label={t("الجهد")} value={fmtReading(current.v)} unit="V" color={color}>
+            <p className="text-[10px] text-muted">
+              {range ? (
+                <>
+                  {t("النطاق المسموح")}{" "}
+                  <bdi>
+                    {range.min}–{range.max} V
+                  </bdi>
+                </>
+              ) : (
+                t("لم يُضبط الجهد الاسمي في الإعدادات")
+              )}
+            </p>
+          </Tile>
+          <Tile
+            icon={Waves}
+            label={t("التيار")}
+            value={fmtReading(current.a, 1)}
+            unit="A"
+            color={color}
+          />
+          <Tile
+            icon={Gauge}
+            label={t("القدرة")}
+            value={fmtReading(current.kw, 2)}
+            unit="kW"
+            color={color}
+          />
+          <Tile
+            icon={Activity}
+            label={t("التردد")}
+            value={fmtReading(current.f, 2)}
+            unit="Hz"
+            color={color}
+          >
+            <p className="text-[10px] text-muted">
+              {settings?.nominal_frequency ? (
+                <>
+                  {t("الاسمي")} <span dir="ltr">{settings.nominal_frequency} Hz</span>
+                </>
+              ) : (
+                t("لم يُضبط التردد الاسمي")
+              )}
+            </p>
+          </Tile>
+        </div>
       </div>
       {feedingNote && <p className="px-1 text-[11px] leading-5 text-muted">{feedingNote}</p>}
 
