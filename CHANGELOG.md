@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.1 — 2026-11-19
+
+### Added
+- **Public web build** for a permanent link (Netlify, Cloudflare Pages or any static host): `npm run build:web` (no source maps) and a guide in Arabic, [docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md).
+- Security headers for the hosted site (`public/_headers`): scripts from the site only, network access to Supabase only, no framing, `noindex`; long-term caching for hashed assets. A test keeps the CSP in step with the configured Supabase project.
+- `robots.txt` and `netlify.toml` (for a later Git-connected deploy).
+
+### Fixed
+- After a new version is published, a tab that was already open no longer fails when it opens a screen: it loads the new version once (guarded against reload loops), and the error screen explains it instead of offering a retry that cannot work.
+
 ## 2.1.0 — 2026-11-18
 
 ### Changed

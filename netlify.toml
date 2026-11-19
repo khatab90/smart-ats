@@ -1,0 +1,8 @@
+# Used only when the site is connected to a Git repository on Netlify.
+# Drag-and-drop deploys upload a ready build instead (docs/WEB_DEPLOY.md).
+[build]
+  command = "npm run build:web"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"

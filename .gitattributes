@@ -1,0 +1,2 @@
+# Images are binary: no line-ending or text diff handling.
+*.png binary

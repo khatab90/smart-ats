@@ -28,12 +28,16 @@ npm run dev            # http://localhost:5173 (also on your Wi-Fi: see the "Net
 
 To point the app at another Supabase project, copy `.env.example` to `.env.local`.
 
+**Permanent web link:** `npm run build:web`, then drop `dist/` on Netlify — step by step in
+[docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md).
+
 ## Scripts
 
 | Command | Does |
 |---|---|
 | `npm run dev` | Development server |
 | `npm run build` | Type-check and build to `dist/` (relative paths: works on any host or in a Capacitor WebView) |
+| `npm run build:web` | Public build for hosting (no source maps); see [docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md) |
 | `npm test` | All tests (unit, components, database on PGlite, board ↔ database) |
 | `npm run check` | Type-check + lint + tests + build — the CI gate |
 | `npm run gen:types` | Regenerate `src/data/database.types.ts` after changing a migration |
@@ -46,6 +50,7 @@ To point the app at another Supabase project, copy `.env.example` to `.env.local
 - [Decisions](docs/DECISIONS.md) — why things are the way they are
 - [ESP32 protocol](docs/ESP32_PROTOCOL.md) — what the firmware must implement
 - [Supabase setup](docs/SUPABASE_SETUP.md) — database, auth, devices, emulator (Arabic)
+- [Web deploy](docs/WEB_DEPLOY.md) — permanent link on Netlify (Arabic)
 - [Changelog](CHANGELOG.md)
 
 ## Changing the database
