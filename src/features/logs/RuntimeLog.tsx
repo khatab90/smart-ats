@@ -219,8 +219,12 @@ export function RuntimeLog() {
           {t(
             "تُحسب الساعات في ذاكرة البورد فقط عندما يكون المصدر هو المصدر الفعّال الذي يغذي الحمل. وقت التحويل والانقطاع الكلي لا يُحتسب لأي مصدر.",
           )}
-          {isAdmin && link !== "live" ? t(" التصفير متاح فقط أثناء اتصال البورد.") : ""}
         </p>
+        {isAdmin && runtime && link !== "live" && (
+          <p className="mt-3 rounded-xl bg-warn-soft px-3 py-2 text-[12px] font-medium text-warn-strong">
+            {t("التصفير متاح فقط أثناء اتصال البورد.")}
+          </p>
+        )}
       </Card>
 
       <Card className="p-4">
@@ -323,6 +327,7 @@ export function RuntimeLog() {
         onClose={() => setConfirm(null)}
         title={confirm && confirm.length > 1 ? t("تصفير جميع العدادات") : t("تصفير عداد المصدر")}
         confirmLabel={t("تأكيد التصفير")}
+        icon={RotateCcw}
         danger
         onConfirm={() => {
           if (confirm) void send("reset_runtime", { sources: confirm });

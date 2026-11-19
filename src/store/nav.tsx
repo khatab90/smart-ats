@@ -10,7 +10,33 @@ import {
 } from "react";
 
 export type Tab = "home" | "live" | "energy" | "logs" | "more";
-export type Route = "notifications" | "profile" | "users" | "devices" | "addDevice" | "settings";
+/** Device settings sections, each on its own screen. */
+export const SETTINGS_SECTIONS = [
+  "priority",
+  "solar",
+  "nominal",
+  "voltage",
+  "frequency",
+  "timers",
+  "manual",
+  "timezone",
+] as const;
+export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
+
+/** Profile sections, each on its own screen. */
+export const PROFILE_SECTIONS = ["name", "email", "phone", "password"] as const;
+export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
+
+export type Route =
+  | "notifications"
+  | "profile"
+  | "users"
+  | "devices"
+  | "addDevice"
+  | "settings"
+  | "transfers"
+  | `settings.${SettingsSection}`
+  | `profile.${ProfileSection}`;
 
 const TABS: readonly Tab[] = ["home", "live", "energy", "logs", "more"];
 const ROUTES: readonly Route[] = [
@@ -20,6 +46,9 @@ const ROUTES: readonly Route[] = [
   "devices",
   "addDevice",
   "settings",
+  "transfers",
+  ...SETTINGS_SECTIONS.map((x) => `settings.${x}` as const),
+  ...PROFILE_SECTIONS.map((x) => `profile.${x}` as const),
 ];
 
 interface NavState {

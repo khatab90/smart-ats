@@ -1,4 +1,5 @@
-import { Clock3, BrainCircuit, Hand, ShieldCheck, Zap } from "lucide-react";
+import { ArrowLeftRight, BrainCircuit, Clock3, Hand, ShieldCheck, Zap } from "lucide-react";
+import { priorityText } from "../settings/summaries";
 import { useState } from "react";
 import { CommandProgress } from "../../components/control";
 import { Card, ConfirmSheet, Segmented, SourceIcon } from "../../components/ui";
@@ -16,7 +17,7 @@ import {
 import { useActiveDevice } from "../../store/devices";
 import { sourceBadge } from "../../components/status";
 import { PrioritySection } from "./PrioritySection";
-import { t } from "../../i18n";
+import { isRtl, t } from "../../i18n";
 
 export function ModeCard() {
   const { status, settings, link, isAdmin, settingsApplied } = useActiveDevice();
@@ -127,6 +128,7 @@ export function ModeCard() {
             ? t("التحويل إلى الوضع الذكي")
             : t("التحويل إلى الوضع اليدوي")
         }
+        icon={confirm?.kind === "mode" && confirm.mode === "smart" ? BrainCircuit : Hand}
         confirmLabel={t("تأكيد")}
         onConfirm={() => {
           if (confirm?.kind === "mode") void send("set_mode", { mode: confirm.mode });
@@ -153,7 +155,7 @@ export function ModeCard() {
               </p>
             )}
             <p>
-              {t("الترتيب الحالي:")} {priority.map((p) => SOURCE_META[p].short).join(" ← ")}
+              {t("الترتيب الحالي:")} {priorityText(priority, installedSources(status))}
             </p>
           </div>
         ) : (
@@ -169,6 +171,7 @@ export function ModeCard() {
         open={confirm?.kind === "source"}
         onClose={() => setConfirm(null)}
         title={t("تأكيد التحويل اليدوي")}
+        icon={ArrowLeftRight}
         confirmLabel={t("تأكيد التحويل")}
         onConfirm={() => {
           if (confirm?.kind === "source") void send("set_source", { source: confirm.source });
@@ -181,7 +184,7 @@ export function ModeCard() {
               {status?.active_source ? (
                 <SourceIcon source={status.active_source} size="lg" />
               ) : null}
-              <span className="text-xl text-faint">←</span>
+              <span className="text-xl text-faint">{isRtl() ? "←" : "→"}</span>
               <SourceIcon source={confirm.source} size="lg" />
             </div>
             <ul className="space-y-2 rounded-2xl border border-line p-4 text-[12px] leading-6 text-muted">

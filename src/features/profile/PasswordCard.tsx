@@ -31,7 +31,6 @@ export function PasswordCard() {
   return (
     <Card className="p-4">
       <form onSubmit={submit} className="space-y-3" noValidate>
-        <p className="text-[15px] font-bold text-ink">{t("تغيير كلمة المرور")}</p>
         {msg && <Msg text={msg.text} tone={msg.tone} />}
         <Field
           label={t("كلمة المرور الحالية")}

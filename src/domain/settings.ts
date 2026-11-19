@@ -29,8 +29,14 @@ export interface NumField {
   hint?: string;
 }
 
-export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] }[] = [
+export const SETTINGS_GROUPS: {
+  id: "voltage" | "frequency" | "timers" | "manual";
+  title: string;
+  desc: string;
+  fields: NumField[];
+}[] = [
   {
+    id: "voltage",
     title: t("حدود الجهد"),
     desc: t(
       "نسب من الجهد الاسمي. يُفصل المصدر عند تجاوز حد الفصل لمدة المهلة، ولا يعود إلا ضمن حد الرجوع.",
@@ -73,6 +79,7 @@ export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] 
     ],
   },
   {
+    id: "frequency",
     title: t("حدود التردد"),
     desc: t("نسب من التردد الاسمي."),
     fields: [
@@ -97,6 +104,7 @@ export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] 
     ],
   },
   {
+    id: "timers",
     title: t("مؤقتات التحويل"),
     desc: t("تمنع التحويل المتكرر وتضمن تحويلاً آمناً للأحمال ذات المحركات."),
     fields: [
@@ -137,6 +145,7 @@ export const SETTINGS_GROUPS: { title: string; desc: string; fields: NumField[] 
     ],
   },
   {
+    id: "manual",
     title: t("الوضع اليدوي"),
     desc: "",
     fields: [

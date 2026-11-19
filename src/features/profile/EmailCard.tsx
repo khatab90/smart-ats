@@ -33,7 +33,6 @@ export function EmailCard() {
   return (
     <Card className="p-4">
       <form onSubmit={submit} className="space-y-3" noValidate>
-        <p className="text-[15px] font-bold text-ink">{t("البريد الإلكتروني")}</p>
         <p className="text-[12px] text-muted">
           {t("الحالي:")} <span dir="ltr">{user?.email}</span>
         </p>

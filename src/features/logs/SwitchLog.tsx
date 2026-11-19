@@ -1,10 +1,11 @@
 import { ArrowLeft, CircleCheck, CircleX, Hand, History, ZapOff } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Card, Chips, EmptyState, ErrorState, Skeleton, SourceIcon } from "../../components/ui";
+import { useMemo } from "react";
+import { Badge, Card, ErrorState, Row, RowGroup, SourceIcon } from "../../components/ui";
+import { useNav } from "../../store/nav";
 import { SOURCE_META, transferReasonText } from "../../data/meta";
 import type { EventRow, SourceId } from "../../data/types";
 import { useEvents } from "../../hooks/data";
-import { fmtClock, fmtDateTime, fmtDayLabel, fmtDuration, fmtMs, fmtTime } from "../../lib/format";
+import { arCount, fmtClock, fmtDateTime, fmtDuration, fmtMs, fmtTime } from "../../lib/format";
 import { latestBefore } from "../../lib/timeline";
 import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
 import { useActiveDevice, useNow } from "../../store/devices";
@@ -19,9 +20,22 @@ export const SWITCH_TYPES = [
 ];
 
 /** Restarts bound how long the previous source ran; they are not listed. */
-const QUERY_TYPES = [...SWITCH_TYPES, "controller_restarted"];
+export const QUERY_TYPES = [...SWITCH_TYPES, "controller_restarted"];
 
 export type Filter = "all" | "smart" | "manual" | "failed" | "no_source";
+
+/** Events shown as entries in the log (an outage end is part of its start). */
+export function isListed(e: EventRow) {
+  return e.type !== "no_source_ended" && e.type !== "controller_restarted";
+}
+
+const ENTRY_COUNT = {
+  one: t("سجل واحد"),
+  two: t("سجلان"),
+  few: t("سجلات"),
+  many: t("سجلاً"),
+  base: t("سجل"),
+};
 
 /** A real change from one source to another (not the end of a total outage). */
 export function isSwitch(e: EventRow) {
@@ -37,10 +51,9 @@ export function isManual(e: EventRow) {
 export function SwitchLog() {
   const { device, status, settings, link, serverNow } = useActiveDevice();
   const tz = settings?.timezone ?? "UTC";
-  const [days, setDays] = useState(7);
-  const [filter, setFilter] = useState<Filter>("all");
-  const now = useNow(1000);
-  const since = useMemo(() => addDaysInTz(serverNow(), -(days - 1), tz), [days, tz, serverNow]);
+  const { push } = useNav();
+  useNow(1000);
+  const since = useMemo(() => addDaysInTz(serverNow(), -6, tz), [tz, serverNow]);
   const { data, loading, error, reload } = useEvents(device?.id ?? null, QUERY_TYPES, since);
   const today = startOfDayInTz(serverNow(), tz);
   const weekStart = addDaysInTz(serverNow(), -6, tz);
@@ -56,6 +69,7 @@ export function SwitchLog() {
     (e) => e.type === "transfer_failed" && Date.parse(e.occurred_at) >= weekStart,
   ).length;
   const todayCount = completed.filter((e) => Date.parse(e.occurred_at) >= today).length;
+  const listed = arCount(data.filter(isListed).length, ENTRY_COUNT);
 
   const last = completed[0];
   const beforeLast = completed[1];
@@ -81,36 +95,6 @@ export function SwitchLog() {
       : (status?.active_source ?? null)
     : (last?.to_source ?? null);
   const activeSince = status?.active_since ? Date.parse(status.active_since) : null;
-
-  // Pair each total-loss start with its end for the duration.
-  const noSourceEnd = useMemo(() => {
-    const asc = [...data].reverse();
-    const map = new Map<number, number | null>();
-    asc.forEach((e, i) => {
-      if (e.type !== "no_source_started") return;
-      const end = asc.slice(i + 1).find((x) => x.type === "no_source_ended");
-      map.set(e.id, end ? Date.parse(end.occurred_at) : null);
-    });
-    return map;
-  }, [data]);
-
-  const filtered = data.filter((e) => {
-    if (e.type === "no_source_ended" || e.type === "controller_restarted") return false;
-    if (filter === "smart") return e.type === "transfer_completed" && !isManual(e);
-    if (filter === "manual") return e.type === "transfer_completed" && isManual(e);
-    if (filter === "failed") return e.type === "transfer_failed";
-    if (filter === "no_source") return e.type === "no_source_started";
-    return true;
-  });
-  const groups = useMemo(() => {
-    const m = new Map<number, EventRow[]>();
-    for (const e of filtered) {
-      const d = startOfDayInTz(Date.parse(e.occurred_at), tz);
-      if (!m.has(d)) m.set(d, []);
-      m.get(d)!.push(e);
-    }
-    return [...m.entries()];
-  }, [filtered, tz]);
 
   if (error) return <ErrorState message={error} onRetry={reload} />;
 
@@ -215,59 +199,19 @@ export function SwitchLog() {
         />
       </div>
 
-      <Chips
-        value={filter}
-        onChange={setFilter}
-        options={[
-          { value: "all", label: t("الكل") },
-          { value: "smart", label: t("الوضع الذكي") },
-          { value: "manual", label: t("يدوي") },
-          {
-            value: "failed",
-            label: t("فاشلة"),
-            count: data.filter((e) => e.type === "transfer_failed").length,
-          },
-          { value: "no_source", label: t("انقطاع كلي") },
-        ]}
-      />
-
-      {loading ? (
-        <Skeleton className="h-48" />
-      ) : groups.length === 0 ? (
-        <Card className="pt-2">
-          <EmptyState
-            icon={History}
-            title={t("لا توجد بيانات حالياً")}
-            body={t("لم يسجّل البورد أي عملية مطابقة خلال آخر {0} أيام.", { 0: days })}
-          />
-        </Card>
-      ) : (
-        groups.map(([day, events]) => (
-          <div key={day}>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-[13px] font-bold text-ink">{fmtDayLabel(day, now, tz)}</p>
-              <span className="text-[11px] text-muted">
-                {events.length} {t("سجل")}
-              </span>
-            </div>
-            <Card className="divide-y divide-line">
-              {events.map((e) => (
-                <SwitchRow key={e.id} e={e} tz={tz} noSourceEnd={noSourceEnd.get(e.id)} />
-              ))}
-            </Card>
-          </div>
-        ))
-      )}
-
-      {!loading && (
-        <button
-          type="button"
-          onClick={() => setDays((d) => d + 7)}
-          className="w-full rounded-2xl border border-dashed border-line py-3 text-[13px] font-semibold text-brand-600 hover:border-brand-200"
-        >
-          {t("عرض أيام أقدم")}
-        </button>
-      )}
+      <RowGroup>
+        <Row
+          icon={History}
+          title={t("سجل التحويلات")}
+          subtitle={loading ? t("جارٍ التحميل…") : t("{0} خلال آخر 7 أيام", { 0: listed })}
+          right={
+            failedWeek ? (
+              <Badge tone="danger">{t("{0} فاشلة", { 0: failedWeek })}</Badge>
+            ) : undefined
+          }
+          onClick={() => push("transfers")}
+        />
+      </RowGroup>
     </>
   );
 }

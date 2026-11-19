@@ -49,7 +49,6 @@ export function PhoneCard({ onVerified }: { onVerified: () => Promise<void> }) {
   return (
     <Card className="p-4">
       <form onSubmit={send} className="space-y-3" noValidate>
-        <p className="text-[15px] font-bold text-ink">{t("رقم الهاتف")}</p>
         <p className="flex items-center gap-1.5 text-[12px] text-muted">
           {current ? (
             <>

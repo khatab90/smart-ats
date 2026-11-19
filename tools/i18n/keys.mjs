@@ -1,5 +1,6 @@
 // Lists every t("…") key in src/ (and reports keys missing from the English
-// catalog). Usage: node tools/i18n/keys.mjs [--missing] [--json]
+// catalog, and English entries no code uses). Fails if there are any.
+// Usage: node tools/i18n/keys.mjs [--missing] [--unused] [--json]
 import ts from "typescript";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -60,7 +61,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   } else {
     const { EN } = await import("../../src/i18n/en.ts").catch(() => ({ EN: {} }));
     const missing = [...keys.keys()].filter((k) => !(k in EN));
-    console.log(`${keys.size} keys, ${missing.length} missing in en.ts`);
+    const unused = Object.keys(EN).filter((k) => !keys.has(k));
+    console.log(
+      `${keys.size} keys, ${missing.length} missing and ${unused.length} unused in en.ts`,
+    );
     if (process.argv.includes("--missing")) missing.forEach((k) => console.log(JSON.stringify(k)));
+    if (process.argv.includes("--unused")) unused.forEach((k) => console.log(JSON.stringify(k)));
+    if (missing.length || unused.length) process.exitCode = 1;
   }
 }

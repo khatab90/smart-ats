@@ -18,3 +18,16 @@ test("foreign hashes (Supabase auth callbacks) are ignored", () => {
   assert.equal(parseHash("#/nowhere"), null);
   assert.deepEqual(parseHash("#/home/bogus/profile")?.stack, ["profile"]);
 });
+
+test("settings and profile sections and the transfer log have their own addresses", () => {
+  assert.deepEqual(parseHash("#/more/settings/settings.voltage")?.stack, [
+    "settings",
+    "settings.voltage",
+  ]);
+  assert.deepEqual(parseHash("#/more/profile/profile.password")?.stack, [
+    "profile",
+    "profile.password",
+  ]);
+  assert.deepEqual(parseHash("#/logs/transfers")?.stack, ["transfers"]);
+  assert.deepEqual(parseHash("#/more/settings/settings.bogus")?.stack, ["settings"]);
+});

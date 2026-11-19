@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { X, type LucideIcon } from "lucide-react";
+import { cn } from "../../lib/cn";
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "./Button";
@@ -60,7 +61,11 @@ export function Sheet({
   return host ? createPortal(node, host) : node;
 }
 
-export function ConfirmSheet({
+/**
+ * A centered confirmation dialog for actions that change the board or the
+ * app: the action runs only from its confirm button.
+ */
+export function ConfirmDialog({
   open,
   onClose,
   title,
@@ -70,24 +75,58 @@ export function ConfirmSheet({
   danger,
   loading,
   disabled,
+  icon: Icon,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
-  children: ReactNode;
+  children?: ReactNode;
   confirmLabel: string;
   onConfirm: () => void;
   danger?: boolean;
   loading?: boolean;
   disabled?: boolean;
+  icon?: LucideIcon;
 }) {
-  return (
-    <Sheet
-      open={open}
-      onClose={onClose}
-      title={title}
-      footer={
-        <div className="flex gap-3">
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+  if (!open) return null;
+  const host = document.getElementById("sheet-root");
+  const node = (
+    <div
+      className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center p-6"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-title"
+    >
+      <button
+        type="button"
+        aria-label={t("إغلاق")}
+        onClick={onClose}
+        className="absolute inset-0 animate-fade-in bg-brand-950/50 backdrop-blur-[3px]"
+      />
+      <div className="relative flex max-h-full w-full animate-dialog-in flex-col overflow-hidden rounded-[28px] bg-surface shadow-[0_24px_60px_-20px_rgba(10,25,50,0.55)]">
+        <div className="overflow-y-auto px-5 pt-6 pb-5 text-center">
+          {Icon && (
+            <span
+              className={cn(
+                "mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl",
+                danger ? "bg-danger-soft text-danger" : "bg-brand-50 text-brand-700",
+              )}
+            >
+              <Icon className="size-6" strokeWidth={1.8} />
+            </span>
+          )}
+          <h2 id="confirm-title" className="text-[17px] font-bold text-ink">
+            {title}
+          </h2>
+          {children && <div className="mt-3 text-start">{children}</div>}
+        </div>
+        <div className="flex gap-3 border-t border-line px-5 pt-4 pb-5">
           <Button
             full
             loading={loading}
@@ -103,9 +142,11 @@ export function ConfirmSheet({
             {t("إلغاء")}
           </Button>
         </div>
-      }
-    >
-      {children}
-    </Sheet>
+      </div>
+    </div>
   );
+  return host ? createPortal(node, host) : node;
 }
+
+/** Kept for existing callers; every confirmation is now a centered dialog. */
+export const ConfirmSheet = ConfirmDialog;

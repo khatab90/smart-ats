@@ -92,3 +92,15 @@ export function Row({
     </button>
   );
 }
+
+/** A titled card of Rows, as in a settings list. */
+export function RowGroup({ title, children }: { title?: string; children: ReactNode }) {
+  return (
+    <div>
+      {title && <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{title}</p>}
+      <div className="divide-y divide-line overflow-hidden rounded-[22px] border border-line/80 bg-surface card-shadow">
+        {children}
+      </div>
+    </div>
+  );
+}

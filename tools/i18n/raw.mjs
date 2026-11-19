@@ -2,8 +2,8 @@
 import ts from "typescript";
 import fs from "fs";
 import path from "path";
-// The language picker shows each language in its own script.
-const ALLOW = new Set(["العربية"]);
+// The language picker names each language, and confirms, in its own script.
+const ALLOW = new Set(["العربية", "سيُعاد تحميل التطبيق باللغة العربية."]);
 const AR = /[؀-ۿ]/;
 const out = [];
 function walk(d) {

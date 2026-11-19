@@ -10,7 +10,13 @@ import { Dashboard } from "./screens/Dashboard";
 import { InvitationScreen } from "./screens/Invitation";
 import { AuthProvider, useAuth } from "./store/auth";
 import { ActiveDeviceProvider, DevicesProvider } from "./store/devices";
-import { NavProvider, useNav, type Route } from "./store/nav";
+import {
+  NavProvider,
+  useNav,
+  type ProfileSection,
+  type Route,
+  type SettingsSection,
+} from "./store/nav";
 import { NotificationsProvider } from "./store/notifications";
 import { PrefsProvider } from "./store/prefs";
 import { ToastProvider } from "./store/toast";
@@ -27,6 +33,13 @@ const Profile = lazy(() => named(import("./screens/Profile"), "Profile"));
 const Users = lazy(() => named(import("./screens/Users"), "Users"));
 const Devices = lazy(() => named(import("./screens/Devices"), "Devices"));
 const Settings = lazy(() => named(import("./screens/Settings"), "Settings"));
+const SettingsSectionScreen = lazy(() =>
+  import("./screens/SettingsSection").then((m) => ({ default: m.SettingsSectionScreen })),
+);
+const ProfileSectionScreen = lazy(() =>
+  import("./screens/ProfileSection").then((m) => ({ default: m.ProfileSectionScreen })),
+);
+const TransferHistory = lazy(() => named(import("./screens/TransferHistory"), "TransferHistory"));
 const AddDevice = lazy(() =>
   import("./screens/AddDevice").then((m) => ({
     default: m.AddDevice as React.ComponentType<{ onClose: () => void }>,
@@ -140,7 +153,14 @@ function MainApp() {
         return <AddDevice onClose={back} />;
       case "settings":
         return <Settings />;
+      case "transfers":
+        return <TransferHistory />;
     }
+    if (r.startsWith("settings."))
+      return <SettingsSectionScreen section={r.slice(9) as SettingsSection} />;
+    if (r.startsWith("profile."))
+      return <ProfileSectionScreen section={r.slice(8) as ProfileSection} />;
+    return null;
   };
   return (
     <div className="relative flex h-full flex-col">

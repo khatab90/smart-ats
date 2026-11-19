@@ -1,6 +1,7 @@
 import { Bell, LogOut, Plus, Router, Settings2, ShieldCheck, UserRound, Users } from "lucide-react";
 import { arCount, initialOf } from "../lib/format";
-import { Badge, Card, Row } from "../components/ui";
+import { useState } from "react";
+import { Badge, Card, ConfirmDialog, Row, RowGroup } from "../components/ui";
 import { ROLE_META } from "../data/meta";
 import { AppPrefsCard } from "../features/settings/AppPrefsCard";
 import { useAuth } from "../store/auth";
@@ -23,6 +24,7 @@ export function More() {
   const { membership, device } = useActiveDevice();
   const { unreadCount } = useNotifications();
   const { push } = useNav();
+  const [signingOut, setSigningOut] = useState(false);
   return (
     <div className="space-y-5 px-5 pt-4 pb-32">
       <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("المزيد")}</h1>
@@ -47,7 +49,7 @@ export function More() {
         </div>
       </Card>
 
-      <Group title={t("الأجهزة")}>
+      <RowGroup title={t("الأجهزة")}>
         <Row
           icon={Router}
           title={t("أجهزتي")}
@@ -68,13 +70,13 @@ export function More() {
           <Row
             icon={Settings2}
             title={t("إعدادات الجهاز")}
-            subtitle={t("الحدود والمؤقتات والأولوية وأوقات الشمسية")}
+            subtitle={t("الأولوية والحماية والمؤقتات وأوقات الشمسية")}
             onClick={() => push("settings")}
           />
         )}
-      </Group>
+      </RowGroup>
 
-      <Group title={t("الحساب")}>
+      <RowGroup title={t("الحساب")}>
         <Row
           icon={UserRound}
           title={t("الملف الشخصي")}
@@ -96,7 +98,7 @@ export function More() {
           onClick={() => push("notifications")}
           right={unreadCount ? <Badge tone="danger">{unreadCount}</Badge> : undefined}
         />
-      </Group>
+      </RowGroup>
 
       <div>
         <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{t("إعدادات التطبيق")}</p>
@@ -105,7 +107,7 @@ export function More() {
 
       <button
         type="button"
-        onClick={() => void signOut()}
+        onClick={() => setSigningOut(true)}
         className="flex w-full items-center justify-center gap-2 rounded-2xl border border-danger/20 bg-surface py-3.5 text-[14px] font-bold text-danger transition hover:bg-danger-soft"
       >
         <LogOut className="size-[18px]" /> {t("تسجيل الخروج")}
@@ -114,15 +116,23 @@ export function More() {
       <p className="flex items-center justify-center gap-1.5 text-[11px] text-faint">
         <ShieldCheck className="size-3.5" /> {t("Smart ATS • الإصدار")} {__APP_VERSION__}
       </p>
-    </div>
-  );
-}
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{title}</p>
-      <Card className="divide-y divide-line overflow-hidden">{children}</Card>
+      <ConfirmDialog
+        open={signingOut}
+        onClose={() => setSigningOut(false)}
+        icon={LogOut}
+        danger
+        title={t("تسجيل الخروج؟")}
+        confirmLabel={t("تسجيل الخروج")}
+        onConfirm={() => {
+          setSigningOut(false);
+          void signOut();
+        }}
+      >
+        <p className="text-center text-[13px] leading-6 text-ink-2">
+          {t("ستحتاج إلى تسجيل الدخول مرة أخرى لمتابعة أجهزتك.")}
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }

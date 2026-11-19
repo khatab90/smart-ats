@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.5.0 — 2026-11-19
+
+Design pass: every setting on its own screen, and a confirmation before
+anything that changes the board or the app.
+
+### Changed
+- **Device settings** is now a list (Operation, Electrical protection, General) showing each section's current value — e.g. "191–253 V" under Voltage limits. Each section (source priority, solar hours, manual mode, nominal values, voltage limits, frequency limits, transfer timers, time zone) opens its own screen with its own Save. Leaving with unsaved changes asks first.
+- **Profile** is now a list (Personal details, Security); name, email, phone and password each open their own screen.
+- **Home**: the priority order is shown read-only (numbered sources); admins get an "Edit" link that opens Source priority in Device settings.
+- **Log → Transfers**: the long list is replaced by a "Transfer log" entry that opens a full screen, filtered by source (all, grid, solar, generator) and by type (smart, manual, failed, total outage).
+- **Confirmations** are now centered dialogs with an icon, instead of bottom sheets: switching Smart/Manual, a manual transfer, resetting one source's runtime or all of them, and removing a device.
+
+### Added
+- Confirmation before changing the language (said in both languages) and before signing out.
+- When the board is offline, the runtime card says clearly that resetting needs the board online (the reset buttons are disabled then).
+- `npm run i18n` now also fails on English entries no code uses.
+
 ## 2.4.0 — 2026-11-19
 
 ### Added

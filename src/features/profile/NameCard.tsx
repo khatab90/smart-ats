@@ -28,7 +28,6 @@ export function NameCard({ initial, onSaved }: { initial: string; onSaved: () =>
   return (
     <Card className="p-4">
       <form onSubmit={save} className="space-y-3" noValidate>
-        <p className="text-[15px] font-bold text-ink">{t("الاسم")}</p>
         {error && <Msg text={error} tone="error" />}
         <Field
           label={t("الاسم الكامل")}
