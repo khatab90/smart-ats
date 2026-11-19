@@ -258,7 +258,9 @@ export function Energy() {
                   color: SOURCE_META[id].color,
                 }))}
               >
-                <p className="num text-[20px] leading-none font-bold text-ink">{fmtNum(kwh, 0)}</p>
+                <p className="num text-[20px] leading-none font-bold text-ink">
+                  {fmtNum(kwh, kwh < 100 ? 1 : 0)}
+                </p>
                 <p className="mt-1 text-[10px] text-muted">kWh</p>
               </Donut>
               <div className="min-w-0 flex-1 space-y-3">

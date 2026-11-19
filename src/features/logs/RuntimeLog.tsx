@@ -33,6 +33,8 @@ import {
   buildTimeline,
   durationsBy,
   stateAfter,
+  TIMELINE_EVENT_TYPES,
+  toTimelineEvent,
   type FeedState,
   type TimelineEvent,
 } from "../../lib/timeline";
@@ -40,11 +42,13 @@ import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
 import { installedSources } from "../../domain/sources";
 import { useActiveDevice, useNow } from "../../store/devices";
 
-export const TIMELINE_TYPES = [
+/** The state before the window comes from the last state-changing event. */
+const STATE_TYPES = [
   "transfer_started",
   "transfer_completed",
   "no_source_started",
   "no_source_ended",
+  "controller_restarted",
 ];
 
 export const STATE_COLOR: Record<FeedState, string> = {
@@ -68,15 +72,15 @@ export function RuntimeLog() {
   const windowStart = days[0];
   const windowEnd = addDaysInTz(days[6], 1, tz);
   const [selectedDay, setSelectedDay] = useState(today);
-  const events = useEvents(device?.id ?? null, TIMELINE_TYPES, windowStart);
+  const events = useEvents(device?.id ?? null, TIMELINE_EVENT_TYPES, windowStart);
   const [initial, setInitial] = useState<FeedState | null>(null);
 
   useEffect(() => {
     if (!device) return;
     let alive = true;
     setInitial(null);
-    void lastEventBefore(device.id, TIMELINE_TYPES, windowStart).then((e) => {
-      if (alive) setInitial(stateAfter(e ? { t: 0, type: e.type, to: e.to_source } : null));
+    void lastEventBefore(device.id, STATE_TYPES, windowStart).then((e) => {
+      if (alive) setInitial(stateAfter(e ? toTimelineEvent(e) : null));
     });
     return () => {
       alive = false;
@@ -88,7 +92,7 @@ export function RuntimeLog() {
     const asc: TimelineEvent[] = [...events.data]
       .reverse()
       .filter((e) => Date.parse(e.occurred_at) < windowEnd)
-      .map((e) => ({ t: Date.parse(e.occurred_at), type: e.type, to: e.to_source }));
+      .map(toTimelineEvent);
     return buildTimeline(asc, initial, windowStart, Math.min(windowEnd, serverNow()));
   }, [events.data, initial, windowStart, windowEnd, serverNow]);
 

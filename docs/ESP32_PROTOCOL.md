@@ -97,10 +97,10 @@ Response:
 - De-duplication key: `(device, boot_id, seq)`. `seq` restarts at 1 on every boot; buffered events can be replayed safely after a disconnection. (Persisting `seq` in NVS is no longer required.)
 - Types:
   - `source_lost` with `data.was_active` (boolean) and `data.reason`; `source_restored`
-  - `transfer_started`, `transfer_completed` with `data.reason` ∈ `source_lost | undervoltage | … | priority_return | schedule | manual`; `transfer_failed` with `data.reason` ∈ `target_lost | close_failed`
+  - `transfer_started`, `transfer_completed` with `data.reason`: the failed source's reason when leaving it (`no_voltage | undervoltage | overvoltage | underfrequency | overfrequency | inverter_fault | sensor_fault | locked_out`, or `source_lost`), `source_restored` when a source comes back after a total outage (`no_source_ended`; then `from: null` and `detect_ms: null`, and `dead_ms` is the length of the outage), `priority_return`, `schedule` or `manual`; `transfer_failed` with `data.reason` ∈ `target_lost | close_failed`
   - `no_source_started` with `data.<source> = reason` (`outside_schedule` for solar blocked by its schedule); `no_source_ended`
   - `electrical_fault` with `data.kind` ∈ `undervoltage|overvoltage|underfrequency|overfrequency` and `data.value`; `electrical_fault_cleared`
-  - `interlock_fault`, `transfer_lockout` (once per rate-limit episode), `protection_override`, `mode_changed`, `controller_restarted`
+  - `interlock_fault`, `transfer_lockout` (once per rate-limit episode), `protection_override`, `mode_changed`, `controller_restarted` (once per boot, `data: { reason, active }`: `active` is the source feeding the load right after boot or `null`; if the board connects a source later it reports a normal `transfer_completed` with `from: null`, so the app's runtime history never credits the time the board was off to a source)
   - `settings_applied`, `settings_rejected`, `runtime_reset`
   - `lockout_cleared` (on-site reset, `data.by`)
 - When the source just disconnected by protection is left for another one, report it as `from` (not `null`).

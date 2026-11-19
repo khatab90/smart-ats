@@ -145,6 +145,37 @@ export const EDITABLE_KEYS: (keyof EditableSettings)[] = [
   "timezone",
 ];
 
+/** JSON equality that ignores object key order (jsonb reorders keys). */
+export function sameValue(a: unknown, b: unknown): boolean {
+  const norm = (v: unknown): unknown =>
+    Array.isArray(v)
+      ? v.map(norm)
+      : v && typeof v === "object"
+        ? Object.fromEntries(
+            Object.keys(v)
+              .sort()
+              .map((k) => [k, norm((v as Record<string, unknown>)[k])]),
+          )
+        : v;
+  return JSON.stringify(norm(a)) === JSON.stringify(norm(b));
+}
+
+/**
+ * What a save sends: the fields the user edited whose value now differs from
+ * the server's. Untouched fields are never sent, so a save cannot overwrite
+ * a change made meanwhile by another admin.
+ */
+export function changedFields(
+  base: EditableSettings,
+  edits: Partial<EditableSettings>,
+): Partial<EditableSettings> {
+  const out: Record<string, unknown> = {};
+  for (const k of EDITABLE_KEYS) {
+    if (k in edits && !sameValue(edits[k], base[k])) out[k] = edits[k];
+  }
+  return out as Partial<EditableSettings>;
+}
+
 export function validateSettings(d: EditableSettings): string | null {
   for (const g of SETTINGS_GROUPS) {
     for (const f of g.fields) {

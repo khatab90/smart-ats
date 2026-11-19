@@ -52,6 +52,11 @@ export const UNAVAILABLE_REASON: Record<string, string> = {
 /** Transfer reasons reported by the board in event.data.reason. */
 export const TRANSFER_REASON: Record<string, string> = {
   source_lost: "انقطاع المصدر",
+  no_voltage: "انقطاع الجهد",
+  source_restored: "عودة مصدر بعد انقطاع كلي",
+  locked_out: "قفل الحماية",
+  inverter_fault: "عطل في الإنفرتر",
+  sensor_fault: "قراءة غير منطقية",
   undervoltage: "انخفاض الجهد",
   overvoltage: "ارتفاع الجهد",
   underfrequency: "انخفاض التردد",
@@ -146,3 +151,8 @@ export const PERMISSIONS: { label: string; roles: Role[] }[] = [
   { label: "تصفير ساعات التشغيل", roles: ["admin"] },
   { label: "دعوة المستخدمين وإدارة صلاحياتهم", roles: ["admin"] },
 ];
+
+/** Readable transfer reason, or null when the board sent none or an unknown code. */
+export function transferReasonText(reason: unknown): string | null {
+  return typeof reason === "string" ? (TRANSFER_REASON[reason] ?? null) : null;
+}

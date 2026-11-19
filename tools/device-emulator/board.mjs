@@ -111,7 +111,8 @@ export class EmulatedBoard {
     );
     for (const s of SOURCES) this.nvs.runtime[s].since ??= this.iso(now);
     this.lastTick = now;
-    this.emit("controller_restarted", { data: { reason: "power_on" } });
+    // `active` lets the history know what fed the load after boot.
+    this.emit("controller_restarted", { data: { reason: "power_on", active: this.active } });
   }
 
   reboot() {
@@ -337,11 +338,14 @@ export class EmulatedBoard {
       return;
     }
     this.rateLimited = false;
+    // Coming back from a total outage is not a fault of the old source.
     const reason = scheduleEnded
       ? "schedule"
-      : !activeOk
-        ? (this.openedFor?.why ?? "source_lost")
-        : "priority_return";
+      : this.noSourceReported
+        ? "source_restored"
+        : !activeOk
+          ? (this.openedFor?.why ?? "source_lost")
+          : "priority_return";
     this.startTransfer(target, reason, now);
   }
 
@@ -364,10 +368,16 @@ export class EmulatedBoard {
       to,
       reason,
       cmdId,
-      // A source just disconnected (protection / schedule) is still the one we leave.
-      from: this.active ?? this.openedFor?.from ?? null,
+      // A source just disconnected (protection / schedule) is still the one we
+      // leave; after a total outage there is nothing to leave.
+      from: reason === "source_restored" ? null : (this.active ?? this.openedFor?.from ?? null),
       t0: now,
-      detectMs: this.openedFor?.badSince ? now - this.openedFor.badSince : 0,
+      detectMs:
+        reason === "source_restored"
+          ? null
+          : this.openedFor?.badSince
+            ? now - this.openedFor.badSince
+            : 0,
       phase: "open",
       until: now,
       timings: {},

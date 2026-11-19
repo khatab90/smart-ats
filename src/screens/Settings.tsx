@@ -16,6 +16,7 @@ import {
   NOMINAL_FREQUENCIES,
   NOMINAL_VOLTAGES,
   SETTINGS_GROUPS,
+  changedFields,
   validateSettings,
   type NumField,
 } from "../domain/settings";
@@ -34,7 +35,10 @@ export function Settings() {
     useActiveDevice();
   const { back } = useNav();
   const { pushToast } = useToast();
-  const [draft, setDraft] = useState<EditableSettings | null>(null);
+  // Only the fields the user touched. The form shows them over the latest
+  // server values, so a save, a refresh or another admin's change can never
+  // bring back stale values (and a second save can never revert them).
+  const [edits, setEdits] = useState<Partial<EditableSettings>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -46,18 +50,11 @@ export function Settings() {
     return out as unknown as EditableSettings;
   }, [settings]);
 
-  useEffect(() => {
-    if (base && !draft) setDraft(base);
-  }, [base, draft]);
-
-  const changed = useMemo(() => {
-    if (!draft || !base) return {} as Partial<EditableSettings>;
-    const out: Record<string, unknown> = {};
-    for (const k of EDITABLE_KEYS) {
-      if (JSON.stringify(draft[k]) !== JSON.stringify(base[k])) out[k] = draft[k];
-    }
-    return out as Partial<EditableSettings>;
-  }, [draft, base]);
+  const draft = useMemo<EditableSettings | null>(
+    () => (base ? { ...base, ...edits } : null),
+    [base, edits],
+  );
+  const changed = useMemo(() => (base ? changedFields(base, edits) : {}), [base, edits]);
   const dirty = Object.keys(changed).length > 0;
 
   const save = async () => {
@@ -74,12 +71,12 @@ export function Settings() {
       title: "تم حفظ الإعدادات",
       body: "ستُطبَّق بعد أن يتحقق منها البورد ويؤكدها.",
     });
-    setDraft(null);
     await refresh();
+    setEdits({});
   };
 
   const set = <K extends keyof EditableSettings>(k: K, v: EditableSettings[K]) =>
-    setDraft((d) => (d ? { ...d, [k]: v } : d));
+    setEdits((e) => ({ ...e, [k]: v }));
   const readOnly = !isAdmin;
 
   return (
@@ -241,7 +238,7 @@ export function Settings() {
               variant="secondary"
               icon={Undo2}
               onClick={() => {
-                setDraft(base);
+                setEdits({});
                 setFormError("");
               }}
             >

@@ -103,9 +103,12 @@ export function Live() {
   const interval = status?.interval_ms ?? 2000;
   const segments = splitSegments(samples, Math.max(3 * interval, 6000));
   const stats = seriesStats(samples);
+  // Voltage keeps the safe band in view (a dip to 0 during an outage still
+  // stretches the scale); current and power always start at 0.
   const [y0, y1] = yDomain(
     samples,
-    metric === "v" || metric === "a" || metric === "kw" ? 0 : undefined,
+    metric === "a" || metric === "kw" ? 0 : undefined,
+    metric === "v" && range ? range : undefined,
   );
   const bands = useMemo(() => {
     const out: { from: number; to: number; color: string }[] = [];
@@ -282,6 +285,12 @@ export function Live() {
               yMax={y1}
               bands={bands}
               safe={metric === "v" && range ? { from: range.min, to: range.max } : undefined}
+              xLabels={[
+                { t: now, label: "الآن" },
+                { t: now - 60_000, label: "قبل دقيقة" },
+                { t: now - 120_000, label: "قبل دقيقتين" },
+                { t: now - WINDOW_MS, label: "قبل 3 د" },
+              ]}
             />
           )}
         </div>

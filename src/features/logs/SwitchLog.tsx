@@ -1,10 +1,11 @@
 import { ArrowLeft, CircleCheck, CircleX, Hand, History, ZapOff } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Card, Chips, EmptyState, ErrorState, Skeleton, SourceIcon } from "../../components/ui";
-import { SOURCE_META, TRANSFER_REASON } from "../../data/meta";
+import { SOURCE_META, transferReasonText } from "../../data/meta";
 import type { EventRow, SourceId } from "../../data/types";
 import { useEvents } from "../../hooks/data";
-import { fmtClock, fmtDayLabel, fmtDuration, fmtMs, fmtTime } from "../../lib/format";
+import { fmtClock, fmtDateTime, fmtDayLabel, fmtDuration, fmtMs, fmtTime } from "../../lib/format";
+import { latestBefore } from "../../lib/timeline";
 import { addDaysInTz, startOfDayInTz } from "../../lib/tz";
 import { useActiveDevice, useNow } from "../../store/devices";
 import { StatTile, num } from "./StatTile";
@@ -16,7 +17,17 @@ export const SWITCH_TYPES = [
   "no_source_ended",
 ];
 
+/** Restarts bound how long the previous source ran; they are not listed. */
+const QUERY_TYPES = [...SWITCH_TYPES, "controller_restarted"];
+
 export type Filter = "all" | "smart" | "manual" | "failed" | "no_source";
+
+/** A real change from one source to another (not the end of a total outage). */
+export function isSwitch(e: EventRow) {
+  return (
+    e.data.reason !== "source_restored" && e.from_source !== null && e.from_source !== e.to_source
+  );
+}
 
 export function isManual(e: EventRow) {
   return e.data.mode === "manual" || e.data.reason === "manual";
@@ -29,12 +40,14 @@ export function SwitchLog() {
   const [filter, setFilter] = useState<Filter>("all");
   const now = useNow(1000);
   const since = useMemo(() => addDaysInTz(serverNow(), -(days - 1), tz), [days, tz, serverNow]);
-  const { data, loading, error, reload } = useEvents(device?.id ?? null, SWITCH_TYPES, since);
+  const { data, loading, error, reload } = useEvents(device?.id ?? null, QUERY_TYPES, since);
   const today = startOfDayInTz(serverNow(), tz);
   const weekStart = addDaysInTz(serverNow(), -6, tz);
 
   const completed = data.filter((e) => e.type === "transfer_completed");
-  const week = completed.filter((e) => Date.parse(e.occurred_at) >= weekStart);
+  // Timing averages describe switching between sources; the end of a total
+  // outage is not a switch (its length is shown on the outage entry).
+  const week = completed.filter((e) => Date.parse(e.occurred_at) >= weekStart && isSwitch(e));
   const dead = week.map((e) => num(e.data.dead_ms)).filter((v): v is number => v !== null);
   const detect = week.map((e) => num(e.data.detect_ms)).filter((v): v is number => v !== null);
   const avg = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
@@ -45,6 +58,21 @@ export function SwitchLog() {
 
   const last = completed[0];
   const beforeLast = completed[1];
+  // The previous source ran from the transfer before (or from the board's
+  // last boot, if later) until the last transfer. Unknown otherwise.
+  const prevRanMs = (() => {
+    if (!last) return null;
+    const at = Date.parse(last.occurred_at);
+    const boots = data
+      .filter((e) => e.type === "controller_restarted")
+      .map((e) => Date.parse(e.occurred_at));
+    const start = Math.max(
+      beforeLast ? Date.parse(beforeLast.occurred_at) : -Infinity,
+      latestBefore(boots, at) ?? -Infinity,
+    );
+    return Number.isFinite(start) ? at - start : null;
+  })();
+  const lastReason = last ? transferReasonText(last.data.reason) : null;
   const live = link === "live" || link === "stale";
   const current: SourceId | null = live
     ? status?.system_state === "no_source"
@@ -66,7 +94,7 @@ export function SwitchLog() {
   }, [data]);
 
   const filtered = data.filter((e) => {
-    if (e.type === "no_source_ended") return false;
+    if (e.type === "no_source_ended" || e.type === "controller_restarted") return false;
     if (filter === "smart") return e.type === "transfer_completed" && !isManual(e);
     if (filter === "manual") return e.type === "transfer_completed" && isManual(e);
     if (filter === "failed") return e.type === "transfer_failed";
@@ -98,7 +126,7 @@ export function SwitchLog() {
                 <SourceIcon source={current} size="sm" />
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-bold text-ink">
-                    {SOURCE_META[current].name}
+                    {SOURCE_META[current].short}
                   </p>
                   <p
                     className="num text-[11px] text-muted"
@@ -125,12 +153,10 @@ export function SwitchLog() {
                 <SourceIcon source={last.from_source} size="sm" />
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-bold text-ink">
-                    {SOURCE_META[last.from_source].name}
+                    {SOURCE_META[last.from_source].short}
                   </p>
                   <p className="text-[11px] text-muted">
-                    {beforeLast
-                      ? `عمل ${fmtDuration(Date.parse(last.occurred_at) - Date.parse(beforeLast.occurred_at))}`
-                      : "—"}
+                    {prevRanMs !== null ? `عمل ${fmtDuration(prevRanMs)}` : "—"}
                   </p>
                 </div>
               </div>
@@ -142,11 +168,17 @@ export function SwitchLog() {
         {last && (
           <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2 text-[12px]">
             <span className="truncate text-muted">
-              آخر تحويل:{" "}
-              <b className="text-ink">{TRANSFER_REASON[String(last.data.reason ?? "")] ?? "—"}</b>
+              آخر تحويل
+              {lastReason && (
+                <>
+                  : <b className="text-ink">{lastReason}</b>
+                </>
+              )}
             </span>
             <span className="num shrink-0 text-muted">
-              {fmtTime(Date.parse(last.occurred_at), tz)}
+              {Date.parse(last.occurred_at) >= today
+                ? fmtTime(Date.parse(last.occurred_at), tz)
+                : fmtDateTime(Date.parse(last.occurred_at), tz)}
             </span>
           </div>
         )}
@@ -264,9 +296,8 @@ export function SwitchRow({
   const failed = e.type === "transfer_failed";
   const detect = num(e.data.detect_ms);
   const dead = num(e.data.dead_ms);
-  const reason =
-    TRANSFER_REASON[String(e.data.reason ?? "")] ??
-    (failed ? String(e.data.reason ?? "سبب غير محدد") : "—");
+  const reason = transferReasonText(e.data.reason) ?? (failed ? "سبب غير محدد" : null);
+  const restored = !failed && !isSwitch(e);
   return (
     <div className="flex items-center gap-3 p-3.5">
       <div className="flex items-center">
@@ -291,12 +322,22 @@ export function SwitchRow({
         </p>
         <p className="text-[11px] leading-5 text-muted">
           {reason}
-          {!failed && (detect !== null || dead !== null) && (
-            <>
-              {" • "}كشف <bdi>{detect !== null ? fmtMs(detect) : "—"}</bdi> • انقطاع{" "}
-              <bdi>{dead !== null ? fmtMs(dead) : "—"}</bdi>
-            </>
-          )}
+          {restored
+            ? dead !== null && (
+                <>
+                  {reason && " • "}مدة الانقطاع{" "}
+                  <bdi className="whitespace-nowrap">{fmtDuration(dead)}</bdi>
+                </>
+              )
+            : !failed &&
+              (detect !== null || dead !== null) && (
+                <>
+                  {reason && " • "}كشف{" "}
+                  <bdi className="whitespace-nowrap">{detect !== null ? fmtMs(detect) : "—"}</bdi> •
+                  انقطاع{" "}
+                  <bdi className="whitespace-nowrap">{dead !== null ? fmtMs(dead) : "—"}</bdi>
+                </>
+              )}
         </p>
       </div>
       <div className="text-left">

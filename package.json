@@ -1,7 +1,7 @@
 {
   "name": "smart-ats",
   "private": true,
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Smart ATS — monitoring and control app for a 3-source automatic transfer switch (grid / solar / generator) driven by an ESP32 board.",
   "type": "module",
   "engines": {

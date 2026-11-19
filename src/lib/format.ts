@@ -53,6 +53,8 @@ export function fmtClock(ms: number) {
 
 /** Human duration in Arabic: "3 س 12 د" */
 export function fmtDuration(ms: number) {
+  // Under a minute, seconds: an 18 s outage must not read "0 د".
+  if (ms < 59_500) return `${Math.max(0, Math.round(ms / 1000))} ث`;
   const totalMin = Math.max(0, Math.round(ms / 60_000));
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
@@ -91,3 +93,25 @@ export const fmtKw = (w: number | null | undefined, digits = 2) =>
 /** Transfer timing measured by the board, in ms or seconds. */
 export const fmtMs = (ms: number) =>
   ms >= 1000 ? `${fmtNum(ms / 1000, 1)} s` : `${fmtNum(ms)} ms`;
+
+/**
+ * Arabic counted noun: 1 → "جهاز واحد", 2 → "جهازان", 3–10 → "3 أجهزة",
+ * 11–99 → "11 جهازاً", 100+ and 0 → "100 جهاز".
+ */
+export function arCount(
+  n: number,
+  forms: { one: string; two: string; few: string; many: string; base: string },
+): string {
+  if (n === 1) return forms.one;
+  if (n === 2) return forms.two;
+  const r = n % 100;
+  if (r >= 3 && r <= 10) return `${n} ${forms.few}`;
+  if (r >= 11 && r <= 99) return `${n} ${forms.many}`;
+  return `${n} ${forms.base}`;
+}
+
+/** Avatar letter: first letter of the name, else of the email. */
+export function initialOf(name: string | null | undefined, email: string | null | undefined) {
+  const src = (name ?? "").trim() || (email ?? "").trim();
+  return src ? src.charAt(0).toUpperCase() : "؟";
+}

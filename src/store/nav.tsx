@@ -34,6 +34,8 @@ interface Nav extends NavState {
   back: () => void;
   /** Jump to a tab with an optional sub-view, closing any pushed screens. */
   go: (t: Tab, view?: string) => void;
+  /** Switch the current tab's sub-view in place (no extra history entry). */
+  setView: (view: string) => void;
 }
 
 /**
@@ -106,9 +108,15 @@ export function NavProvider({ children }: { children: ReactNode }) {
     window.history.replaceState(null, "", toHash(next));
   }, []);
 
+  const setView = useCallback((view: string) => {
+    const next = { ...ref.current, view };
+    setState(next);
+    window.history.replaceState(null, "", toHash(next));
+  }, []);
+
   const value = useMemo(
-    () => ({ ...state, setTab, push, back, go }),
-    [state, setTab, push, back, go],
+    () => ({ ...state, setTab, push, back, go, setView }),
+    [state, setTab, push, back, go, setView],
   );
   return <NavContext.Provider value={value}>{children}</NavContext.Provider>;
 }

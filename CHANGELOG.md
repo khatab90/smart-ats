@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.1.2 — 2026-11-19
+
+First end-to-end test on the real Supabase project: database migration 2
+applied, the board emulator reporting live, every screen and scenario driven
+in a phone-sized browser (outage, priority return, manual mode and transfer,
+strict solar schedule, total outage, board offline and back, runtime reset).
+Everything worked; these were found and fixed:
+
+### Fixed
+- **Settings could be reverted by a second save.** Right after saving, the form briefly showed the old values (e.g. the solar schedule switched off) with "Save (1)" still pending. The form now keeps only the fields you edit on top of the latest server values, so it can never show or re-send stale values, and it never overwrites another admin's change to a field you did not touch.
+- **Runtime history counted time the board was off.** A board that is switched off or rebooted no longer credits the gap to the last source (it showed 24 h of solar for a day the board was off); network-only outages still count, because the board replays its events. `controller_restarted` now carries the source feeding the load after boot.
+- **Previous source "ran 40 h"**: its duration now starts at the last boot when that is later than the previous transfer.
+- **Live chart:** value axis and time labels (now → 3 min ago); voltage keeps the safe band in view instead of a flat line at the top of a 0–250 V scale (an outage still stretches it to 0).
+- **Energy chart** tick labels repeated ("0.1, 0.1, 0.0"); the donut showed 0 kWh for 0.7 kWh. The day chart of the runtime log uses 0 / 8 / 16 / 24 h.
+- **Transfer reasons** sent by the board (`no_voltage`, …) showed as "—"; the end of a total outage is reported as `source_restored` (`from: null`) and no longer inflates the average detection and switching times.
+- Logs: the sub-tab is part of the address (refresh and links keep it); older transfers show their date; short source names; durations under a minute in seconds; values and units no longer split across lines.
+- More: the real app version (was 1.1.0), correct Arabic counts ("جهاز واحد"), menu text without the removed capacities; the same avatar letter on Home and More.
+
 ## 2.1.1 — 2026-11-19
 
 ### Added

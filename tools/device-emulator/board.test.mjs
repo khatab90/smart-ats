@@ -94,6 +94,11 @@ describe("passive sources", () => {
     s.run(125_000); // must be stable for the return delay first
     assert.equal(s.board.active, "generator");
     assert.ok(s.allEvents().some((e) => e.type === "no_source_ended"));
+    // Coming back from a total outage is reported as such, not as the old fault.
+    const back = s.allEvents().find((e) => e.type === "transfer_completed" && e.to === "generator");
+    assert.equal(back.data.reason, "source_restored");
+    assert.equal(back.from, null); // nothing was left: the load had no source
+    assert.equal(back.data.detect_ms, null);
   });
 });
 
@@ -264,6 +269,9 @@ describe("board side of DB-2 / DB-3", () => {
     assert.notEqual(first.boot_id, second.boot_id);
     assert.equal(second.seq, 1);
     assert.equal(second.events[0].seq, 1);
+    // The boot event says what feeds the load, for the runtime history.
+    assert.equal(second.events[0].type, "controller_restarted");
+    assert.equal(second.events[0].data.active, s.board.active);
   });
 
   test("the board adopts server_time when told its clock is invalid", async () => {

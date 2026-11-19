@@ -1,5 +1,4 @@
 import { History } from "lucide-react";
-import { useState } from "react";
 import { EmptyState, Segmented } from "../components/ui";
 import { useActiveDevice } from "../store/devices";
 import { useNav } from "../store/nav";
@@ -7,9 +6,11 @@ import { RuntimeLog } from "../features/logs/RuntimeLog";
 import { SwitchLog } from "../features/logs/SwitchLog";
 
 export function Logs() {
-  const { view } = useNav();
+  const { view, setView } = useNav();
   const { device } = useActiveDevice();
-  const [tab, setTab] = useState<"switch" | "runtime">(view === "runtime" ? "runtime" : "switch");
+  // The sub-tab lives in the address (#/logs:runtime), so links, refresh and
+  // notifications that open a sub-tab always show the right one.
+  const tab: "switch" | "runtime" = view === "runtime" ? "runtime" : "switch";
   if (!device) {
     return (
       <div className="px-5 pt-16">
@@ -25,7 +26,7 @@ export function Logs() {
       </div>
       <Segmented
         value={tab}
-        onChange={setTab}
+        onChange={setView}
         options={[
           { value: "switch", label: "التحويلات" },
           { value: "runtime", label: "ساعات التشغيل" },

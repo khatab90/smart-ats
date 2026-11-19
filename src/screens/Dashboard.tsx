@@ -11,6 +11,7 @@ import { DeviceSheet } from "../features/dashboard/DeviceSheet";
 import { Hero } from "../features/dashboard/Hero";
 import { ModeCard } from "../features/dashboard/ModeCard";
 import { SourcesCard } from "../features/dashboard/SourcesCard";
+import { initialOf } from "../lib/format";
 import { StatusBanners } from "../features/dashboard/StatusBanners";
 import { TodayStats } from "../features/dashboard/TodayStats";
 
@@ -20,7 +21,7 @@ export function greeting() {
 }
 
 export function Dashboard() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { memberships, loading, error, refresh } = useDevices();
   const { unreadCount } = useNotifications();
   const { push } = useNav();
@@ -32,7 +33,7 @@ export function Dashboard() {
     <div className="space-y-5 px-5 pt-4 pb-32">
       <div className="flex items-center gap-3">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-brand-800 text-[15px] font-bold text-white">
-          {firstName.charAt(0) || "S"}
+          {initialOf(profile?.full_name, user?.email)}
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[12px] text-muted">{greeting()}</p>

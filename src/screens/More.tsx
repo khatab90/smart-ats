@@ -1,10 +1,19 @@
 import { Bell, LogOut, Plus, Router, Settings2, ShieldCheck, UserRound, Users } from "lucide-react";
+import { arCount, initialOf } from "../lib/format";
 import { Badge, Card, Row } from "../components/ui";
 import { ROLE_META } from "../data/meta";
 import { useAuth } from "../store/auth";
 import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
+
+const DEVICE_COUNT = {
+  one: "جهاز واحد",
+  two: "جهازان",
+  few: "أجهزة",
+  many: "جهازاً",
+  base: "جهاز",
+};
 
 export function More() {
   const { profile, user, signOut } = useAuth();
@@ -18,7 +27,7 @@ export function More() {
 
       <Card onClick={() => push("profile")} className="flex items-center gap-3 p-4">
         <span className="flex size-14 items-center justify-center rounded-[20px] bg-brand-800 text-xl font-bold text-white">
-          {(profile?.full_name || user?.email || "?").charAt(0).toUpperCase()}
+          {initialOf(profile?.full_name, user?.email)}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[16px] font-bold text-ink">
@@ -40,7 +49,11 @@ export function More() {
         <Row
           icon={Router}
           title="أجهزتي"
-          subtitle={`${memberships.length} أجهزة مرتبطة بالحساب`}
+          subtitle={
+            memberships.length
+              ? `المرتبطة بحسابك: ${arCount(memberships.length, DEVICE_COUNT)}`
+              : "لا توجد أجهزة مرتبطة بحسابك"
+          }
           onClick={() => push("devices")}
         />
         <Row
@@ -53,7 +66,7 @@ export function More() {
           <Row
             icon={Settings2}
             title="إعدادات الجهاز"
-            subtitle="الحدود والمؤقتات والأولوية والسعات"
+            subtitle="الحدود والمؤقتات والأولوية وأوقات الشمسية"
             onClick={() => push("settings")}
           />
         )}
@@ -92,7 +105,7 @@ export function More() {
       </button>
 
       <p className="flex items-center justify-center gap-1.5 text-[11px] text-faint">
-        <ShieldCheck className="size-3.5" /> Smart ATS • الإصدار 1.1.0
+        <ShieldCheck className="size-3.5" /> Smart ATS • الإصدار {__APP_VERSION__}
       </p>
     </div>
   );
