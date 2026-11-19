@@ -12,6 +12,7 @@ import type { Profile } from "../data/types";
 import { isSchemaMissing } from "../lib/errors";
 import * as authApi from "../api/auth";
 import { probeProfile } from "../api/profile";
+import { useToast } from "./toast";
 
 interface AuthCtx {
   loading: boolean;
@@ -28,7 +29,19 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+  children,
+  initialLinkError = null,
+}: {
+  children: ReactNode;
+  /** Error from the email link or Google sign-in the page was opened with (main.tsx). */
+  initialLinkError?: string | null;
+}) {
+  const { pushToast } = useToast();
+  useEffect(() => {
+    if (initialLinkError)
+      pushToast({ kind: "error", title: "تعذر تسجيل الدخول", body: initialLinkError });
+  }, [initialLinkError, pushToast]);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);

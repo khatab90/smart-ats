@@ -10,12 +10,13 @@
 |---|---|
 | `20261116000000_smart_ats_schema.sql` | الأساس: الجداول، الصلاحيات (RLS)، دوال البورد والتطبيق |
 | `20261118000000_reliability_and_security.sql` | الموثوقية والأمان: استقبال لا يتعطل بحقل خاطئ، `boot_id`، حماية ساعة البورد، الاحتفاظ بالبيانات، خصوصية الملفات الشخصية، المولد كمصدر عادي، أوقات الطاقة الشمسية |
+| `20261119000000_invitations_by_email.sql` | الدعوات حسب البريد الموثّق: من يدخل بـ Google (أو لم يفتح رسالة الدعوة) يرى دعواته ويقبلها داخل التطبيق |
 
 ### مشروع موجود (شغّلت الملف الأول سابقاً)
 
-افتح Supabase Dashboard ← مشروعك ← **SQL Editor** ← **New query**، والصق محتوى الملف الثاني فقط واضغط **Run**. بياناتك تبقى كما هي.
+افتح Supabase Dashboard ← مشروعك ← **SQL Editor** ← **New query**، والصق محتوى **الملفات التي لم تشغّلها بعد فقط**، كل ملف لوحده وبالترتيب، واضغط **Run**. بياناتك تبقى كما هي.
 
-> لا تُعِد تشغيل الملف الأول بعد تشغيل الثاني.
+> لا تُعِد تشغيل ملف قديم بعد تشغيل ملف أحدث منه.
 
 ### مشروع جديد فارغ
 
@@ -49,8 +50,15 @@
    - `http://localhost:5173/**` (التشغيل على حاسبتك)
    - رابط النشر (مثل Netlify)
 2. **Confirm email**: أثناء التجربة يمكن إيقافه مؤقتاً من **Authentication ← Providers ← Email**. **أعد تفعيله** قبل أن يستخدم التطبيق أي شخص آخر، وإلا يستطيع أي أحد إنشاء حساب ببريد غيره.
-3. **SMTP مخصص** (Authentication ← Emails ← SMTP Settings): خادم البريد المدمج يرسل فقط لأعضاء فريق المشروع وبعدد محدود. تأكيد الحساب وتغيير البريد والدعوات تحتاج SMTP مثل Gmail (كلمة مرور تطبيق) أو Resend.
-4. **التحقق من الهاتف**: فعّل **Phone** provider واربطه بمزوّد SMS (مثل Twilio، مدفوع). حتى يتم ذلك يرفض التطبيق تغيير الرقم برسالة واضحة.
+3. **SMTP مخصص** (Authentication ← Emails ← SMTP Settings): خادم البريد المدمج يرسل فقط لأعضاء فريق المشروع وبعدد محدود. تأكيد الحساب وتغيير البريد والدعوات تحتاج SMTP. مع Gmail: فعّل التحقق بخطوتين، وأنشئ كلمة مرور تطبيق من `myaccount.google.com/apppasswords`، ثم: Host `smtp.gmail.com`، Port `465`، Username = عنوان Gmail، Password = كلمة مرور التطبيق.
+   - **قوالب الرسائل بالعربي**: الصق ما في `supabase/email-templates.txt` في Authentication ← Emails ← Templates (Magic Link تُستخدم للدعوات، وConfirm signup، وReset Password).
+4. **الدخول بـ Google**:
+   - Google Cloud Console ← مشروع جديد ← **Google Auth Platform** ← Get started: اسم التطبيق، بريد الدعم، **External**.
+   - **Clients ← Create client ← Web application**، وفي Authorized redirect URIs: `https://<project>.supabase.co/auth/v1/callback`.
+   - انسخ Client ID وClient secret إلى Supabase ← Authentication ← Sign In / Providers ← **Google**.
+   - ما دام التطبيق في وضع **Testing**، أضف كل من سيدخل بـ Google في **Audience ← Test users** (حتى 100 حساب). النشر الكامل يحتاج رابط سياسة خصوصية في صفحة Branding (مع مرحلة تطبيق الهاتف).
+   - في تطبيق أندرويد لاحقاً يُضاف Client ثانٍ من نوع Android (اسم الحزمة وبصمة SHA-1)، ويبقى Client الويب كما هو.
+5. **التحقق من الهاتف**: فعّل **Phone** provider واربطه بمزوّد SMS (مثل Twilio، مدفوع). حتى يتم ذلك يرفض التطبيق تغيير الرقم برسالة واضحة.
 
 ## 4. تسجيل الأجهزة
 

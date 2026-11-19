@@ -1,0 +1,46 @@
+Smart ATS — Arabic email templates for Supabase
+Paste each one in Supabase → Authentication → Emails → Templates.
+Keep {{ .ConfirmationURL }} exactly as written.
+
+==================================================================
+1) Template: Magic Link   (used to send invitations)
+==================================================================
+Subject:
+دعوة إلى Smart ATS
+
+Body (Message, HTML):
+<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:15px;line-height:1.8;color:#0a1f3d">
+  <h2 style="margin:0 0 12px">لديك دعوة إلى Smart ATS</h2>
+  <p>دعاك أحد مسؤولي نظام Smart ATS للانضمام إلى جهازه.</p>
+  <p>اضغط الزر لتسجيل الدخول وعرض الدعوة وقبولها:</p>
+  <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0f2d57;color:#ffffff;padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:bold">عرض الدعوة</a></p>
+  <p style="color:#5b6b82;font-size:13px">يمكنك أيضاً تسجيل الدخول بحساب Google بنفس هذا البريد، وستظهر لك الدعوة مباشرة. الرابط صالح لمرة واحدة. إذا لم تكن تتوقع هذه الرسالة فتجاهلها.</p>
+</div>
+
+==================================================================
+2) Template: Confirm signup
+==================================================================
+Subject:
+تأكيد بريدك في Smart ATS
+
+Body (Message, HTML):
+<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:15px;line-height:1.8;color:#0a1f3d">
+  <h2 style="margin:0 0 12px">أكّد بريدك الإلكتروني</h2>
+  <p>اضغط الزر لتأكيد بريدك وإكمال الدخول إلى Smart ATS. إذا وصلتك دعوة لجهاز، ستظهر لك بعد التأكيد.</p>
+  <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0f2d57;color:#ffffff;padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:bold">تأكيد البريد</a></p>
+  <p style="color:#5b6b82;font-size:13px">إذا لم تطلب ذلك فتجاهل هذه الرسالة.</p>
+</div>
+
+==================================================================
+3) Template: Reset Password
+==================================================================
+Subject:
+استعادة كلمة المرور في Smart ATS
+
+Body (Message, HTML):
+<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;font-size:15px;line-height:1.8;color:#0a1f3d">
+  <h2 style="margin:0 0 12px">استعادة كلمة المرور</h2>
+  <p>طلبت تعيين كلمة مرور جديدة لحسابك في Smart ATS. اضغط الزر لاختيار كلمة مرور جديدة:</p>
+  <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#0f2d57;color:#ffffff;padding:12px 22px;border-radius:12px;text-decoration:none;font-weight:bold">تعيين كلمة مرور جديدة</a></p>
+  <p style="color:#5b6b82;font-size:13px">إذا لم تطلب ذلك فتجاهل هذه الرسالة، وستبقى كلمة مرورك كما هي.</p>
+</div>

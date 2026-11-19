@@ -62,3 +62,26 @@ export const verifyPhoneChange = (phone: string, token: string) =>
   run(supabase.auth.verifyOtp({ phone, token, type: "phone_change" }), () => null);
 
 export const signOut = () => supabase.auth.signOut();
+
+/**
+ * Google sign-in (OAuth through Supabase). The browser leaves for Google and
+ * comes back to `redirectTo` with the session; a pending invitation token is
+ * carried along so the invitation screen still opens.
+ */
+export const signInWithGoogle = (invite?: string | null) =>
+  run(
+    supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: invite ? `${appBaseUrl()}?invite=${encodeURIComponent(invite)}` : appBaseUrl(),
+        queryParams: { prompt: "select_account" },
+      },
+    }),
+    () => null,
+  );
+
+/** Sign-in methods of the current user ("email", "google"), from Supabase. */
+export function signInMethods(user: { app_metadata?: { providers?: unknown } } | null): string[] {
+  const p = user?.app_metadata?.providers;
+  return Array.isArray(p) ? p.filter((x): x is string => typeof x === "string") : [];
+}

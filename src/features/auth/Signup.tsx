@@ -1,4 +1,5 @@
 import { Check, KeyRound, Lock, Mail, User } from "lucide-react";
+import { GoogleSignIn } from "./GoogleButton";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import { cn } from "../../lib/cn";
@@ -56,6 +57,7 @@ export function Signup({ onNavigate }: { onNavigate: (v: View) => void }) {
         subtitle="أنشئ حسابك ثم أضف جهاز Smart ATS الخاص بك."
         onBack={() => onNavigate("login")}
       />
+      <GoogleSignIn label="إنشاء حساب بـ Google" />
       <FormError msg={error} />
       <Field
         label="الاسم الكامل"

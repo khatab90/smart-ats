@@ -77,6 +77,26 @@ export const acceptInvitation = (token: string) =>
     (d) => d as { device_id: string; role: Role },
   );
 
+/** A pending invitation addressed to the signed-in user's verified email. */
+export interface MyInvitation {
+  id: string;
+  device_id: string;
+  device_name: string;
+  role: Role;
+  inviter_name: string | null;
+  expires_at: string;
+}
+
+/** Invitations for my verified email (no email link needed, e.g. after Google sign-in). */
+export const listMyInvitations = () =>
+  run(supabase.rpc("my_invitations"), (rows) => (rows ?? []) as unknown as MyInvitation[]);
+
+export const acceptMyInvitation = (id: string) =>
+  run(
+    supabase.rpc("accept_my_invitation", { p_invitation_id: id }),
+    (d) => d as { device_id: string; role: Role },
+  );
+
 // Isolated, non-persistent client used only to email invitation links, so it
 // can never touch the signed-in admin's session storage.
 const inviteMailer = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {

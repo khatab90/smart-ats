@@ -31,10 +31,10 @@ const AddDevice = lazy(() =>
   })),
 );
 
-export default function App() {
+export default function App({ linkError = null }: { linkError?: string | null }) {
   return (
     <ToastProvider>
-      <AuthProvider>
+      <AuthProvider initialLinkError={linkError}>
         <PhoneFrame>
           <Root />
         </PhoneFrame>

@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import * as authApi from "../../api/auth";
 import { type View } from "./AuthFlow";
+import { GoogleSignIn } from "./GoogleButton";
 import { FormError } from "./shared";
 
 export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
@@ -40,6 +41,7 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
         <h2 className="text-[22px] font-bold text-ink">تسجيل الدخول</h2>
         <p className="mt-1 text-[13px] text-muted">سجّل الدخول لمتابعة أجهزتك.</p>
       </div>
+      <GoogleSignIn />
       <FormError msg={error} />
       {unconfirmed && (
         <Button variant="secondary" full onClick={resend} disabled={resent}>

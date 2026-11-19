@@ -755,6 +755,10 @@ export type Database = {
         Args: { p_token: string };
         Returns: Json;
       };
+      accept_my_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: Json;
+      };
       claim_device: {
         Args: { p_device_id: string; p_pin: string; p_environment: string; p_name: string; p_location?: string; p_timezone?: string };
         Returns: Json;
@@ -798,6 +802,10 @@ export type Database = {
       list_device_members: {
         Args: { p_device_id: string };
         Returns: { user_id: string | null; role: string | null; added_at: string | null; is_owner: boolean | null; full_name: string | null; email: string | null; phone: string | null }[];
+      };
+      my_invitations: {
+        Args: Record<PropertyKey, never>;
+        Returns: { id: string | null; device_id: string | null; device_name: string | null; role: string | null; inviter_name: string | null; expires_at: string | null }[];
       };
       release_device: {
         Args: { p_device_id: string };

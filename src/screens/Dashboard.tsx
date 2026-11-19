@@ -12,6 +12,7 @@ import { Hero } from "../features/dashboard/Hero";
 import { ModeCard } from "../features/dashboard/ModeCard";
 import { SourcesCard } from "../features/dashboard/SourcesCard";
 import { initialOf } from "../lib/format";
+import { PendingInvitations } from "../features/dashboard/PendingInvitations";
 import { StatusBanners } from "../features/dashboard/StatusBanners";
 import { TodayStats } from "../features/dashboard/TodayStats";
 
@@ -46,6 +47,8 @@ export function Dashboard() {
           onClick={() => push("notifications")}
         />
       </div>
+
+      <PendingInvitations />
 
       {loading ? (
         <div className="space-y-4">

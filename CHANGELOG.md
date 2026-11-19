@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.0 — 2026-11-19
+
+### Added
+- **Sign in with Google** on the sign-in and sign-up screens, next to email and password (Supabase Google provider; the web OAuth client stays valid for the Android app later, which only adds an Android client).
+- **Invitations by verified email** (database migration 3): a signed-in user sees the invitations sent to their verified address on the home screen and accepts them there, so an invitation no longer depends on the email being delivered or opened. An unverified address is never trusted.
+- Arabic email templates for invitations, sign-up confirmation and password reset (`supabase/email-templates.txt`); setup steps for Gmail SMTP and Google in `docs/SUPABASE_SETUP.md`.
+
+### Changed
+- Profile: Google-only accounts see that Google manages their sign-in; the password and email forms appear only for accounts that have a password.
+- A failed or cancelled Google sign-in, or an expired email link, now shows a clear message instead of nothing.
+
 ## 2.1.2 — 2026-11-19
 
 First end-to-end test on the real Supabase project: database migration 2
