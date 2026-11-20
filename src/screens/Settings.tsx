@@ -1,13 +1,6 @@
 import { CircleCheck, Eye, LoaderCircle, Settings2 } from "lucide-react";
-import {
-  Card,
-  EmptyState,
-  ErrorState,
-  Row,
-  RowGroup,
-  ScreenHeader,
-  Skeleton,
-} from "../components/ui";
+import { NoDevice } from "../components/DeviceGate";
+import { Card, ErrorState, Row, RowGroup, ScreenHeader, Skeleton } from "../components/ui";
 import { installedSources } from "../domain/sources";
 import { SECTION_META } from "../features/settings/sections";
 import { sectionSummary } from "../features/settings/summaries";
@@ -48,7 +41,7 @@ export function Settings() {
       />
       <div className="space-y-5 px-5">
         {!device ? (
-          <EmptyState icon={Settings2} title={t("لا يوجد جهاز")} body={t("أضف جهازاً أولاً.")} />
+          <NoDevice icon={Settings2} body={t("أضف جهازاً لضبط إعداداته.")} />
         ) : error ? (
           <ErrorState message={error} onRetry={refresh} />
         ) : loading || !values || !settings ? (

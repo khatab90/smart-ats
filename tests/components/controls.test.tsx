@@ -2,35 +2,65 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import assert from "node:assert/strict";
 import { afterEach, describe, test, vi } from "vitest";
-import { CommandProgress, PriorityList } from "../../src/components/control";
+import { CommandProgress } from "../../src/components/control";
+import { PriorityPicker } from "../../src/features/settings/PriorityPicker";
 import { LinkBadge } from "../../src/components/status";
 import type { SourceId } from "../../src/data/types";
 
 afterEach(cleanup);
 
-describe("PriorityList", () => {
-  test("shows installed sources only and saves the full order", () => {
-    const onChange = vi.fn<(next: SourceId[]) => void>();
+describe("PriorityPicker", () => {
+  test("shows the order as a chain of installed sources only", () => {
     render(
-      <PriorityList
+      <PriorityPicker
         value={["solar", "grid", "generator"]}
         installed={["grid", "generator"]}
-        onChange={onChange}
+        onChange={() => {}}
       />,
     );
     const items = screen.getAllByRole("listitem").map((li) => li.textContent);
     assert.equal(items.length, 2);
     assert.match(items[0] ?? "", /الشبكة الوطنية/);
     assert.match(items[1] ?? "", /المولد/);
-    fireEvent.click(screen.getByLabelText("رفع أولوية المولد"));
-    assert.deepEqual(onChange.mock.calls[0][0], ["generator", "grid", "solar"]);
   });
 
-  test("is read-only when disabled", () => {
-    const onChange = vi.fn();
-    render(<PriorityList value={["grid", "solar", "generator"]} onChange={onChange} disabled />);
-    for (const b of screen.getAllByRole("button"))
-      assert.equal((b as HTMLButtonElement).disabled, true);
+  test("tapping sources in order sets the priority; the last one places itself", () => {
+    const onChange = vi.fn<(next: SourceId[]) => void>();
+    render(
+      <PriorityPicker
+        value={["grid", "solar", "generator"]}
+        installed={["grid", "solar", "generator"]}
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByText("تغيير الترتيب"));
+    fireEvent.click(screen.getByText("المولد"));
+    fireEvent.click(screen.getByText("الطاقة الشمسية"));
+    assert.deepEqual(onChange.mock.calls[0][0], ["generator", "solar", "grid"]);
+  });
+
+  test("uninstalled sources keep their place at the end; read-only has no change button", () => {
+    const onChange = vi.fn<(next: SourceId[]) => void>();
+    const { unmount } = render(
+      <PriorityPicker
+        value={["grid", "solar", "generator"]}
+        installed={["grid", "generator"]}
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByText("تغيير الترتيب"));
+    fireEvent.click(screen.getByText("المولد"));
+    assert.deepEqual(onChange.mock.calls[0][0], ["generator", "grid", "solar"]);
+    unmount();
+    render(
+      <PriorityPicker
+        value={["grid", "solar", "generator"]}
+        installed={["grid", "solar"]}
+        onChange={onChange}
+        disabled
+      />,
+    );
+    assert.equal(screen.queryByText("تغيير الترتيب"), null);
   });
 });
 

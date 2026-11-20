@@ -63,32 +63,3 @@ export function predictSmartTarget(
   }
   return null;
 }
-
-export function movePriority(priority: SourceId[], from: number, to: number): SourceId[] {
-  const next = [...priority];
-  if (from < 0 || from >= next.length || to < 0 || to >= next.length) return next;
-  const [item] = next.splice(from, 1);
-  next.splice(to, 0, item);
-  return next;
-}
-
-/** The priority list as shown: installed sources only, in saved order. */
-export function visiblePriority(
-  priority: readonly SourceId[],
-  installed: readonly SourceId[],
-): SourceId[] {
-  return priority.filter((id) => installed.includes(id));
-}
-
-/**
- * Applies a reordering of the visible sources to the full saved priority:
- * the database always stores all three, hidden ones keep their place at
- * the end so they never jump ahead of an installed source.
- */
-export function mergePriority(
-  visibleOrder: readonly SourceId[],
-  full: readonly SourceId[],
-): SourceId[] {
-  const hidden = full.filter((id) => !visibleOrder.includes(id));
-  return [...visibleOrder, ...hidden];
-}

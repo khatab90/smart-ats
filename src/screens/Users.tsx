@@ -1,3 +1,4 @@
+import { NoDevice } from "../components/DeviceGate";
 import {
   Check,
   Clock3,
@@ -16,7 +17,6 @@ import {
   Button,
   Card,
   ConfirmDialog,
-  EmptyState,
   ErrorState,
   ScreenHeader,
   SectionTitle,
@@ -109,11 +109,9 @@ export function Users() {
     return (
       <div className="pb-10">
         <ScreenHeader title={t("المستخدمون والصلاحيات")} onBack={back} />
-        <EmptyState
-          icon={UsersIcon}
-          title={t("لا يوجد جهاز")}
-          body={t("أضف جهازاً أولاً لإدارة المستخدمين.")}
-        />
+        <div className="px-5">
+          <NoDevice icon={UsersIcon} body={t("أضف جهازاً أولاً لإدارة المستخدمين.")} />
+        </div>
       </div>
     );
   }

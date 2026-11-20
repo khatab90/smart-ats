@@ -8,9 +8,7 @@ import {
   isFeeding,
   isSelectable,
   isUsableManually,
-  mergePriority,
   outsideSchedule,
-  visiblePriority,
 } from "../../src/domain/sources";
 
 const status = (sources: DeviceStatus["sources"]) => ({ sources }) as Pick<DeviceStatus, "sources">;
@@ -26,22 +24,6 @@ describe("installed sources", () => {
       generator: { v: 0, f: 0 },
     });
     assert.deepEqual(installedSources(s), ["grid", "generator"]);
-  });
-});
-
-describe("priority with hidden sources", () => {
-  test("only installed sources are listed, in saved order", () => {
-    assert.deepEqual(visiblePriority(["solar", "generator", "grid"], ["grid", "generator"]), [
-      "generator",
-      "grid",
-    ]);
-  });
-  test("reordering the visible list keeps hidden sources at the end", () => {
-    assert.deepEqual(mergePriority(["grid", "generator"], ["solar", "generator", "grid"]), [
-      "grid",
-      "generator",
-      "solar",
-    ]);
   });
 });
 

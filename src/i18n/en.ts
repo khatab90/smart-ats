@@ -34,10 +34,6 @@ export const EN: Record<string, string> = {
   "التنقل الرئيسي": "Main navigation",
   "تحقق من حالة النظام قبل إعادة المحاولة.": "Check the system status before trying again.",
   إخفاء: "Hide",
-  "ترتيب أولوية المصادر": "Source priority order",
-  "اسحب لإعادة ترتيب {0}": "Drag to reorder {0}",
-  "رفع أولوية {0}": "Raise priority of {0}",
-  "خفض أولوية {0}": "Lower priority of {0}",
   فعّال: "Active",
   "لا توجد بيانات": "No data",
   متاح: "Available",
@@ -328,7 +324,6 @@ export const EN: Record<string, string> = {
   "بصلاحية «": "as “",
   "قبول الدعوة": "Accept invitation",
   لاحقاً: "Later",
-  "مطبَّق على البورد": "Applied on the board",
   "بانتظار تأكيد البورد": "Waiting for the board to confirm",
   "تُستخدم في الوضع الذكي فقط في:": "Used in Smart mode only during:",
   تراجع: "Undo",
@@ -340,8 +335,6 @@ export const EN: Record<string, string> = {
   "متوفرة لكن خارج وقتها المحدد، فلن يستخدمها الوضع الذكي. يمكنك التحويل إليها يدوياً.":
     "Available but outside its hours, so Smart mode won't use it. You can switch to it manually.",
   "بانتظار أول بيانات من البورد": "Waiting for the first data from the board",
-  "لم تصل أي قراءة من هذا الجهاز بعد. تأكد من تشغيل البورد واتصاله بالإنترنت.":
-    "No reading has arrived from this device yet. Make sure the board is powered and online.",
   "البورد غير متصل": "The board is offline",
   "). أزرار التحكم معطلة حتى يعود الاتصال.":
     "). Controls are disabled until the connection is back.",
@@ -371,14 +364,7 @@ export const EN: Record<string, string> = {
   "بانتظار تأكيد البورد للإعدادات": "Waiting for the board to confirm the settings",
   الإصدار: "Version",
   "محفوظ، ولم يؤكد البورد تطبيقه بعد.": "is saved, but the board hasn't confirmed applying it yet.",
-  "استهلاك اليوم": "Today's consumption",
-  "مجموع الطاقة المسجلة بعدادات البورد لكل المصادر منذ منتصف الليل بتوقيت الجهاز.":
-    "Total energy recorded by the board's counters for all sources since midnight, device time.",
-  "لا يوجد استهلاك مسجل": "No consumption recorded",
   "تحويلات اليوم": "Transfers today",
-  "عدد عمليات التحويل الناجحة منذ منتصف الليل. المحاولات الفاشلة لا تُحتسب وتظهر في السجل.":
-    "Successful transfers since midnight. Failed attempts are not counted and appear in the log.",
-  عملية: "transfers",
   "مدة تشغيل المصدر الحالي": "Current source runtime",
   "غير متاح أثناء عدم اتصال البورد": "Unavailable while the board is offline",
   "بدأ {0} الساعة {1}": "Started {0} at {1}",
@@ -647,7 +633,6 @@ export const EN: Record<string, string> = {
   "ستفقد الوصول إلى هذا الجهاز وإشعاراته.":
     "You will lose access to this device and its notifications.",
   "الساعة {0}:00 – {1}:00": "{0}:00 – {1}:00",
-  "لا يوجد جهاز": "No device",
   "أضف جهازاً لعرض إحصائيات الاستهلاك.": "Add a device to see consumption statistics.",
   "إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر":
     "Historical consumption and how it splits across sources",
@@ -762,7 +747,6 @@ export const EN: Record<string, string> = {
   "تم حفظ الإعدادات": "Settings saved",
   "ستُطبَّق بعد أن يتحقق منها البورد ويؤكدها.":
     "They will apply once the board checks and confirms them.",
-  "أضف جهازاً أولاً.": "Add a device first.",
   "صلاحيتك «مشاهد»: الإعدادات للعرض فقط.": "Your role is “Viewer”: settings are view only.",
   "القيم الاسمية": "Nominal values",
   "الجهد الاسمي": "Nominal voltage",
@@ -811,9 +795,6 @@ export const EN: Record<string, string> = {
   "تعذر حفظ الإعدادات": "Couldn't save the settings",
   "تعذر تحديث الإشعارات": "Couldn't update notifications",
   "تعذر حذف الإشعار": "Couldn't delete the notification",
-  "ترتيب الأولوية": "Priority order",
-  تعديل: "Edit",
-  "الشمسية في الوضع الذكي فقط:": "Solar in Smart mode only:",
   "التصفير متاح فقط أثناء اتصال البورد.": "Resetting is only available while the board is online.",
   "سجل واحد": "1 entry",
   سجلان: "2 entries",
@@ -851,10 +832,6 @@ export const EN: Record<string, string> = {
   تجاهل: "Discard",
   "لم تحفظ التغييرات على «{0}». إذا خرجت الآن ستُفقد.":
     "Your changes to “{0}” are not saved. They will be lost if you leave now.",
-  "اسحب المصادر أو استخدم الأسهم لإعادة ترتيبها. ":
-    "Drag the sources or use the arrows to reorder them. ",
-  "في الوضع الذكي يعتمد البورد على المصدر الأول إذا كان مستوفياً لشروط التشغيل، وإلا ينتقل إلى التالي، ويعود إلى الأعلى أولوية بعد استقراره.":
-    "In Smart mode the board uses the first source if it meets the operating conditions, otherwise the next one, and returns to the higher priority once it is stable.",
   "حسب شبكة موقع التركيب. حدود الجهد والتردد تُحسب كنسب من هذه القيم.":
     "As on the grid where the board is installed. Voltage and frequency limits are percentages of these values.",
   "تحدد منتصف الليل لعدّادات «اليوم» وأوقات السجل. مثال: Asia/Baghdad":
@@ -870,4 +847,28 @@ export const EN: Record<string, string> = {
     "Data has been arriving from two different devices under this board's name since {0}. We show the board that started first and stopped the other (it gets none of your commands). Disconnect the extra device, such as an emulator still running or an old board; if you do not know it, its secret token may have been copied.",
   "تصل بيانات من جهازين مختلفين{0}. نعرض البورد الذي بدأ أولاً وأوقفنا الآخر. افصل الجهاز الزائد؛ وإذا لم تعرفه فقد يكون رمزه السري منسوخاً.":
     "Data is arriving from two different devices{0}. We show the board that started first and stopped the other. Disconnect the extra device; if you do not know it, its secret token may have been copied.",
+  "وصّل البورد بالكهرباء وانتظر دقيقة حتى يقلع.": "Power the board and give it a minute to start.",
+  "تأكد أنه متصل بشبكة Wi-Fi فيها إنترنت.":
+    "Make sure it is on a Wi-Fi network with internet access.",
+  "تأكد أن معرّف الجهاز المبرمج في البورد هو نفسه المعروض هنا.":
+    "Make sure the device ID programmed into the board matches the one shown here.",
+  "تظهر هنا البيانات تلقائياً بعد أول اتصال للبورد. راجع خطوات التشغيل في الرئيسية.":
+    "Data appears here on its own once the board connects for the first time. See the setup steps on Home.",
+  "الجهاز مضاف إلى حسابك، لكن لم تصل منه أي قراءة بعد. ستظهر الحالة هنا تلقائياً.":
+    "The device is on your account, but no reading has arrived from it yet. Its status will appear here on its own.",
+  "معرّف الجهاز": "Device ID",
+  طافي: "Off",
+  الأول: "first",
+  الثاني: "second",
+  الثالث: "third",
+  "اختر المصدر {0}": "Choose the {0} source",
+  "المصدر الذي يستخدمه البورد أولاً كلما كان متوفراً.":
+    "The source the board uses first whenever it is available.",
+  "يُستخدم إذا لم يتوفر ما قبله.": "Used when the one before it is not available.",
+  "من البداية": "Start over",
+  "تغيير الترتيب": "Change order",
+  "إذا لم يتوفر": "if not available",
+  "أضف جهازاً لضبط إعداداته.": "Add a device to adjust its settings.",
+  "في الوضع الذكي يستخدم البورد المصدر الأول متى ما كان صالحاً، ويرجع إليه تلقائياً بعد استقراره. لا يؤثر الترتيب على الوضع اليدوي.":
+    "In smart mode the board uses the first source whenever it is usable, and returns to it on its own once it is stable. The order has no effect in manual mode.",
 };

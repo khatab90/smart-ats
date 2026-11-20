@@ -1,6 +1,5 @@
 import {
   CircleAlert,
-  Clock3,
   Hand,
   LoaderCircle,
   Lock,
@@ -39,13 +38,9 @@ export function StatusBanners() {
     );
   }
 
-  if (link === "never") {
-    banners.push(
-      <Banner key="never" tone="info" icon={Clock3} title={t("بانتظار أول بيانات من البورد")}>
-        {t("لم تصل أي قراءة من هذا الجهاز بعد. تأكد من تشغيل البورد واتصاله بالإنترنت.")}
-      </Banner>,
-    );
-  } else if (link === "offline") {
+  // A board that never reported gets its own full screen (WaitingForBoard),
+  // so it needs no banner here.
+  if (link === "offline") {
     banners.push(
       <Banner key="off" tone="danger" icon={WifiOff} title={t("البورد غير متصل")}>
         {t("آخر حالة معروفة في")} {lastSeen ? fmtTime(lastSeen, tz) : "—"} (
@@ -53,7 +48,7 @@ export function StatusBanners() {
         {t("). أزرار التحكم معطلة حتى يعود الاتصال.")}
       </Banner>,
     );
-  } else {
+  } else if (link !== "never") {
     if (link === "stale") {
       banners.push(
         <Banner key="stale" tone="warn" icon={Wifi} title={t("البيانات متأخرة")}>

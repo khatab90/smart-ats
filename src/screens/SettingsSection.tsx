@@ -1,15 +1,8 @@
 import { Info, Save, Settings2, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import { PriorityList } from "../components/control";
-import {
-  Button,
-  Card,
-  ConfirmDialog,
-  EmptyState,
-  ScreenHeader,
-  Segmented,
-  Skeleton,
-} from "../components/ui";
+import { PriorityPicker } from "../features/settings/PriorityPicker";
+import { NoDevice } from "../components/DeviceGate";
+import { Button, Card, ConfirmDialog, ScreenHeader, Segmented, Skeleton } from "../components/ui";
 import { SOURCE_META } from "../data/meta";
 import type { EditableSettings, SourceId } from "../data/types";
 import { describePeriod } from "../domain/schedule";
@@ -63,7 +56,7 @@ export function SettingsSectionScreen({ section }: { section: SettingsSection })
       />
       <div className="flex-1 space-y-4 px-5 pb-6">
         {!device ? (
-          <EmptyState icon={Settings2} title={t("لا يوجد جهاز")} body={t("أضف جهازاً أولاً.")} />
+          <NoDevice icon={Settings2} body={t("أضف جهازاً لضبط إعداداته.")} />
         ) : loading || !draft ? (
           <Skeleton className="h-72" />
         ) : (
@@ -154,18 +147,15 @@ function SectionBody({
     case "priority":
       return (
         <>
-          <Card className="p-4">
-            <PriorityList
-              value={draft.priority}
-              installed={installed}
-              onChange={(p: SourceId[]) => set("priority", p)}
-              disabled={readOnly}
-            />
-          </Card>
+          <PriorityPicker
+            value={draft.priority}
+            installed={installed}
+            onChange={(p: SourceId[]) => set("priority", p)}
+            disabled={readOnly}
+          />
           <Note>
-            {readOnly ? "" : t("اسحب المصادر أو استخدم الأسهم لإعادة ترتيبها. ")}
             {t(
-              "في الوضع الذكي يعتمد البورد على المصدر الأول إذا كان مستوفياً لشروط التشغيل، وإلا ينتقل إلى التالي، ويعود إلى الأعلى أولوية بعد استقراره.",
+              "في الوضع الذكي يستخدم البورد المصدر الأول متى ما كان صالحاً، ويرجع إليه تلقائياً بعد استقراره. لا يؤثر الترتيب على الوضع اليدوي.",
             )}
           </Note>
           {draft.solar_schedule.enabled && installed.includes("solar") && (

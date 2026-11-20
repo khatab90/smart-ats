@@ -6,6 +6,7 @@ import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
 import { LinkBadge } from "../components/status";
+import { WaitingForBoard, useAwaitingFirstData } from "../components/DeviceGate";
 import { ConnectionCard } from "../features/dashboard/ConnectionCard";
 import { DeviceSheet } from "../features/dashboard/DeviceSheet";
 import { Hero } from "../features/dashboard/Hero";
@@ -14,7 +15,6 @@ import { SourcesCard } from "../features/dashboard/SourcesCard";
 import { initialOf } from "../lib/format";
 import { PendingInvitations } from "../features/dashboard/PendingInvitations";
 import { StatusBanners } from "../features/dashboard/StatusBanners";
-import { TodayStats } from "../features/dashboard/TodayStats";
 import { t, uiStart } from "../i18n";
 
 function greeting() {
@@ -108,6 +108,7 @@ export function Dashboard() {
 
 function DeviceBody() {
   const ad = useActiveDevice();
+  const awaiting = useAwaitingFirstData();
   if (ad.loading && !ad.status) {
     return (
       <div className="space-y-4">
@@ -116,8 +117,10 @@ function DeviceBody() {
       </div>
     );
   }
+  if (awaiting) return <WaitingForBoard />;
   // Phones: one column in reading order. Laptops: two columns — what is
-  // happening (hero, today, sources) and what you control (mode, board).
+  // happening (hero, sources) and what you control (mode, board). Today's
+  // totals live in Energy and Log, the priority order in Device settings.
   return (
     <>
       <StatusBanners />
@@ -127,9 +130,6 @@ function DeviceBody() {
             <Hero />
           </div>
           <div className="order-3 lg:order-none">
-            <TodayStats />
-          </div>
-          <div className="order-4 lg:order-none">
             <SourcesCard />
           </div>
         </div>
@@ -137,7 +137,7 @@ function DeviceBody() {
           <div className="order-2 lg:order-none">
             <ModeCard />
           </div>
-          <div className="order-5 lg:order-none">
+          <div className="order-4 lg:order-none">
             <ConnectionCard />
           </div>
         </div>

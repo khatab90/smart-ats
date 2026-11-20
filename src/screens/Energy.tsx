@@ -2,6 +2,12 @@ import { ChartColumn, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BarChart, Donut, type Bar } from "../components/charts";
 import {
+  NoDevice,
+  PageHeading,
+  WaitingForBoard,
+  useAwaitingFirstData,
+} from "../components/DeviceGate";
+import {
   Card,
   EmptyState,
   ErrorState,
@@ -71,6 +77,7 @@ function sumRange(rows: EnergyRow[], from: number, to: number): Split {
 
 export function Energy() {
   const { device, settings, serverNow } = useActiveDevice();
+  const awaiting = useAwaitingFirstData();
   const tz = settings?.timezone ?? "UTC";
   const [range, setRange] = useState<Range>("day");
   const [selected, setSelected] = useState<number | undefined>();
@@ -100,14 +107,18 @@ export function Energy() {
   }));
   const sel = selected !== undefined && selected < bars.length ? selected : undefined;
 
-  if (!device) {
+  if (!device || awaiting) {
     return (
-      <div className="px-5 pt-16">
-        <EmptyState
-          icon={ChartColumn}
-          title={t("لا يوجد جهاز")}
-          body={t("أضف جهازاً لعرض إحصائيات الاستهلاك.")}
+      <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
+        <PageHeading
+          title={t("الطاقة")}
+          subtitle={t("إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر")}
         />
+        {device ? (
+          <WaitingForBoard compact />
+        ) : (
+          <NoDevice icon={ChartColumn} body={t("أضف جهازاً لعرض إحصائيات الاستهلاك.")} />
+        )}
       </div>
     );
   }

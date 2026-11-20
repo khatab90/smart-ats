@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "vitest";
 import { classifyLink } from "../../src/lib/link.ts";
 import { seriesStats, splitSegments, yDomain } from "../../src/lib/series.ts";
-import { movePriority, predictSmartTarget } from "../../src/domain/sources.ts";
+import { predictSmartTarget } from "../../src/domain/sources.ts";
 import { buildTimeline, durationsBy, stateAfter } from "../../src/lib/timeline.ts";
 import { addDaysInTz, startOfDayInTz } from "../../src/lib/tz.ts";
 
@@ -47,16 +47,6 @@ test("smart prediction follows the user priority over qualified sources only", (
   // … and solar outside its schedule is skipped by Smart mode.
   const night = { ...sources, solar: { ...sources.solar, allowed: false } };
   assert.equal(predictSmartTarget(["solar", "grid", "generator"], night), null);
-  assert.deepEqual(movePriority(["grid", "solar", "generator"], 2, 0), [
-    "generator",
-    "grid",
-    "solar",
-  ]);
-  assert.deepEqual(movePriority(["grid", "solar", "generator"], 0, 5), [
-    "grid",
-    "solar",
-    "generator",
-  ]);
 });
 
 test("series: null and long gaps split the line; zeros count in statistics", () => {

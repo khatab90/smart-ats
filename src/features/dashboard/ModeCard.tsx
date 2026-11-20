@@ -16,11 +16,10 @@ import {
 } from "../../domain/sources";
 import { useActiveDevice } from "../../store/devices";
 import { sourceBadge } from "../../components/status";
-import { PrioritySection } from "./PrioritySection";
 import { isRtl, t } from "../../i18n";
 
 export function ModeCard() {
-  const { status, settings, link, isAdmin, settingsApplied } = useActiveDevice();
+  const { status, settings, link, isAdmin } = useActiveDevice();
   const { state, send, reset, busy } = useCommand();
   const [confirm, setConfirm] = useState<
     { kind: "mode"; mode: SystemMode } | { kind: "source"; source: SourceId } | null
@@ -65,9 +64,7 @@ export function ModeCard() {
       )}
       <CommandProgress state={state} onDismiss={reset} />
 
-      {mode !== "manual" ? (
-        <PrioritySection priority={priority} applied={settingsApplied} editable={isAdmin} />
-      ) : (
+      {mode === "manual" && (
         <div
           className="mt-4 grid gap-2"
           style={{

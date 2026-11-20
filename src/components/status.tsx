@@ -13,7 +13,11 @@ export function sourceBadge(
   if (report.qualified && report.allowed === false)
     return { label: UNAVAILABLE_REASON.outside_schedule, tone: "neutral" };
   if (report.qualified) return { label: t("متاح"), tone: "info" };
-  if (report.reason === "qualifying" || (report.available && !report.qualified)) {
+  // No voltage at all: the source is simply off (a stopped generator, a grid cut).
+  if (report.reason === "no_voltage" || (!report.available && !report.reason))
+    return { label: t("طافي"), tone: "neutral" };
+  // Qualifying only when the board says so; a source out of its limits shows why.
+  if (report.reason === "qualifying" || (report.available && !report.reason)) {
     const done = report.q_elapsed_s ?? null;
     const need = report.q_required_s ?? null;
     return {

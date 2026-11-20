@@ -1,7 +1,13 @@
 import { Activity, Gauge, Waves, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { LineChart } from "../components/charts";
-import { Card, Chips, EmptyState, ErrorState, Segmented, Skeleton } from "../components/ui";
+import { Card, Chips, ErrorState, Segmented, Skeleton } from "../components/ui";
+import {
+  NoDevice,
+  PageHeading,
+  WaitingForBoard,
+  useAwaitingFirstData,
+} from "../components/DeviceGate";
 import { SOURCE_META } from "../data/meta";
 import type { DeviceSettings, SourceId, TelemetryRow } from "../data/types";
 import { useTelemetryWindow } from "../hooks/data";
@@ -58,6 +64,7 @@ export function Live() {
   const [channel, setChannel] = useState<Channel>("load");
   const [metric, setMetric] = useState<Metric>("v");
   const telemetry = useTelemetryWindow(device?.id ?? null, WINDOW_MS);
+  const awaiting = useAwaitingFirstData();
   if (channel !== "load" && !installedSources(status).includes(channel)) setChannel("load");
   useNow(2000);
   const live = link === "live" || link === "stale";
@@ -141,14 +148,15 @@ export function Live() {
   }, [telemetry.data]);
   const mm = METRIC[metric];
 
-  if (!device) {
+  if (!device || awaiting) {
     return (
-      <div className="px-5 pt-16">
-        <EmptyState
-          icon={Activity}
-          title={t("لا يوجد جهاز")}
-          body={t("أضف جهازاً لعرض القراءات اللحظية.")}
-        />
+      <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
+        <PageHeading title={t("المراقبة")} subtitle={t("القراءات الكهربائية اللحظية من البورد")} />
+        {device ? (
+          <WaitingForBoard compact />
+        ) : (
+          <NoDevice icon={Activity} body={t("أضف جهازاً لعرض القراءات اللحظية.")} />
+        )}
       </div>
     );
   }

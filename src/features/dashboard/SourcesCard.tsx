@@ -9,19 +9,9 @@ import { t, uiStart } from "../../i18n";
 
 const fmtVf = (r: SourceReport | undefined) => `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
 
-/**
- * Sources worth showing right now: every installed source when nothing
- * feeds the load (each with its reason), otherwise the ones delivering
- * power or qualifying.
- */
+/** Every installed source the board reported, off ones included (they say so). */
 function visibleSources(status: DeviceStatus | null): SourceId[] {
-  const noSource = status?.system_state === "no_source";
-  return installedSources(status).filter((id) => {
-    const r = status?.sources?.[id];
-    if (!r) return false;
-    if (noSource) return true;
-    return status?.active_source === id || r.available || r.qualified || r.reason === "qualifying";
-  });
+  return installedSources(status).filter((id) => Boolean(status?.sources?.[id]));
 }
 
 export function SourcesCard() {
@@ -58,7 +48,7 @@ export function SourcesCard() {
                       dir="ltr"
                       style={{ textAlign: uiStart() }}
                     >
-                      {fmtVf(r)}
+                      {r?.available || r?.qualified ? fmtVf(r) : t("لا يوجد جهد")}
                     </p>
                   </div>
                   <Badge tone={b.tone} dot pulse={isActive}>
