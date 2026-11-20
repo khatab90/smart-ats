@@ -15,12 +15,13 @@ export function CommandProgress({
   const done = state.phase === "completed";
   const bad = ["rejected", "failed", "expired", "error"].includes(state.phase);
   const timeout = state.phase === "timeout";
-  const terminal = done || bad || timeout;
+  // Success hides itself (useCommand); only problems need a close button.
+  const dismissable = bad || timeout;
   return (
     <div
       role="status"
       className={cn(
-        "mt-3 flex items-start gap-2.5 rounded-2xl px-3.5 py-3 text-[12px]",
+        "mt-3 flex animate-fade-in items-start gap-2.5 rounded-2xl px-3.5 py-3 text-[12px]",
         done
           ? "bg-ok-soft text-ok-strong"
           : bad
@@ -46,7 +47,7 @@ export function CommandProgress({
           <span className="block opacity-90">{t("تحقق من حالة النظام قبل إعادة المحاولة.")}</span>
         )}
       </span>
-      {terminal && (
+      {dismissable && (
         <button
           type="button"
           aria-label={t("إخفاء")}

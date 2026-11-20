@@ -2,13 +2,19 @@ import { Lock, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import * as authApi from "../../api/auth";
-import { type View } from "./AuthFlow";
+import { InviteEmailWarning, type View } from "./AuthFlow";
 import { GoogleSignIn } from "./GoogleButton";
 import { FormError } from "./shared";
 import { t } from "../../i18n";
 
-export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
-  const [email, setEmail] = useState("");
+export function Login({
+  onNavigate,
+  inviteEmail,
+}: {
+  onNavigate: (v: View) => void;
+  inviteEmail?: string;
+}) {
+  const [email, setEmail] = useState(inviteEmail ?? "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,6 +65,7 @@ export function Login({ onNavigate }: { onNavigate: (v: View) => void }) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+      <InviteEmailWarning email={email} inviteEmail={inviteEmail} />
       <div>
         <Field
           label={t("كلمة المرور")}

@@ -1,16 +1,5 @@
-import {
-  CircleAlert,
-  Hand,
-  LoaderCircle,
-  Lock,
-  Settings2,
-  ShieldAlert,
-  Wifi,
-  WifiOff,
-  type Zap,
-  ZapOff,
-} from "lucide-react";
-import { ALARM_LABEL, SOURCE_META, SOURCE_ORDER, UNAVAILABLE_REASON } from "../../data/meta";
+import { CircleAlert, Lock, Settings2, ShieldAlert, Wifi, type Zap } from "lucide-react";
+import { ALARM_LABEL, SOURCE_META } from "../../data/meta";
 import { cn } from "../../lib/cn";
 import { fmtAgo, fmtTime } from "../../lib/format";
 import { useActiveDevice, useNow } from "../../store/devices";
@@ -18,7 +7,7 @@ import { useNav } from "../../store/nav";
 import { t } from "../../i18n";
 
 export function StatusBanners() {
-  const { status, link, settings, settingsApplied, isAdmin, serverNow } = useActiveDevice();
+  const { status, link, settings, isAdmin, serverNow } = useActiveDevice();
   const { push } = useNav();
   useNow(5000);
   const tz = settings?.timezone;
@@ -38,46 +27,16 @@ export function StatusBanners() {
     );
   }
 
-  // A board that never reported gets its own full screen (WaitingForBoard),
-  // so it needs no banner here.
-  if (link === "offline") {
-    banners.push(
-      <Banner key="off" tone="danger" icon={WifiOff} title={t("البورد غير متصل")}>
-        {t("آخر حالة معروفة في")} {lastSeen ? fmtTime(lastSeen, tz) : "—"} (
-        {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}
-        {t("). أزرار التحكم معطلة حتى يعود الاتصال.")}
-      </Banner>,
-    );
-  } else if (link !== "never") {
+  // Banners are only for problems that need attention. What the hero or a
+  // card already shows (offline, no source, manual mode) is not repeated
+  // here. A board that never reported gets its own screen (WaitingForBoard).
+  if (link === "live" || link === "stale") {
     if (link === "stale") {
       banners.push(
         <Banner key="stale" tone="warn" icon={Wifi} title={t("البيانات متأخرة")}>
           {t("آخر تحديث")} {lastSeen ? fmtAgo(lastSeen, serverNow()) : "—"}
           {t(". قد لا تعكس القراءات الحالة الحالية.")}
         </Banner>,
-      );
-    }
-    if (status?.system_state === "no_source") {
-      const reasons = SOURCE_ORDER.filter(
-        (id) => status.sources?.[id]?.reason !== "not_installed",
-      ).map((id) => {
-        const r = status.sources?.[id];
-        return `${SOURCE_META[id].short}: ${UNAVAILABLE_REASON[r?.reason ?? ""] ?? t("غير متاح")}`;
-      });
-      banners.push(
-        <div
-          key="nosrc"
-          role="alert"
-          className="rounded-[22px] bg-danger px-4 py-4 text-white shadow-[0_12px_28px_-14px_rgba(229,55,43,0.9)]"
-        >
-          <p className="flex items-center gap-2 text-[16px] font-bold">
-            <ZapOff className="size-5" /> {t("لا يوجد مصدر متاح")}
-          </p>
-          <p className="mt-1 text-[13px] text-white/90">
-            {t("الأحمال بدون كهرباء. لا يوجد أي مصدر صالح للتشغيل حالياً.")}
-          </p>
-          <p className="mt-2 text-[12px] leading-5 text-white/85">{reasons.join(" • ")}</p>
-        </div>,
       );
     }
     if (status?.system_state === "lockout") {
@@ -106,20 +65,6 @@ export function StatusBanners() {
         </Banner>,
       );
     }
-    if (status?.mode === "manual") {
-      const revert =
-        settings?.manual_revert_min && status.mode_since
-          ? Date.parse(status.mode_since) + settings.manual_revert_min * 60_000 - serverNow()
-          : null;
-      banners.push(
-        <Banner key="manual" tone="info" icon={Hand} title={t("الوضع اليدوي مفعّل")}>
-          {t("البورد لا يختار المصدر تلقائياً حسب الأولوية.")}
-          {revert !== null && revert > 0
-            ? t(" سيعود إلى الوضع الذكي خلال {0} د.", { 0: Math.ceil(revert / 60_000) })
-            : ""}
-        </Banner>,
-      );
-    }
   }
   if (settings && (!settings.nominal_voltage || !settings.nominal_frequency)) {
     banners.push(
@@ -133,17 +78,6 @@ export function StatusBanners() {
         {t("لم يُحدَّد الجهد والتردد الاسميان بعد، وهما أساس فحص صلاحية المصادر.")}
       </Banner>,
     );
-  } else if (settings && !settingsApplied && link !== "never") {
-    banners.push(
-      <Banner
-        key="pending"
-        tone="info"
-        icon={LoaderCircle}
-        title={t("بانتظار تأكيد البورد للإعدادات")}
-      >
-        {t("الإصدار")} {settings.version} {t("محفوظ، ولم يؤكد البورد تطبيقه بعد.")}
-      </Banner>,
-    );
   }
   return banners.length ? <div className="space-y-3">{banners}</div> : null;
 }
@@ -155,7 +89,7 @@ function Banner({
   children,
   action,
 }: {
-  tone: "info" | "warn" | "danger";
+  tone: "warn" | "danger";
   icon: typeof Zap;
   title: string;
   children: React.ReactNode;
@@ -164,20 +98,13 @@ function Banner({
   const cls =
     tone === "danger"
       ? "border-danger/20 bg-danger-soft text-danger-strong"
-      : tone === "warn"
-        ? "border-warn/25 bg-warn-soft text-warn-strong"
-        : "border-brand-200 bg-brand-50 text-brand-800";
+      : "border-warn/25 bg-warn-soft text-warn-strong";
   return (
     <div
       role={tone === "danger" ? "alert" : undefined}
       className={cn("flex items-start gap-3 rounded-2xl border px-4 py-3", cls)}
     >
-      <Icon
-        className={cn(
-          "mt-0.5 size-5 shrink-0",
-          tone === "info" && Icon === LoaderCircle && "animate-spin",
-        )}
-      />
+      <Icon className="mt-0.5 size-5 shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="text-[13px] font-bold">{title}</p>
         <p className="mt-0.5 text-[12px] leading-5 opacity-90">{children}</p>

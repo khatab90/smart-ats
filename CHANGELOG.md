@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.10.1 — 2026-11-20
+
+### Fixed
+- **Email and password fields**: the text no longer runs under the field icon in Arabic (left-to-right fields such as email, device ID and phone). Fixed in the shared field, so on every screen.
+- **"The board executed the command" hides itself** after 3 seconds. Failures and timeouts stay until closed, since they need reading.
+
+### Changed
+- **Home shows banners only for problems that need attention**: two boards with one ID, delayed data, lockout, board alarms, protection overriding your choice, incomplete settings. What the hero or a card already shows is no longer repeated above it: board offline, no source, manual mode (its auto-return countdown moved into the mode card), settings waiting for the board.
+- **Invitation links before sign-in** (database migration 5, `invitation_preview`): the sign-in screen says who invited which email to which system and role, fills the invited email in, and warns under the field if another email is typed. The invitation can be dismissed with ×. Accepting still requires the invited, verified email.
+
 ## 2.10.0 — 2026-11-20
 
 ### Changed

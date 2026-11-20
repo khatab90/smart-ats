@@ -14,12 +14,19 @@ import {
   outsideSchedule,
   predictSmartTarget,
 } from "../../domain/sources";
-import { useActiveDevice } from "../../store/devices";
+import { useActiveDevice, useNow } from "../../store/devices";
 import { sourceBadge } from "../../components/status";
 import { isRtl, t } from "../../i18n";
 
 export function ModeCard() {
-  const { status, settings, link, isAdmin } = useActiveDevice();
+  const { status, settings, link, isAdmin, serverNow } = useActiveDevice();
+  useNow(30_000);
+  // Manual mode may revert by itself (Device settings → timers).
+  const revertMs =
+    status?.mode === "manual" && settings?.manual_revert_min && status.mode_since
+      ? Date.parse(status.mode_since) + settings.manual_revert_min * 60_000 - serverNow()
+      : null;
+  const revertMin = revertMs !== null && revertMs > 0 ? Math.ceil(revertMs / 60_000) : null;
   const { state, send, reset, busy } = useCommand();
   const [confirm, setConfirm] = useState<
     { kind: "mode"; mode: SystemMode } | { kind: "source"; source: SourceId } | null
@@ -38,7 +45,9 @@ export function ModeCard() {
             {mode === "smart"
               ? t("البورد يختار المصدر حسب ترتيب الأولوية")
               : mode === "manual"
-                ? t("أنت تختار المصدر يدوياً")
+                ? revertMin !== null
+                  ? t("أنت تختار المصدر يدوياً • يعود للذكي خلال {0} د", { 0: revertMin })
+                  : t("أنت تختار المصدر يدوياً")
                 : t("الوضع غير معروف حتى تصل بيانات من البورد")}
           </p>
         </div>

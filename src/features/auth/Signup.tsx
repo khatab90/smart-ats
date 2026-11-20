@@ -4,12 +4,23 @@ import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import { cn } from "../../lib/cn";
 import * as authApi from "../../api/auth";
-import { type View } from "./AuthFlow";
+import { InviteEmailWarning, type View } from "./AuthFlow";
 import { BackHeader, EMAIL_RE, FormError, SentScreen, strength } from "./shared";
 import { t } from "../../i18n";
 
-export function Signup({ onNavigate }: { onNavigate: (v: View) => void }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+export function Signup({
+  onNavigate,
+  inviteEmail,
+}: {
+  onNavigate: (v: View) => void;
+  inviteEmail?: string;
+}) {
+  const [form, setForm] = useState({
+    name: "",
+    email: inviteEmail ?? "",
+    password: "",
+    confirm: "",
+  });
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -80,6 +91,7 @@ export function Signup({ onNavigate }: { onNavigate: (v: View) => void }) {
           "يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب. يمكنك إضافة رقم الهاتف والتحقق منه لاحقاً من الملف الشخصي.",
         )}
       />
+      <InviteEmailWarning email={form.email} inviteEmail={inviteEmail} />
       <div>
         <Field
           label={t("كلمة المرور")}

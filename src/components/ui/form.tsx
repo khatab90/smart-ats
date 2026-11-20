@@ -1,7 +1,7 @@
 import { Eye, EyeOff, type LucideIcon } from "lucide-react";
 import { useState, type InputHTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
-import { t } from "../../i18n";
+import { isRtl, t } from "../../i18n";
 
 export type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -24,6 +24,7 @@ export function Field({
 }: FieldProps) {
   const [show, setShow] = useState(false);
   const isPassword = type === "password";
+  const pageRtl = isRtl();
   const inputId = id ?? `f-${label}`;
   return (
     <label htmlFor={inputId} className={cn("block", className)}>
@@ -39,9 +40,15 @@ export function Field({
           className={cn(
             "h-12 w-full rounded-2xl border bg-surface text-[15px] text-ink outline-none transition placeholder:text-faint",
             "focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10",
-            Icon ? "ps-11" : "ps-4",
-            isPassword ? "pe-11" : "pe-4",
-            ltr && "rtl:text-right rtl:placeholder:text-right",
+            // The icon sits at the start of the field and the eye button at
+            // its end, in the page's direction. An ltr input (email, IDs)
+            // flips ps/pe, so its padding is set physically from the page
+            // direction instead; otherwise the text runs under the icon.
+            ltr
+              ? pageRtl
+                ? `${Icon ? "pr-11" : "pr-4"} ${isPassword ? "pl-11" : "pl-4"} text-right placeholder:text-right`
+                : `${Icon ? "pl-11" : "pl-4"} ${isPassword ? "pr-11" : "pr-4"}`
+              : `${Icon ? "ps-11" : "ps-4"} ${isPassword ? "pe-11" : "pe-4"}`,
             error ? "border-danger" : "border-line",
           )}
           {...rest}

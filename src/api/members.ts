@@ -71,6 +71,22 @@ export interface InvitationInfo {
 export const getInvitation = (token: string) =>
   run(supabase.rpc("get_invitation", { p_token: token }), (d) => d as unknown as InvitationInfo);
 
+/** What an invitation link is for, before sign-in (migration 5). */
+export interface InvitationPreview {
+  status: InvitationInfo["status"];
+  email?: string;
+  role?: Role;
+  device_name?: string;
+  inviter_name?: string | null;
+  expires_at?: string;
+}
+
+export const previewInvitation = (token: string) =>
+  run(
+    supabase.rpc("invitation_preview", { p_token: token }),
+    (d) => d as unknown as InvitationPreview,
+  );
+
 export const acceptInvitation = (token: string) =>
   run(
     supabase.rpc("accept_invitation", { p_token: token }),

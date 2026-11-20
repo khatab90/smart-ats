@@ -30,6 +30,8 @@ const TERMINAL = new Set<CommandPhase>([
 const ACK_TIMEOUT_MS = 12_000;
 // Neutral delay (≤ 3 s) + contactor confirmation (≤ 30 s) + margin.
 const EXEC_TIMEOUT_MS = 60_000;
+/** A success needs no action: it is shown briefly, then hidden. Failures stay until dismissed. */
+export const SUCCESS_VISIBLE_MS = 3_000;
 
 export function useCommand() {
   const { device, onCommand } = useDeviceMeta();
@@ -73,6 +75,16 @@ export function useCommand() {
     }, 2000);
     return () => clearInterval(id);
   }, [inFlight, state.id, apply]);
+
+  const completedId = state.phase === "completed" ? state.id : null;
+  useEffect(() => {
+    if (!completedId) return;
+    const id = setTimeout(
+      () => setState((s) => (s.id === completedId && s.phase === "completed" ? IDLE : s)),
+      SUCCESS_VISIBLE_MS,
+    );
+    return () => clearTimeout(id);
+  }, [completedId]);
 
   const send = useCallback(
     async (type: CommandType, payload: Record<string, unknown>) => {

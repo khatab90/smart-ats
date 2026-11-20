@@ -335,13 +335,8 @@ export const EN: Record<string, string> = {
   "متوفرة لكن خارج وقتها المحدد، فلن يستخدمها الوضع الذكي. يمكنك التحويل إليها يدوياً.":
     "Available but outside its hours, so Smart mode won't use it. You can switch to it manually.",
   "بانتظار أول بيانات من البورد": "Waiting for the first data from the board",
-  "البورد غير متصل": "The board is offline",
-  "). أزرار التحكم معطلة حتى يعود الاتصال.":
-    "). Controls are disabled until the connection is back.",
   "البيانات متأخرة": "Data is delayed",
   ". قد لا تعكس القراءات الحالة الحالية.": ". The readings may not reflect the current state.",
-  "الأحمال بدون كهرباء. لا يوجد أي مصدر صالح للتشغيل حالياً.":
-    "The loads have no power. No source is usable right now.",
   "النظام مقفل بالحماية": "The system is locked by protection",
   "يتطلب فحصاً في الموقع قبل إعادة التشغيل.": "Needs an on-site check before restarting.",
   "إنذارات البورد": "Board alarms",
@@ -353,17 +348,10 @@ export const EN: Record<string, string> = {
   "المصدر المتاح": "the available source",
   ". لن يعود البورد إليه تلقائياً في الوضع اليدوي؛ اختره من جديد بعد استقراره.":
     ". In manual mode the board won't return to it automatically; choose it again once it is stable.",
-  "الوضع اليدوي مفعّل": "Manual mode is on",
-  "البورد لا يختار المصدر تلقائياً حسب الأولوية.":
-    "The board does not pick the source automatically by priority.",
-  " سيعود إلى الوضع الذكي خلال {0} د.": " It will return to Smart mode in {0} min.",
   "إعدادات الجهاز غير مكتملة": "Device settings incomplete",
   ضبط: "Set up",
   "لم يُحدَّد الجهد والتردد الاسميان بعد، وهما أساس فحص صلاحية المصادر.":
     "The nominal voltage and frequency are not set yet; they are the basis for checking the sources.",
-  "بانتظار تأكيد البورد للإعدادات": "Waiting for the board to confirm the settings",
-  الإصدار: "Version",
-  "محفوظ، ولم يؤكد البورد تطبيقه بعد.": "is saved, but the board hasn't confirmed applying it yet.",
   "تحويلات اليوم": "Transfers today",
   "مدة تشغيل المصدر الحالي": "Current source runtime",
   "غير متاح أثناء عدم اتصال البورد": "Unavailable while the board is offline",
@@ -871,4 +859,12 @@ export const EN: Record<string, string> = {
   "أضف جهازاً لضبط إعداداته.": "Add a device to adjust its settings.",
   "في الوضع الذكي يستخدم البورد المصدر الأول متى ما كان صالحاً، ويرجع إليه تلقائياً بعد استقراره. لا يؤثر الترتيب على الوضع اليدوي.":
     "In smart mode the board uses the first source whenever it is usable, and returns to it on its own once it is stable. The order has no effect in manual mode.",
+  "«{0}» يدعوك إلى «{1}» بصلاحية {2}.": "“{0}” invites you to “{1}” as {2}.",
+  "لديك دعوة إلى «{0}» بصلاحية {1}.": "You are invited to “{0}” as {1}.",
+  "ادخل أو أنشئ حساباً بالبريد المدعو:": "Sign in or create an account with the invited email:",
+  "تجاهل الدعوة": "Dismiss invitation",
+  "الدعوة مرسلة إلى": "The invitation was sent to",
+  "؛ لن تُقبل بهذا البريد.": "; it can't be accepted with this email.",
+  "أنت تختار المصدر يدوياً • يعود للذكي خلال {0} د":
+    "You choose the source • back to smart in {0} min",
 };
