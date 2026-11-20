@@ -63,6 +63,14 @@ export function notificationText(n: Pick<NotificationRow, "type" | "title" | "bo
         }),
       };
     }
+    case "duplicate_board":
+      return {
+        title: t("جهازان يرسلان بنفس المعرّف"),
+        body: t(
+          "تصل بيانات من جهازين مختلفين{0}. نعرض البورد الذي بدأ أولاً وأوقفنا الآخر. افصل الجهاز الزائد؛ وإذا لم تعرفه فقد يكون رمزه السري منسوخاً.",
+          { 0: where },
+        ),
+      };
     case "connection_lost":
       return {
         title: t("انقطاع الاتصال بالبورد"),

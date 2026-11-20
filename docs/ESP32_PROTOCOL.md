@@ -1,4 +1,4 @@
-# Smart ATS — ESP32 ↔ Supabase protocol v1 (revision 2)
+# Smart ATS — ESP32 ↔ Supabase protocol v1 (revision 3)
 
 The board talks HTTPS to Supabase PostgREST RPC endpoints:
 
@@ -13,6 +13,10 @@ logic in `logic.mjs`). It and the firmware must pass the test vectors in
 [`protocol/logic-vectors.json`](../protocol/logic-vectors.json), which this
 document and that file define.
 
+> **Revision 3** (migration `20261120000000`): `device_ingest` may answer
+> `{ "ok": false, "reason": "duplicate_board" }` when two boards report with
+> the same device ID (§1.3). The board must keep its events and carry on.
+>
 > **Revision 2 changes** (migration `20261118000000`): `boot_id`; clock guard
 > and `server_time` sync; one bad event no longer rejects a message;
 > `lockout_cleared` event; protection-first rule; contactor close
@@ -84,7 +88,29 @@ Response:
 ```
 
 - If `settings_version > config_version`, call `device_get_settings`, validate, apply, then report the new `config_version` and a `settings_applied` (or `settings_rejected`) event.
+- **`"ok": false`** means the message was **not** accepted: keep every buffered event (do not drop them as sent), ignore the rest of the answer, and keep reporting at the normal interval. The only reason today is `duplicate_board` (§1.3), with `retry_after_s` as a hint.
 - Commands are delivered **at least once**: a delivered command is re-sent after 3 s without an acknowledgement. The board must **de-duplicate by `id`**: on a repeat, send the last acknowledgement again and never execute twice.
+
+### 1.3 Two boards with the same ID
+
+Every start of the board must use a new random `boot_id`. The server uses it
+to spot two boards sending as one (a copied token, an old board left powered
+after a replacement): when messages keep **returning** to a `boot_id` already
+seen while another one is talking (three returns within 90 s), it declares a
+conflict. A normal reboot (old id never comes back), a boot loop (only new
+ids) or one delayed message cannot trigger it.
+
+During a conflict only the boot that started first is accepted. The other
+receives:
+
+```json
+{ "ok": false, "reason": "duplicate_board", "server_time": "...", "retry_after_s": 30 }
+```
+
+It must keep its events buffered and keep reporting; it receives no commands
+and no settings version. The owner is notified and the app shows a warning.
+When the extra board stops (or the first one does), the remaining one is
+accepted within 90 s and the warning clears 2 minutes after the last return.
 
 ## 2. Events
 

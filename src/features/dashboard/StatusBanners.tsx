@@ -26,6 +26,19 @@ export function StatusBanners() {
   const lastSeen = status?.last_seen_at ? Date.parse(status.last_seen_at) : null;
   const banners: React.ReactNode[] = [];
 
+  // Two boards with this ID (server-side detection, migration 4). Shown
+  // first: until it is resolved the readings may not be from your board.
+  if (status?.duplicate_since) {
+    banners.push(
+      <Banner key="dup" tone="danger" icon={ShieldAlert} title={t("جهازان يرسلان بنفس المعرّف")}>
+        {t(
+          "تصل بيانات من جهازين مختلفين باسم هذا البورد منذ {0}. نعرض البورد الذي بدأ أولاً وأوقفنا الآخر (لا تصله أوامرك). افصل الجهاز الزائد، مثل محاكٍ ما زال يعمل أو بورد قديم؛ وإذا لم تعرفه فقد يكون رمزه السري منسوخاً.",
+          { 0: fmtTime(Date.parse(status.duplicate_since), tz) },
+        )}
+      </Banner>,
+    );
+  }
+
   if (link === "never") {
     banners.push(
       <Banner key="never" tone="info" icon={Clock3} title={t("بانتظار أول بيانات من البورد")}>

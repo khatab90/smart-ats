@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.9.0 — 2026-11-20
+
+Found while testing on the phone: with the phone simulator and the PC emulator both running as ATS-TEST01, the app kept flipping between "no source" and "solar".
+
+### Added
+- **Two boards with the same ID are detected** (database migration 4). The server recognises boards alternating from their `boot_id` (never a normal reboot, a boot loop or one delayed message), accepts only the board that started first and refuses the other: it gets no commands and keeps its events until it is accepted. Energy is no longer counted twice.
+- The owner gets a critical notification ("Two devices are sending with the same ID", in the board-connection type) and Home shows a red warning explaining what to do. It clears by itself two minutes after the extra device stops.
+- ESP32 protocol revision 3: `device_ingest` may answer `ok: false` (§1.3); the board must keep its events. The reference board and the simulator do (smart-ats-simulator 1.2.0). ADR-018.
+
 ## 2.8.0 — 2026-11-20
 
 The Android app: install `smart-ats.apk` from the GitHub release and use Smart ATS on the phone.

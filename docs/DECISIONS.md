@@ -151,3 +151,20 @@ built by GitHub Actions and published as a release, debug-signed for now.
 blocks OAuth inside web views, so the system browser is required; a custom
 link needs no Android OAuth client and no verified domain.
 
+## ADR-018 — Two boards with one ID: accept the first, refuse the other
+
+**Context.** A copied token or an old board left powered makes two boards
+report as one: the status flips between them, commands may reach either and
+energy is counted twice.
+
+**Decision.** The server detects it from `boot_id` "returns" (three within
+90 s; a reboot, a boot loop or one delayed message cannot trigger it). While
+it lasts, only the boot that started first is accepted; the other gets
+`ok: false, reason: duplicate_board`, keeps its events and gets no commands.
+The owner gets a critical notification and the app a warning; it clears two
+minutes after the last return.
+
+**Why.** The app stays consistent and safe (one board, one command target)
+without guessing which device is "real"; the owner decides by disconnecting
+the extra one. A later step for a copied token is rotating the board's token.
+

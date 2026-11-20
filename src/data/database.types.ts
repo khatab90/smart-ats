@@ -6,6 +6,35 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      device_boots: {
+        Row: {
+          boot_id: string;
+          device_id: string;
+          first_seen_at: string;
+          last_seen_at: string;
+        };
+        Insert: {
+          boot_id: string;
+          device_id: string;
+          first_seen_at: string;
+          last_seen_at: string;
+        };
+        Update: {
+          boot_id?: string;
+          device_id?: string;
+          first_seen_at?: string;
+          last_seen_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "device_boots_device_id_fkey";
+            columns: ["device_id"];
+            isOneToOne: false;
+            referencedRelation: "devices";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       device_commands: {
         Row: {
           created_at: string;
@@ -252,6 +281,10 @@ export type Database = {
           controller: Json | null;
           device_id: string;
           device_ts: string | null;
+          duplicate_boot_id: string | null;
+          duplicate_hits: number;
+          duplicate_seen_at: string | null;
+          duplicate_since: string | null;
           energy_wh: Json | null;
           interval_ms: number | null;
           last_seen_at: string | null;
@@ -280,6 +313,10 @@ export type Database = {
           controller?: Json | null;
           device_id: string;
           device_ts?: string | null;
+          duplicate_boot_id?: string | null;
+          duplicate_hits?: number;
+          duplicate_seen_at?: string | null;
+          duplicate_since?: string | null;
           energy_wh?: Json | null;
           interval_ms?: number | null;
           last_seen_at?: string | null;
@@ -308,6 +345,10 @@ export type Database = {
           controller?: Json | null;
           device_id?: string;
           device_ts?: string | null;
+          duplicate_boot_id?: string | null;
+          duplicate_hits?: number;
+          duplicate_seen_at?: string | null;
+          duplicate_since?: string | null;
           energy_wh?: Json | null;
           interval_ms?: number | null;
           last_seen_at?: string | null;
@@ -423,7 +464,7 @@ export type Database = {
           severity: "info" | "warning" | "critical";
           source: "grid" | "solar" | "generator" | null;
           to_source: "grid" | "solar" | "generator" | null;
-          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
+          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "duplicate_board" | "duplicate_board_cleared" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
         };
         Insert: {
           actor_id?: string | null;
@@ -439,7 +480,7 @@ export type Database = {
           severity?: "info" | "warning" | "critical";
           source?: "grid" | "solar" | "generator" | null;
           to_source?: "grid" | "solar" | "generator" | null;
-          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
+          type: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "duplicate_board" | "duplicate_board_cleared" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
         };
         Update: {
           actor_id?: string | null;
@@ -455,7 +496,7 @@ export type Database = {
           severity?: "info" | "warning" | "critical";
           source?: "grid" | "solar" | "generator" | null;
           to_source?: "grid" | "solar" | "generator" | null;
-          type?: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
+          type?: "source_lost" | "source_restored" | "transfer_started" | "transfer_completed" | "transfer_failed" | "no_source_started" | "no_source_ended" | "electrical_fault" | "electrical_fault_cleared" | "interlock_fault" | "transfer_lockout" | "protection_override" | "mode_changed" | "controller_restarted" | "settings_applied" | "settings_rejected" | "runtime_reset" | "lockout_cleared" | "connection_lost" | "connection_restored" | "duplicate_board" | "duplicate_board_cleared" | "command_sent" | "command_result" | "settings_changed" | "device_claimed" | "device_released" | "member_added" | "member_removed" | "role_changed" | "ownership_transferred" | "invitation_sent" | "invitation_revoked";
         };
         Relationships: [
           {

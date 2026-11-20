@@ -865,4 +865,9 @@ export const EN: Record<string, string> = {
   "نوع العملية": "Type",
   "لا توجد عمليات": "No entries",
   "تعذر تسجيل الدخول من الرابط": "Could not sign in from the link",
+  "جهازان يرسلان بنفس المعرّف": "Two devices are sending with the same ID",
+  "تصل بيانات من جهازين مختلفين باسم هذا البورد منذ {0}. نعرض البورد الذي بدأ أولاً وأوقفنا الآخر (لا تصله أوامرك). افصل الجهاز الزائد، مثل محاكٍ ما زال يعمل أو بورد قديم؛ وإذا لم تعرفه فقد يكون رمزه السري منسوخاً.":
+    "Data has been arriving from two different devices under this board's name since {0}. We show the board that started first and stopped the other (it gets none of your commands). Disconnect the extra device, such as an emulator still running or an old board; if you do not know it, its secret token may have been copied.",
+  "تصل بيانات من جهازين مختلفين{0}. نعرض البورد الذي بدأ أولاً وأوقفنا الآخر. افصل الجهاز الزائد؛ وإذا لم تعرفه فقد يكون رمزه السري منسوخاً.":
+    "Data is arriving from two different devices{0}. We show the board that started first and stopped the other. Disconnect the extra device; if you do not know it, its secret token may have been copied.",
 };
