@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.2 — 2026-11-20
+
+### Added
+- Board emulator: a source can be "absent" (not installed), or given an exact voltage and frequency; the random drift of the load can be turned off. Used by the new phone simulator (separate project `smart-ats-simulator`); the CLI accepts `grid absent`.
+
 ## 2.6.1 — 2026-11-20
 
 Project clean-up; no change to what the app does.
