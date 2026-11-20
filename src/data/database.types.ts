@@ -820,11 +820,11 @@ export type Database = {
         Args: { p_device_id: string; p_token: string; p_payload: Json };
         Returns: Json;
       };
-      invitation_preview: {
+      get_invitation: {
         Args: { p_token: string };
         Returns: Json;
       };
-      get_invitation: {
+      invitation_preview: {
         Args: { p_token: string };
         Returns: Json;
       };
