@@ -7,10 +7,6 @@ export const EN: Record<string, string> = {
     "No internet connection. The data shown may be out of date.",
   "تعذر الاتصال بقاعدة البيانات.": "Couldn't connect to the database.",
   إعادة: "Retry",
-  "قاعدة البيانات غير مهيأة": "Database not set up",
-  "لم يتم العثور على جداول Smart ATS في Supabase. لمشروع جديد شغّل الملف":
-    "No Smart ATS tables were found in Supabase. For a new project, run the file",
-  "مرة واحدة من SQL Editor.": "once from the SQL Editor.",
   "إعادة التحقق": "Check again",
   "تسجيل الخروج": "Sign out",
   "كلمة المرور الحالية غير صحيحة": "Current password is incorrect",
@@ -846,4 +842,22 @@ export const EN: Record<string, string> = {
   "يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب.":
     "A confirmation link is sent to this email before the account is activated.",
   "الاسم والبريد وكلمة المرور": "Name, email and password",
+  "يلزم تحديث التطبيق":
+    "Update required",
+  "هذا الإصدار ({0}) لم يعد يعمل مع الخادم. نزّل الإصدار الأحدث وثبّته فوق الحالي؛ حسابك وأجهزتك تبقى كما هي.":
+    "This version ({0}) no longer works with the server. Download the latest version and install it over this one; your account and devices stay as they are.",
+  "تحميل الإصدار {0}":
+    "Download version {0}",
+  "تحميل التحديث":
+    "Download the update",
+  "الخدمة غير متاحة حالياً":
+    "Service unavailable",
+  "تعذر الوصول إلى بيانات التطبيق على الخادم. حاول مرة أخرى بعد قليل.":
+    "The app's data on the server couldn't be reached. Try again in a moment.",
+  "يتوفر الإصدار {0}":
+    "Version {0} is available",
+  "نزّله وثبّته فوق الحالي؛ بياناتك تبقى.":
+    "Download it and install it over this one; your data stays.",
+  "تحميل":
+    "Download",
 };

@@ -68,17 +68,31 @@ export function errorMessage(err: unknown): string {
   return msg ? t("حدث خطأ غير متوقع: {0}", { 0: msg }) : t("حدث خطأ غير متوقع.");
 }
 
-export function isSchemaMissing(err: unknown) {
+/**
+ * Why a startup query failed, if it is the server's shape and not the network:
+ * "missing" — the app's tables are not there (an empty or broken project);
+ * "outdated" — the tables are there but differ from what this app expects
+ * (a column or function it uses is gone): the installed app is too old.
+ */
+export function schemaProblem(err: unknown): "missing" | "outdated" | null {
   const msg =
     err && typeof err === "object" && "message" in err
       ? String((err as { message: unknown }).message)
       : "";
   const code =
     err && typeof err === "object" && "code" in err ? String((err as { code: unknown }).code) : "";
-  return (
+  if (
+    code === "42703" ||
+    code === "PGRST204" ||
+    /column .* does not exist|could not find the .* column/i.test(msg)
+  )
+    return "outdated";
+  if (code === "PGRST202" || /could not find the function/i.test(msg)) return "outdated";
+  if (
     code === "PGRST205" ||
-    code === "PGRST202" ||
     code === "42P01" ||
-    /schema cache|does not exist/i.test(msg)
-  );
+    /relation .* does not exist|schema cache/i.test(msg)
+  )
+    return "missing";
+  return null;
 }

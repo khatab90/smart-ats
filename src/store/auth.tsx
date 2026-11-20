@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Profile } from "../data/types";
-import { isSchemaMissing } from "../lib/errors";
+import { schemaProblem } from "../lib/errors";
 import * as authApi from "../api/auth";
 import { APP_LINK_BASE } from "../config/app";
 import { isAppLink, parseAuthLink } from "../lib/authLink";
@@ -26,7 +26,7 @@ interface AuthCtx {
   user: User | null;
   profile: Profile | null;
   /** Database not reachable or migration not applied. */
-  dbError: "schema" | "network" | null;
+  dbError: "schema" | "outdated" | "network" | null;
   recovery: boolean;
   clearRecovery: () => void;
   refreshProfile: () => Promise<void>;
@@ -92,7 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
     const { data, error } = await probeProfile(userId);
     if (error) {
-      setDbError(isSchemaMissing(error) ? "schema" : "network");
+      const problem = schemaProblem(error);
+      setDbError(
+        problem === "missing" ? "schema" : problem === "outdated" ? "outdated" : "network",
+      );
       return;
     }
     setDbError(null);

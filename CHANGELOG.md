@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.12.0 — 2026-11-21
+
+Found after 2.11.0: an older app installed on a phone opened to "database not set up" once the database dropped the phone column.
+
+### Added
+- **Update required instead of a broken app** (database migration 7, `app_config` + `app_requirements`): the server states the oldest app version it supports and the latest one. An installed version below the minimum opens to "Update required" with a download button; when only a newer version exists, More shows it with a download button. Checked at start and whenever the app returns to the foreground; without an answer nothing is blocked.
+- A failing start is classified properly: a column or function the app expects is gone → "Update required"; the app's tables are missing → "Service unavailable, try again" (no developer instructions shown to users).
+
+### Process
+- Release rule in CONTRIBUTING: migrations only add while installed apps still use something; removing it raises `min_app_version` in the same migration; every release raises `latest_app_version`.
+
 ## 2.11.0 — 2026-11-20
 
 The project is now an Android app only, with no phone numbers and a stricter structure.

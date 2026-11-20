@@ -33,6 +33,8 @@ code base healthy; `npm run check` enforces most of them.
 
 - Never edit an applied migration. Add `supabase/migrations/<timestamp>_<name>.sql`, then run `npm run gen:types && npm run db:bundle` and add a test in `tests/db/`.
 - CI fails if the generated types or `supabase/dist/full_install.sql` are out of date.
+- **Installed apps must keep working.** People update the app later than the database changes. A migration only adds (tables, columns, functions) while older apps still use what it would remove. To remove or rename something an installed version uses: release the app that no longer needs it, then in a later migration raise `min_app_version` in `public.app_config` **in the same migration** that removes it. Older apps then show "update required" instead of failing.
+- With every release, raise `latest_app_version` in `public.app_config` (a one-line `update` in a migration) so installed apps offer the update.
 
 ## Board
 

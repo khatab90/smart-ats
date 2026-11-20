@@ -1,4 +1,14 @@
-import { Bell, LogOut, Plus, Router, Settings2, ShieldCheck, UserRound, Users } from "lucide-react";
+import {
+  Bell,
+  Download,
+  LogOut,
+  Plus,
+  Router,
+  Settings2,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from "lucide-react";
 import { arCount, initialOf } from "../lib/format";
 import { useState } from "react";
 import { Badge, Card, ConfirmDialog, Row, RowGroup } from "../components/ui";
@@ -8,6 +18,8 @@ import { useAuth } from "../store/auth";
 import { useActiveDevice, useDevices } from "../store/devices";
 import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
+import { useAppVersion } from "../store/appVersion";
+import { openInBrowser } from "../platform/native";
 import { t, uiStart } from "../i18n";
 
 const DEVICE_COUNT = {
@@ -25,6 +37,7 @@ export function More() {
   const { unreadCount } = useNotifications();
   const { push } = useNav();
   const [signingOut, setSigningOut] = useState(false);
+  const version = useAppVersion();
   return (
     <div className="space-y-5 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
       <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("المزيد")}</h1>
@@ -107,6 +120,26 @@ export function More() {
           </RowGroup>
         </div>
         <div className="space-y-5">
+          {version.state === "available" && version.requirements?.download_url && (
+            <Card className="flex items-center gap-3 border-brand-200 bg-brand-50 p-4">
+              <Download className="size-5 shrink-0 text-brand-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-bold text-ink">
+                  {t("يتوفر الإصدار {0}", { 0: version.requirements.latest_version ?? "" })}
+                </p>
+                <p className="text-[12px] text-muted">
+                  {t("نزّله وثبّته فوق الحالي؛ بياناتك تبقى.")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void openInBrowser(version.requirements!.download_url!)}
+                className="shrink-0 rounded-xl bg-brand-800 px-3.5 py-2 text-[12px] font-bold text-white"
+              >
+                {t("تحميل")}
+              </button>
+            </Card>
+          )}
           <div>
             <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{t("إعدادات التطبيق")}</p>
             <AppPrefsCard />

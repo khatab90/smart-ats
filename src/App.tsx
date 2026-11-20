@@ -1,4 +1,4 @@
-import { CloudOff, Database, LoaderCircle } from "lucide-react";
+import { CloudOff, LoaderCircle } from "lucide-react";
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppFrame, BottomNav, Logo, SideNav, ToastHost } from "./components/Shell";
@@ -23,6 +23,8 @@ import {
 import { NotificationsProvider } from "./store/notifications";
 import { PrefsProvider } from "./store/prefs";
 import { ToastProvider } from "./store/toast";
+import { AppVersionProvider, useAppVersion } from "./store/appVersion";
+import { ServerNotReady, UpdateRequired } from "./components/AppGates";
 import { t } from "./i18n";
 
 const named = <T extends Record<string, unknown>>(p: Promise<T>, key: keyof T) =>
@@ -62,11 +64,13 @@ export default function App() {
   return (
     <PrefsProvider>
       <ToastProvider>
-        <AuthProvider>
-          <AppFrame>
-            <Root />
-          </AppFrame>
-        </AuthProvider>
+        <AppVersionProvider>
+          <AuthProvider>
+            <AppFrame>
+              <Root />
+            </AppFrame>
+          </AuthProvider>
+        </AppVersionProvider>
       </ToastProvider>
     </PrefsProvider>
   );
@@ -86,7 +90,11 @@ function Splash() {
 
 function Root() {
   const { loading, session, recovery, dbError } = useAuth();
+  const version = useAppVersion();
   if (loading) return <Splash />;
+  // An installed version the server no longer supports never reaches the
+  // screens that would fail; it asks for the update instead.
+  if (version.state === "required" || dbError === "outdated") return <UpdateRequired />;
   if (session && recovery) return <RecoveryScreen />;
   if (!session) {
     return (
@@ -96,7 +104,7 @@ function Root() {
       </>
     );
   }
-  if (dbError === "schema") return <SetupRequired />;
+  if (dbError === "schema") return <ServerNotReady />;
   return (
     <DevicesProvider>
       <ActiveDeviceProvider>
@@ -252,40 +260,5 @@ function SideNavUser() {
         </span>
       </span>
     </button>
-  );
-}
-
-function SetupRequired() {
-  const { signOut, refreshProfile } = useAuth();
-  return (
-    <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-      <span className="flex size-16 items-center justify-center rounded-3xl bg-warn-soft text-warn">
-        <Database className="size-7" />
-      </span>
-      <h1 className="mt-4 text-lg font-bold text-ink">{t("قاعدة البيانات غير مهيأة")}</h1>
-      <p className="mt-2 text-[13px] leading-6 text-muted">
-        {t("لم يتم العثور على جداول Smart ATS في Supabase. لمشروع جديد شغّل الملف")}
-        <span className="mx-1 font-mono text-[11px]" dir="ltr">
-          supabase/dist/full_install.sql
-        </span>
-        {t("مرة واحدة من SQL Editor.")}
-      </p>
-      <div className="mt-6 flex w-full gap-3">
-        <button
-          type="button"
-          onClick={() => void refreshProfile()}
-          className="h-12 flex-1 rounded-2xl bg-brand-800 text-sm font-semibold text-white"
-        >
-          {t("إعادة التحقق")}
-        </button>
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="h-12 flex-1 rounded-2xl bg-brand-50 text-sm font-semibold text-brand-800"
-        >
-          {t("تسجيل الخروج")}
-        </button>
-      </div>
-    </div>
   );
 }

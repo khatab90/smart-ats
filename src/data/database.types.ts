@@ -6,6 +6,30 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      app_config: {
+        Row: {
+          download_url: string;
+          id: boolean;
+          latest_app_version: string;
+          min_app_version: string;
+          updated_at: string;
+        };
+        Insert: {
+          download_url: string;
+          id?: boolean;
+          latest_app_version: string;
+          min_app_version: string;
+          updated_at?: string;
+        };
+        Update: {
+          download_url?: string;
+          id?: boolean;
+          latest_app_version?: string;
+          min_app_version?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       device_boots: {
         Row: {
           boot_id: string;
@@ -795,6 +819,10 @@ export type Database = {
       };
       accept_my_invitation: {
         Args: { p_invitation_id: string };
+        Returns: Json;
+      };
+      app_requirements: {
+        Args: Record<PropertyKey, never>;
         Returns: Json;
       };
       claim_device: {
