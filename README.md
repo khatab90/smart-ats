@@ -26,13 +26,9 @@ npm run dev        # http://localhost:5173 — on your Wi-Fi too: see the "Netwo
 The app is already connected to its Supabase project. To use another project,
 copy `.env.example` to `.env.local`.
 
-**No board yet?** Run the board emulator in a second terminal. It needs
-`tools/device-emulator/emulator.config.json` (the board ID and its secret
-token; never commit it — git ignores it):
-
-```bash
-npm run emulator   # type "help" for commands: grid off, solar low, load 2000…
-```
+**No board yet?** Use the separate **smart-ats-simulator** project: a phone
+app (and a PC emulator) that plays the board against the same server, with
+outages, faults and scenarios at a tap.
 
 **New Supabase project:** follow [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)
 — run `supabase/dist/full_install.sql`, register a board, then in the app
@@ -50,8 +46,6 @@ sign up and **Add device** with the board ID and PIN.
 | `npm run i18n` | Fails on a text not wrapped in `t()`, without English, or English no code uses |
 | `npm run gen:types` | Regenerate `src/data/database.types.ts` after a migration |
 | `npm run db:bundle` | Regenerate `supabase/dist/full_install.sql` |
-| `npm run emulator` | Run the board emulator |
-| `npm run emulator:bundle` | Package the emulator as one file in `dist-emulator/` |
 | `npm run format` | Format the code |
 
 ## Project layout
@@ -64,8 +58,8 @@ src/
   components/   design system (ui/), charts, shell and navigation
   store/ hooks/ state and data hooks      i18n/  texts and English catalog
 supabase/       migrations, full_install.sql, email templates
-protocol/       shared test vectors for the board logic
-tools/          board emulator, database tools, text checks
+protocol/       test vectors for the board logic (the firmware must pass them)
+tools/          database tools, text checks
 tests/          unit, components, database, system
 docs/           architecture, decisions, ESP32 protocol, setup guides
 ```

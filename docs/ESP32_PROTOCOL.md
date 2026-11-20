@@ -7,10 +7,11 @@ The board talks HTTPS to Supabase PostgREST RPC endpoints:
 - The board authenticates with its own secret `token` (from `register_device`), sent as a parameter.
 - **Never** embed the service-role key in firmware.
 
-The reference implementation of everything below is the emulator
-(`tools/device-emulator/board.mjs`, decision logic in `logic.mjs`). The
-firmware must pass the shared test vectors in
-[`protocol/logic-vectors.json`](../protocol/logic-vectors.json).
+The reference implementation of everything below is the board in the
+separate **smart-ats-simulator** project (`src/board/board.mjs`, decision
+logic in `logic.mjs`). It and the firmware must pass the test vectors in
+[`protocol/logic-vectors.json`](../protocol/logic-vectors.json), which this
+document and that file define.
 
 > **Revision 2 changes** (migration `20261118000000`): `boot_id`; clock guard
 > and `server_time` sync; one bad event no longer rejects a message;

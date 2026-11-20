@@ -29,7 +29,8 @@ code base healthy; `npm run check` enforces most of them.
 
 ## Board
 
-- Behaviour changes go to `tools/device-emulator/` first, with a vector in `protocol/logic-vectors.json` and a note in `docs/ESP32_PROTOCOL.md`.
+- This project owns the protocol: a behaviour change starts with `docs/ESP32_PROTOCOL.md` and a vector in `protocol/logic-vectors.json`. The reference board, the PC emulator and the phone simulator live in the separate `smart-ats-simulator` project, which follows them (`npm run sync-protocol` there).
+- No simulation code here. If the board's messages change, re-record `tests/system/board-session.json` from the reference board.
 
 ## Before every commit
 

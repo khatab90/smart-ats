@@ -1,5 +1,5 @@
 {
-  "$comment": "Reference test vectors for the ATS decision logic (protocol v1). The JS emulator (tools/device-emulator/logic.mjs) and the ESP32 firmware must both pass every case. Times are in ms, thresholds in % of nominal. Schedule checks are [weekday, minutesSinceLocalMidnight, allowed].",
+  "$comment": "Reference test vectors for the ATS decision logic (protocol v1). The reference board (smart-ats-simulator, src/board/logic.mjs), the ESP32 firmware and the app's schedule logic must all pass every case. Times are in ms, thresholds in % of nominal. Schedule checks are [weekday, minutesSinceLocalMidnight, allowed].",
   "version": 1,
   "settings": {
     "nominal_voltage": 230,

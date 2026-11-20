@@ -2,7 +2,7 @@ import { t } from "../i18n";
 /**
  * Solar schedule: the hours when Smart mode may use solar.
  *
- * Mirrors the board's rule (tools/device-emulator/logic.mjs) and the DB
+ * Mirrors the board's rule (the reference board in smart-ats-simulator) and the DB
  * check (_valid_solar_schedule). Both implementations run the shared
  * vectors in protocol/logic-vectors.json ("schedule").
  *

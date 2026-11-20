@@ -14,10 +14,10 @@ export default defineConfig({
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   test: {
-    // Pure logic, database and emulator tests run in Node; component tests
+    // Pure logic and database tests run in Node; component tests
     // opt into jsdom with a `// @vitest-environment jsdom` header.
     environment: "node",
-    include: ["tests/**/*.test.{ts,tsx,mjs}", "tools/**/*.test.{ts,mjs}"],
+    include: ["tests/**/*.test.{ts,tsx,mjs}"],
     testTimeout: 60_000,
     hookTimeout: 120_000,
   },

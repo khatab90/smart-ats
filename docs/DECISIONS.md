@@ -8,8 +8,10 @@ Short records of decisions that are not obvious from the code.
 **Decision.** All protection and Smart-mode decisions run on the ESP32. The
 server stores what the board reports and queues commands. The app predicts
 outcomes only to warn the user (`predictSmartTarget`).
-**Consequence.** The emulator is the executable specification of the
-firmware; both must pass `protocol/logic-vectors.json`.
+**Consequence.** The reference board (in the separate `smart-ats-simulator`
+project) is the executable specification of the firmware; both must pass
+`protocol/logic-vectors.json`, which this project owns with
+`docs/ESP32_PROTOCOL.md`.
 
 ## ADR-002 — Numbered, run-once migrations
 
@@ -126,3 +128,15 @@ desktop apps.
 
 **Why.** One code base to test and maintain; the Android app later wraps the
 same build.
+
+## ADR-016 — Simulation lives in its own project
+
+**Decision.** Everything that stands in for the board — the reference board
+logic, the PC emulator and the phone simulator — lives in
+`smart-ats-simulator`. This project keeps the contract only: the protocol
+document and its test vectors. Its end-to-end test replays a recorded board
+session (`tests/system/board-session.json`) instead of running a board.
+
+**Why.** The app project contains only what ships to users; test tools have
+their own releases and can change without touching the app.
+

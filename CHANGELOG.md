@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.7.0 — 2026-11-20
+
+No simulation in this project any more; nothing changes for users of the app.
+
+### Removed
+- The board emulator (`tools/device-emulator`: reference board, PC emulator, their tests) the `emulator` / `emulator:bundle` scripts and the `esbuild` dependency they needed. They moved to the separate **smart-ats-simulator** project, next to the phone simulator.
+
+### Changed
+- The end-to-end test replays a recorded board session (`tests/system/board-session.json`: first contact, grid outage, an app command, a reboot) into the real database functions, instead of running a board. Same checks, no simulation code.
+- This project owns the board ↔ server contract: `docs/ESP32_PROTOCOL.md` and `protocol/logic-vectors.json` (the app's solar-schedule logic is tested against them). ADR-016 records the split; README, architecture, contributing and setup docs point to the simulator project.
+
 ## 2.6.2 — 2026-11-20
 
 ### Added

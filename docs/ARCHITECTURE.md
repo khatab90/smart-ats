@@ -11,8 +11,8 @@ grid, solar inverter, generator). Three parts, one source of truth each:
         ▲                                                └────────────┬─────────────┘
         │ reference behaviour + test vectors                          │ RLS reads, Realtime,
  ┌──────┴───────────────┐                                             │ checked RPCs
- │ tools/device-emulator│                                  ┌──────────▼──────────┐
- │ (board.mjs/logic.mjs)│                                  │  React app (this    │
+ │ smart-ats-simulator  │                                  ┌──────────▼──────────┐
+ │ (separate project)   │                                  │  React app (this    │
  └──────────────────────┘                                  │  repo, src/)        │
                                                            └─────────────────────┘
 ```
@@ -26,15 +26,18 @@ grid, solar inverter, generator). Three parts, one source of truth each:
   Realtime (polling fallback), and sends commands whose lifecycle it tracks
   until the board confirms.
 
+The board's stand-ins — the reference board logic, a PC emulator and a phone
+simulator — live in the separate **smart-ats-simulator** project; this
+project owns the protocol they follow.
+
 ## Repository layout
 
 | Path | Responsibility |
 |---|---|
 | `supabase/migrations/` | Numbered, run-once migrations (the schema contract) |
 | `supabase/dist/full_install.sql` | Generated: all migrations for a new project |
-| `protocol/logic-vectors.json` | Shared test vectors for the ATS decision logic (JS + firmware) |
+| `protocol/logic-vectors.json` | Test vectors for the ATS decision logic: the reference board, the firmware and the app's schedule logic must pass them |
 | `docs/ESP32_PROTOCOL.md` | Board ↔ server protocol |
-| `tools/device-emulator/` | Reference board: `logic.mjs` (pure rules), `board.mjs` (state machine), `cli.mjs`, `transport-supabase.mjs` |
 | `tools/db/` | `pglite.mjs` (Postgres-in-WASM with the real migrations, for tests), `gen-types.mjs` (generates `src/data/database.types.ts`), `bundle-migrations.mjs` (writes `full_install.sql`) |
 | `tools/i18n/` | Text checks: every Arabic text goes through `t()` and has an English line |
 | `src/config/` | Environment (Supabase URL / anon key / app environment) |
@@ -111,5 +114,4 @@ of date.
 | `tests/unit` | Domain rules, time zones, timeline, navigation, storage, translations, settings summaries |
 | `tests/components` | Controls render and behave (priority list, link badge, command progress) |
 | `tests/db` | RLS, every RPC, ingestion robustness, retention, privileges, settings schema ↔ CHECK constraints |
-| `tools/device-emulator/*.test.mjs` | Shared logic vectors; board state machine (protection, close verification, lockout, de-dup) |
-| `tests/system` | Reference board + real database functions end to end |
+| `tests/system` | A recorded board session replayed into the real database functions, end to end |

@@ -1,0 +1,1767 @@
+{
+  "$comment": "Messages the reference board (smart-ats-simulator) sent to the database functions in one session: first contact, grid outage, an app command, a reboot. Recorded with board times from 2026-01-01T00:00:00Z; the test shifts every timestamp to the present before replaying. Re-record from the simulator project if the protocol changes.",
+  "recordedFrom": "2026-01-01T00:00:00.000Z",
+  "steps": [
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 1,
+        "ts": "2026-01-01T00:00:00.000Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-01-01T00:00:00.000Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-01-01T00:00:00.000Z",
+        "sources": {
+          "grid": {
+            "v": 231,
+            "f": 49.98,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 229.6,
+            "f": 49.99,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 120,
+            "reason": "no_voltage",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 120,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 228.9, "a": 9.69, "w": 2218, "f": 50.01 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": ["settings_incomplete"],
+        "override": null,
+        "config_version": 0,
+        "controller": {
+          "uptime_s": 0,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 0, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": [
+          {
+            "seq": 1,
+            "ts": "2026-01-01T00:00:00.000Z",
+            "type": "controller_restarted",
+            "severity": "info",
+            "data": { "reason": "power_on", "active": "grid" }
+          }
+        ]
+      }
+    },
+    { "call": "device_get_settings", "args": null },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 2,
+        "ts": "2026-11-20T12:25:57.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 228.7,
+            "f": 49.98,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 229.7,
+            "f": 49.98,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 2,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.9, "a": 9.84, "w": 2264, "f": 50.01 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 2,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 1, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 2, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": [
+          {
+            "seq": 2,
+            "ts": "2026-11-20T12:25:55.657Z",
+            "type": "settings_applied",
+            "severity": "info",
+            "data": { "version": 3, "nominal_set": true }
+          }
+        ]
+      }
+    },
+    { "checkpoint": "first_contact" },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 3,
+        "ts": "2026-11-20T12:25:59.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.5,
+            "f": 50.02,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.9,
+            "f": 49.99,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 4,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.3, "a": 9.93, "w": 2277, "f": 50.02 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 4,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 2, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 4, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 4,
+        "ts": "2026-11-20T12:26:01.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 231.1,
+            "f": 49.99,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 230.2,
+            "f": 50.02,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 6,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.8, "a": 9.75, "w": 2241, "f": 50.01 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 6,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 4, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 6, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 5,
+        "ts": "2026-11-20T12:26:03.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 229.7,
+            "f": 50.03,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.6,
+            "f": 49.98,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 8,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.4, "a": 9.82, "w": 2253, "f": 50 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 8,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 5, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 8, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 6,
+        "ts": "2026-11-20T12:26:05.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 229.3,
+            "f": 49.98,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 230.2,
+            "f": 50,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 10,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 230.7, "a": 9.8, "w": 2262, "f": 49.99 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 10,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 6, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 10, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 7,
+        "ts": "2026-11-20T12:26:07.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 231.3,
+            "f": 50.03,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.8,
+            "f": 50.01,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 12,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 230.1, "a": 9.74, "w": 2240, "f": 50.01 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 12,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 8, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 12, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 8,
+        "ts": "2026-11-20T12:26:09.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.1,
+            "f": 49.98,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 230.5,
+            "f": 49.98,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 14,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.8, "a": 9.95, "w": 2286, "f": 49.97 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 14,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 9, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 14, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 9,
+        "ts": "2026-11-20T12:26:11.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 229.5,
+            "f": 50,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.6,
+            "f": 49.98,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 16,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.3, "a": 9.86, "w": 2261, "f": 49.99 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 16,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 10, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 16, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 10,
+        "ts": "2026-11-20T12:26:13.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.3,
+            "f": 49.99,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.8,
+            "f": 50.02,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 18,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 230.5, "a": 9.92, "w": 2286, "f": 50.02 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 18,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 11, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 18, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 11,
+        "ts": "2026-11-20T12:26:15.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.3,
+            "f": 50.01,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.8,
+            "f": 49.97,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 20,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.3, "a": 10.18, "w": 2334, "f": 49.97 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 20,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 13, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 20, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 12,
+        "ts": "2026-11-20T12:26:17.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.3,
+            "f": 50.02,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 231.2,
+            "f": 50.01,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 22,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.9, "a": 10.38, "w": 2387, "f": 49.97 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 22,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 14, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 22, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 13,
+        "ts": "2026-11-20T12:26:19.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 229.7,
+            "f": 50.03,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 230,
+            "f": 50.01,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 24,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229, "a": 10.28, "w": 2353, "f": 50 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 24,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 15, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 24, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 14,
+        "ts": "2026-11-20T12:26:21.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.7,
+            "f": 50,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 230.2,
+            "f": 49.99,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 26,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 228.6, "a": 10.49, "w": 2397, "f": 50.02 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 26,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 16, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 26, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 15,
+        "ts": "2026-11-20T12:26:23.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 230.7,
+            "f": 50.01,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 229.2,
+            "f": 49.99,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 28,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 229.7, "a": 10.48, "w": 2408, "f": 50.01 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 28,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 18, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 28, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 16,
+        "ts": "2026-11-20T12:26:25.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 229.3,
+            "f": 50.01,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 229.1,
+            "f": 49.98,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 30,
+            "q_required_s": 30,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 231.4, "a": 10.5, "w": 2430, "f": 50 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 30,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 19, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 30, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 17,
+        "ts": "2026-11-20T12:26:27.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 231,
+            "f": 50.01,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 231.4,
+            "f": 49.98,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 228.8, "a": 10.5, "w": 2402, "f": 49.98 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 32,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 20, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 32, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 18,
+        "ts": "2026-11-20T12:26:29.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "grid",
+        "active_since": "2026-11-20T12:25:55.657Z",
+        "sources": {
+          "grid": {
+            "v": 228.6,
+            "f": 49.99,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "solar": {
+            "v": 230.7,
+            "f": 50.02,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 230.6, "a": 10.3, "w": 2375, "f": 50.02 },
+        "contactors": {
+          "grid": { "cmd": true, "fb": true },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 34,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 22, "solar": 0, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 34, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 0, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 19,
+        "ts": "2026-11-20T12:26:31.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "solar",
+        "active_since": "2026-11-20T12:26:30.857Z",
+        "sources": {
+          "grid": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          },
+          "solar": {
+            "v": 230.9,
+            "f": 49.97,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 231.2, "a": 10.23, "w": 2367, "f": 50.01 },
+        "contactors": {
+          "grid": { "cmd": false, "fb": false },
+          "solar": { "cmd": true, "fb": true },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 36,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 22, "solar": 1, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 34, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 1, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": [
+          {
+            "seq": 3,
+            "ts": "2026-11-20T12:26:29.757Z",
+            "type": "source_lost",
+            "severity": "critical",
+            "source": "grid",
+            "data": { "was_active": true, "reason": "no_voltage" }
+          },
+          {
+            "seq": 4,
+            "ts": "2026-11-20T12:26:29.757Z",
+            "type": "transfer_started",
+            "severity": "info",
+            "from": "grid",
+            "to": "solar",
+            "data": { "reason": "no_voltage", "mode": "smart" }
+          },
+          {
+            "seq": 5,
+            "ts": "2026-11-20T12:26:30.857Z",
+            "type": "transfer_completed",
+            "severity": "info",
+            "from": "grid",
+            "to": "solar",
+            "data": {
+              "reason": "no_voltage",
+              "mode": "smart",
+              "detect_ms": 0,
+              "open_ms": 0,
+              "dead_ms": 1000,
+              "close_ms": 100
+            }
+          }
+        ]
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 20,
+        "ts": "2026-11-20T12:26:33.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "solar",
+        "active_since": "2026-11-20T12:26:30.857Z",
+        "sources": {
+          "grid": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          },
+          "solar": {
+            "v": 228.8,
+            "f": 49.98,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 228.6, "a": 10.33, "w": 2361, "f": 49.99 },
+        "contactors": {
+          "grid": { "cmd": false, "fb": false },
+          "solar": { "cmd": true, "fb": true },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 38,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 22, "solar": 2, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 34, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 3, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    { "checkpoint": "grid_outage" },
+    {
+      "app": "send_command",
+      "id": "cccccccc-0000-0000-0000-000000000001",
+      "type": "reset_runtime",
+      "payload": { "sources": ["solar"] }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 21,
+        "ts": "2026-11-20T12:26:35.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "solar",
+        "active_since": "2026-11-20T12:26:30.857Z",
+        "sources": {
+          "grid": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          },
+          "solar": {
+            "v": 231.4,
+            "f": 49.97,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 228.6, "a": 10.43, "w": 2384, "f": 49.98 },
+        "contactors": {
+          "grid": { "cmd": false, "fb": false },
+          "solar": { "cmd": true, "fb": true },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 40,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 22, "solar": 3, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 34, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 5, "since": "2026-01-01T00:00:00.000Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": []
+      }
+    },
+    {
+      "call": "device_ack_command",
+      "args": { "id": "cccccccc-0000-0000-0000-000000000001", "status": "accepted", "result": null }
+    },
+    {
+      "call": "device_ack_command",
+      "args": {
+        "id": "cccccccc-0000-0000-0000-000000000001",
+        "status": "completed",
+        "result": { "sources": ["solar"] }
+      }
+    },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "49680f48",
+        "seq": 22,
+        "ts": "2026-11-20T12:26:37.657Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-11-20T12:25:55.657Z",
+        "state": "normal",
+        "active": "solar",
+        "active_since": "2026-11-20T12:26:30.857Z",
+        "sources": {
+          "grid": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          },
+          "solar": {
+            "v": 231,
+            "f": 50.02,
+            "available": true,
+            "qualified": true,
+            "q_elapsed_s": null,
+            "q_required_s": null,
+            "reason": null,
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 30,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 231, "a": 10.54, "w": 2434, "f": 50.03 },
+        "contactors": {
+          "grid": { "cmd": false, "fb": false },
+          "solar": { "cmd": true, "fb": true },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": [],
+        "override": null,
+        "config_version": 3,
+        "controller": {
+          "uptime_s": 42,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 22, "solar": 4, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 34, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 2, "since": "2026-11-20T12:26:35.657Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": [
+          {
+            "seq": 6,
+            "ts": "2026-11-20T12:26:35.657Z",
+            "type": "runtime_reset",
+            "severity": "info",
+            "data": { "sources": ["solar"] }
+          }
+        ]
+      }
+    },
+    { "checkpoint": "command_done" },
+    {
+      "call": "device_ingest",
+      "args": {
+        "v": 1,
+        "boot_id": "2ca0a45f",
+        "seq": 1,
+        "ts": "2026-01-01T00:00:44.000Z",
+        "interval_ms": 2000,
+        "fw": "emulator-2.1",
+        "mode": "smart",
+        "mode_since": "2026-01-01T00:00:42.000Z",
+        "state": "no_source",
+        "active": null,
+        "active_since": null,
+        "sources": {
+          "grid": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 120,
+            "reason": "no_voltage",
+            "allowed": true
+          },
+          "solar": {
+            "v": 229.6,
+            "f": 49.98,
+            "available": true,
+            "qualified": false,
+            "q_elapsed_s": 2,
+            "q_required_s": 120,
+            "reason": "qualifying",
+            "allowed": true
+          },
+          "generator": {
+            "v": 0,
+            "f": 0,
+            "available": false,
+            "qualified": false,
+            "q_elapsed_s": 0,
+            "q_required_s": 120,
+            "reason": "no_voltage",
+            "allowed": true
+          }
+        },
+        "load": { "v": 0, "a": 0, "w": 0, "f": null },
+        "contactors": {
+          "grid": { "cmd": false, "fb": false },
+          "solar": { "cmd": false, "fb": false },
+          "generator": { "cmd": false, "fb": false }
+        },
+        "alarms": ["settings_incomplete"],
+        "override": null,
+        "config_version": 0,
+        "controller": {
+          "uptime_s": 2,
+          "reset_reason": "power_on",
+          "temp_c": 41,
+          "supply_v": 5.02,
+          "dropped_events": 0
+        },
+        "rssi": -58,
+        "energy_wh": { "grid": 22, "solar": 4, "generator": 0 },
+        "runtime": {
+          "grid": { "s": 34, "since": "2026-01-01T00:00:00.000Z" },
+          "solar": { "s": 2, "since": "2026-11-20T12:26:35.657Z" },
+          "generator": { "s": 0, "since": "2026-01-01T00:00:00.000Z" }
+        },
+        "events": [
+          {
+            "seq": 1,
+            "ts": "2026-01-01T00:00:42.000Z",
+            "type": "controller_restarted",
+            "severity": "info",
+            "data": { "reason": "power_on", "active": "grid" }
+          },
+          {
+            "seq": 2,
+            "ts": "2026-01-01T00:00:42.100Z",
+            "type": "source_lost",
+            "severity": "critical",
+            "source": "grid",
+            "data": { "was_active": true, "reason": "no_voltage" }
+          },
+          {
+            "seq": 3,
+            "ts": "2026-01-01T00:00:42.100Z",
+            "type": "no_source_started",
+            "severity": "critical",
+            "data": { "grid": "no_voltage", "solar": "qualifying", "generator": "no_voltage" }
+          }
+        ]
+      }
+    },
+    { "call": "device_get_settings", "args": null },
+    { "checkpoint": "rebooted" }
+  ]
+}
