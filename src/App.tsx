@@ -4,7 +4,9 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppFrame, BottomNav, Logo, SideNav, ToastHost } from "./components/Shell";
 import { initialOf } from "./lib/format";
 import { Skeleton } from "./components/ui";
-import { getPendingInvite } from "./lib/invite";
+import { dispatchBack } from "./lib/backStack";
+import { usePendingInvite } from "./lib/invite";
+import { moveToBackground, onHardwareBack } from "./platform/native";
 import { AuthFlow } from "./features/auth/AuthFlow";
 import { RecoveryScreen } from "./features/auth/RecoveryScreen";
 import { Dashboard } from "./screens/Dashboard";
@@ -48,6 +50,15 @@ const AddDevice = lazy(() =>
 );
 
 export default function App({ linkError = null }: { linkError?: string | null }) {
+  // Android back button: the top-most handler (dialog, sheet, screen, tab)
+  // wins; with nothing left to close, the app goes to the background.
+  useEffect(
+    () =>
+      onHardwareBack(() => {
+        if (!dispatchBack()) moveToBackground();
+      }),
+    [],
+  );
   return (
     <PrefsProvider>
       <ToastProvider>
@@ -98,8 +109,8 @@ function Root() {
 }
 
 function SignedIn() {
-  const [invite, setInvite] = useState(getPendingInvite());
-  if (invite) return <InvitationScreen token={invite} onDone={() => setInvite(null)} />;
+  const invite = usePendingInvite();
+  if (invite) return <InvitationScreen token={invite} />;
   return <MainApp />;
 }
 

@@ -1,0 +1,53 @@
+name: Android APK
+
+# Builds an installable (debug-signed) APK of the app without Android Studio,
+# on every push to main or from the Actions tab ("Run workflow"). The APK is
+# published as the release of the version in package.json (e.g. v2.8.0):
+# open Releases on the phone and download smart-ats.apk.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      # The Android SDK is already installed on GitHub's Ubuntu runners
+      # (ANDROID_HOME); Gradle downloads the exact platform it needs.
+      - run: npm ci
+      - run: npm run android:sync
+      - name: Build debug APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk smart-ats.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smart-ats-apk
+          path: smart-ats.apk
+          if-no-files-found: error
+      - name: Version
+        id: version
+        run: echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Smart ATS ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          body: Download smart-ats.apk on the phone and open it to install. See CHANGELOG.md.
+          files: smart-ats.apk
+          overwrite_files: true

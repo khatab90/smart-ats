@@ -140,3 +140,14 @@ session (`tests/system/board-session.json`) instead of running a board.
 **Why.** The app project contains only what ships to users; test tools have
 their own releases and can change without touching the app.
 
+## ADR-017 — Android app from the same code (Capacitor)
+
+**Decision.** The Android app is the web build inside a Capacitor shell, not
+a separate native app. Google sign-in runs in the system browser and returns
+through the `smartats://app` link (also used by email links). The APK is
+built by GitHub Actions and published as a release, debug-signed for now.
+
+**Why.** One code base for phone, tablet, laptop and the Android app. Google
+blocks OAuth inside web views, so the system browser is required; a custom
+link needs no Android OAuth client and no verified domain.
+

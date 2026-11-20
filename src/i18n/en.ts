@@ -864,4 +864,5 @@ export const EN: Record<string, string> = {
   "كل المصادر": "All sources",
   "نوع العملية": "Type",
   "لا توجد عمليات": "No entries",
+  "تعذر تسجيل الدخول من الرابط": "Could not sign in from the link",
 };

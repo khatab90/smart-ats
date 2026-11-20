@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.8.0 — 2026-11-20
+
+The Android app: install `smart-ats.apk` from the GitHub release and use Smart ATS on the phone.
+
+### Added
+- **Android app** from the same code (Capacitor; app ID `iq.smartats.app`, Smart ATS icon). Built by GitHub Actions on every push to `main` and published as the release of the `package.json` version.
+- **Back button**: closes the open dialog or sheet, then the inner screen, then returns to Home; from Home the app goes to the background. Settings with unsaved changes, and the create-account / forgot-password screens, handle it too.
+- **Google sign-in in the app** opens in the phone's browser (Google refuses sign-in inside apps) and comes back to the app by itself; **email links** (confirmation, password reset, invitations) open the app directly. Needs `smartats://app**` in Supabase Redirect URLs (docs/ANDROID_BUILD.md).
+- Edge-to-edge layout that keeps clear of the status and navigation bars; data refreshes when the app returns from the background.
+
+### Changed
+- The pending invitation is kept in local storage inside the app (the system may close the app while you confirm your email) and is observable, so an invitation link that arrives while the app is open shows at once.
+- Only `src/platform/native.ts` may use Capacitor (ESLint). ADR-017.
+
 ## 2.7.0 — 2026-11-20
 
 No simulation in this project any more; nothing changes for users of the app.

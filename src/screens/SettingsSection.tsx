@@ -26,6 +26,7 @@ import { frequencyRange, voltageRange } from "../features/settings/summaries";
 import { useSettingsForm } from "../features/settings/useSettingsForm";
 import { cn } from "../lib/cn";
 import { useActiveDevice } from "../store/devices";
+import { pushBackHandler } from "../lib/backStack";
 import { useNav, type SettingsSection } from "../store/nav";
 import { t } from "../i18n";
 
@@ -41,6 +42,14 @@ export function SettingsSectionScreen({ section }: { section: SettingsSection })
   const meta = SECTION_META[section];
 
   const close = () => (form.dirty ? setLeaving(true) : back());
+  // The Android back button asks too when there are unsaved changes.
+  useEffect(() => {
+    if (!form.dirty) return;
+    return pushBackHandler(() => {
+      setLeaving(true);
+      return true;
+    });
+  }, [form.dirty]);
   const save = async () => {
     if (await form.save()) back();
   };

@@ -1,4 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
+import { isNative, openInBrowser } from "../platform/native";
 import { appBaseUrl, supabase } from "./client";
 import { fail, ok, run, type Result } from "./result";
 import { t } from "../i18n";
@@ -69,17 +70,32 @@ export const signOut = () => supabase.auth.signOut();
  * comes back to `redirectTo` with the session; a pending invitation token is
  * carried along so the invitation screen still opens.
  */
-export const signInWithGoogle = (invite?: string | null) =>
-  run(
+/**
+ * Google sign-in. Web: the page goes to Google and comes back. Android: Google
+ * opens in the phone's browser (it refuses sign-in inside an app) and returns
+ * to the app through smartats://app, where the auth store starts the session.
+ */
+export async function signInWithGoogle(invite?: string | null) {
+  const redirectTo = invite ? `${appBaseUrl()}?invite=${encodeURIComponent(invite)}` : appBaseUrl();
+  const native = isNative();
+  const res = await run(
     supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: invite ? `${appBaseUrl()}?invite=${encodeURIComponent(invite)}` : appBaseUrl(),
+        redirectTo,
         queryParams: { prompt: "select_account" },
+        skipBrowserRedirect: native,
       },
     }),
-    () => null,
+    (d) => d.url ?? null,
   );
+  if (native && res.error === null && res.data) await openInBrowser(res.data);
+  return res;
+}
+
+/** Starts the session carried by a link that opened the Android app. */
+export const startSessionFromLink = (tokens: { access_token: string; refresh_token: string }) =>
+  run(supabase.auth.setSession(tokens), () => null);
 
 /** Sign-in methods of the current user ("email", "google"), from Supabase. */
 export function signInMethods(user: { app_metadata?: { providers?: unknown } } | null): string[] {

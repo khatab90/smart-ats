@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   server: { host: true, port: 5173 },
-  // `--mode web` (npm run build:web) is the public build: no source maps.
-  build: { sourcemap: mode !== "web", target: "es2020" },
+  // Public web build (`--mode web`) and the Android app (`--mode native`):
+  // no source maps.
+  build: { sourcemap: mode !== "web" && mode !== "native", target: "es2020" },
 }));

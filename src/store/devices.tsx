@@ -15,6 +15,7 @@ import type { CommandRow, DeviceSettings, DeviceStatus, EventRow, Membership } f
 import { classifyLink, type LinkState } from "../lib/link";
 import { readStorage, writeStorage } from "../lib/storage";
 import { useAuth } from "./auth";
+import { onAppResume } from "../platform/native";
 
 const ACTIVE_KEY = "smart-ats.active-device";
 
@@ -210,6 +211,13 @@ export function ActiveDeviceProvider({ children }: { children: ReactNode }) {
       alive = false;
       unsubscribe();
     };
+  }, [deviceId, refresh]);
+
+  // Back from the background (phone locked, app switched): the realtime
+  // socket may have been paused, so read the current state at once.
+  useEffect(() => {
+    if (!deviceId) return;
+    return onAppResume(() => void refresh());
   }, [deviceId, refresh]);
 
   // Polling fallback while realtime is unavailable.

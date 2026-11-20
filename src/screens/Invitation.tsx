@@ -19,7 +19,8 @@ const STATUS_TEXT: Record<Exclude<InviteInfo["status"], "pending">, string> = {
   invalid: t("رابط الدعوة غير صالح."),
 };
 
-export function InvitationScreen({ token, onDone }: { token: string; onDone: () => void }) {
+/** Closes by clearing the pending invitation (the app watches it). */
+export function InvitationScreen({ token }: { token: string }) {
   const { user, signOut } = useAuth();
   const { refresh, setActiveId } = useDevices();
   const { pushToast } = useToast();
@@ -40,7 +41,6 @@ export function InvitationScreen({ token, onDone }: { token: string; onDone: () 
 
   const finish = () => {
     clearPendingInvite();
-    onDone();
   };
 
   const accept = async () => {

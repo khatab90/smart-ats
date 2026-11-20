@@ -1,6 +1,7 @@
 import { MailPlus } from "lucide-react";
-import { useState } from "react";
-import { getPendingInvite } from "../../lib/invite";
+import { useEffect, useState } from "react";
+import { pushBackHandler } from "../../lib/backStack";
+import { usePendingInvite } from "../../lib/invite";
 import { AuthLayout } from "./AuthLayout";
 import { Forgot } from "./Forgot";
 import { Login } from "./Login";
@@ -11,7 +12,17 @@ export type View = "login" | "signup" | "forgot";
 
 export function AuthFlow() {
   const [view, setView] = useState<View>("login");
-  const hasInvite = Boolean(getPendingInvite());
+  const hasInvite = Boolean(usePendingInvite());
+  // Back from "create account" / "forgot password" returns to sign-in.
+  useEffect(
+    () =>
+      pushBackHandler(() => {
+        if (view === "login") return false;
+        setView("login");
+        return true;
+      }),
+    [view],
+  );
   return (
     <AuthLayout compact={view !== "login" || hasInvite} contentKey={view}>
       {hasInvite && (

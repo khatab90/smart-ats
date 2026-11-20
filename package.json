@@ -1,6 +1,6 @@
 {
   "name": "smart-ats",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "private": true,
   "description": "Smart ATS — monitoring and control app for a 3-source automatic transfer switch (grid / solar / generator) driven by an ESP32 board.",
   "license": "UNLICENSED",
@@ -10,6 +10,8 @@
     "build": "tsc --noEmit && vite build",
     "build:web": "tsc --noEmit && vite build --mode web",
     "preview": "vite preview",
+    "android:sync": "tsc --noEmit && vite build --mode native && cap sync android",
+    "android:open": "cap open android",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "oxfmt src tests tools",
@@ -21,6 +23,10 @@
     "check": "npm run typecheck && npm run lint && npm run i18n && npm run test && vite build"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/browser": "^8.0.5",
+    "@capacitor/core": "^8.6.2",
     "@fontsource/ibm-plex-sans-arabic": "^5.2.5",
     "@supabase/supabase-js": "^2.119.0",
     "lucide-react": "^1.70.0",
@@ -28,6 +34,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
     "@electric-sql/pglite": "0.3.14",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.0.0",

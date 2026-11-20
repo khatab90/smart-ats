@@ -1,2 +1,4 @@
-# Images are binary: no line-ending or text diff handling.
 *.png binary
+*.jar binary
+gradlew text eol=lf
+*.bat text eol=crlf

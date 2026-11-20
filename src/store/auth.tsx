@@ -11,6 +11,10 @@ import {
 import type { Profile } from "../data/types";
 import { isSchemaMissing } from "../lib/errors";
 import * as authApi from "../api/auth";
+import { APP_LINK_BASE } from "../config/app";
+import { isAppLink, parseAuthLink } from "../lib/authLink";
+import { savePendingInvite } from "../lib/invite";
+import { closeBrowser, onAppLink } from "../platform/native";
 import { probeProfile } from "../api/profile";
 import { useToast } from "./toast";
 import { t } from "../i18n";
@@ -69,6 +73,32 @@ export function AuthProvider({
       unsubscribe();
     };
   }, []);
+
+  // Android: email links and Google sign-in come back through smartats://app…
+  // instead of loading a page, so the session they carry is started here.
+  useEffect(
+    () =>
+      onAppLink((url) => {
+        if (!isAppLink(url, APP_LINK_BASE)) return;
+        closeBrowser();
+        const link = parseAuthLink(url);
+        if (link.invite) savePendingInvite(link.invite);
+        if (link.error) {
+          pushToast({ kind: "error", title: t("تعذر تسجيل الدخول"), body: link.error });
+          return;
+        }
+        if (!link.tokens) return;
+        const recoveryLink = link.type === "recovery";
+        // Set before the session starts so the main screen never flashes.
+        if (recoveryLink) setRecovery(true);
+        void authApi.startSessionFromLink(link.tokens).then(({ error }) => {
+          if (!error) return;
+          if (recoveryLink) setRecovery(false);
+          pushToast({ kind: "error", title: t("تعذر تسجيل الدخول من الرابط"), body: error });
+        });
+      }),
+    [pushToast],
+  );
 
   const userId = session?.user.id;
   const refreshProfile = useCallback(async () => {

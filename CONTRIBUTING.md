@@ -17,6 +17,12 @@ code base healthy; `npm run check` enforces most of them.
 - Numbers are always Western digits, in both languages.
 - Layout must work in both directions: use logical classes (`ps-`, `pe-`, `start-`, `end-`, `text-start`) and `rtl:` / `ltr:` variants, never `left` / `right`.
 
+## Android
+
+- Only `src/platform/native.ts` imports `@capacitor/*` (ESLint enforces it); everything there must be a no-op in the browser.
+- Anything that opens over the screen (a dialog, a sheet, a guarded screen) registers with `pushBackHandler` so the Android back button closes it first.
+- Raising `version` in `package.json` publishes a new APK release on the next push to `main`.
+
 ## Screens
 
 - One code base for phone, tablet and laptop. Phone first, then `md:` (tablet: side rail, one column) and `lg:` (laptop: sidebar, two columns).

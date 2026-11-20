@@ -65,3 +65,13 @@ export function parseAuthLink(url: string): AuthLink {
     error: hasError ? linkErrorText(errorCode, errorDescription) : null,
   };
 }
+
+/** True for a link meant for this app (smartats://app…, or another configured base). */
+export function isAppLink(url: string, base: string): boolean {
+  return (
+    url === base ||
+    url.startsWith(`${base}?`) ||
+    url.startsWith(`${base}#`) ||
+    url.startsWith(`${base}/`)
+  );
+}

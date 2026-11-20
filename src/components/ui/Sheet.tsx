@@ -1,4 +1,5 @@
 import { X, type LucideIcon } from "lucide-react";
+import { pushBackHandler } from "../../lib/backStack";
 import { cn } from "../../lib/cn";
 import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -22,7 +23,15 @@ export function Sheet({
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // The Android back button closes it before anything behind it.
+    const offBack = pushBackHandler(() => {
+      onClose();
+      return true;
+    });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      offBack();
+    };
   }, [open, onClose]);
   if (!open) return null;
   const host = document.getElementById("sheet-root");
@@ -38,7 +47,7 @@ export function Sheet({
         onClick={onClose}
         className="absolute inset-0 animate-fade-in bg-brand-950/45 backdrop-blur-[2px]"
       />
-      <div className="relative flex max-h-[88%] animate-sheet-in flex-col rounded-t-[28px] bg-surface md:max-h-[85%] md:w-full md:max-w-lg md:animate-dialog-in md:rounded-[28px] md:shadow-[0_24px_60px_-20px_rgba(10,25,50,0.55)]">
+      <div className="relative flex max-h-[88%] animate-sheet-in flex-col rounded-t-[28px] bg-surface pb-safe md:max-h-[85%] md:pb-0 md:w-full md:max-w-lg md:animate-dialog-in md:rounded-[28px] md:shadow-[0_24px_60px_-20px_rgba(10,25,50,0.55)]">
         <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line md:hidden" />
         {title && (
           <div className="flex items-center justify-between px-5 pt-3 pb-2">
@@ -92,7 +101,15 @@ export function ConfirmDialog({
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // The Android back button closes it before anything behind it.
+    const offBack = pushBackHandler(() => {
+      onClose();
+      return true;
+    });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      offBack();
+    };
   }, [open, onClose]);
   if (!open) return null;
   const host = document.getElementById("sheet-root");

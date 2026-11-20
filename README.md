@@ -2,7 +2,8 @@
 
 Monitoring and remote-control app for a **3-source automatic transfer switch**
 — national grid, solar inverter and generator — driven by an ESP32 board.
-Arabic and English, phone, tablet and laptop. React + TypeScript + Supabase.
+Arabic and English, phone, tablet and laptop. React + TypeScript + Supabase,
+with an **Android app** built from the same code (Capacitor).
 
 ## Features
 
@@ -26,6 +27,10 @@ npm run dev        # http://localhost:5173 — on your Wi-Fi too: see the "Netwo
 The app is already connected to its Supabase project. To use another project,
 copy `.env.example` to `.env.local`.
 
+**Android app:** every push to `main` on GitHub builds `smart-ats.apk` and
+publishes it under **Releases** — see [docs/ANDROID_BUILD.md](docs/ANDROID_BUILD.md)
+(one Supabase setting is needed for Google sign-in and email links).
+
 **No board yet?** Use the separate **smart-ats-simulator** project: a phone
 app (and a PC emulator) that plays the board against the same server, with
 outages, faults and scenarios at a tap.
@@ -44,6 +49,8 @@ sign up and **Add device** with the board ID and PIN.
 | `npm run check` | Types + lint + texts + all tests + build — run before every commit |
 | `npm test` | All tests: unit, components, database (PGlite), board ↔ database |
 | `npm run i18n` | Fails on a text not wrapped in `t()`, without English, or English no code uses |
+| `npm run android:sync` | Build for the Android app and copy it into `android/` |
+| `npm run android:open` | Open the Android project in Android Studio (optional) |
 | `npm run gen:types` | Regenerate `src/data/database.types.ts` after a migration |
 | `npm run db:bundle` | Regenerate `supabase/dist/full_install.sql` |
 | `npm run format` | Format the code |
@@ -57,6 +64,8 @@ src/
   screens/      top-level screens   features/   their sections
   components/   design system (ui/), charts, shell and navigation
   store/ hooks/ state and data hooks      i18n/  texts and English catalog
+  platform/     the only code that talks to the Android shell (Capacitor)
+android/        Android project (Capacitor)
 supabase/       migrations, full_install.sql, email templates
 protocol/       test vectors for the board logic (the firmware must pass them)
 tools/          database tools, text checks
@@ -70,6 +79,7 @@ docs/           architecture, decisions, ESP32 protocol, setup guides
 - [Decisions](docs/DECISIONS.md) — why things are the way they are
 - [ESP32 protocol](docs/ESP32_PROTOCOL.md) — what the firmware must implement
 - [Supabase setup](docs/SUPABASE_SETUP.md) — database, sign-in, email, boards (Arabic)
+- [Android app](docs/ANDROID_BUILD.md) — install, Supabase setting, how it behaves (Arabic)
 - [Web deploy](docs/WEB_DEPLOY.md) — permanent link on Netlify (Arabic)
 - [Contributing](CONTRIBUTING.md) — rules for changing the code
 - [Changelog](CHANGELOG.md)

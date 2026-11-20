@@ -51,6 +51,8 @@ project owns the protocol they follow.
 | `src/components/` | Design-system primitives (`ui/`), shared controls, charts, shell |
 | `src/features/<area>/` | Screen sections (dashboard, logs, auth, profile, settings, users) |
 | `src/screens/` | Top-level screens that compose features |
+| `src/platform/` | **The only code that talks to the Android shell** (back button, app links, system browser); no-ops in the browser |
+| `android/` | Capacitor Android project; `npm run android:sync` copies the web build in |
 | `tests/` | `unit/`, `components/` (jsdom), `db/` (PGlite), `system/` (board ↔ DB) |
 
 ## Dependency rules
@@ -102,6 +104,16 @@ window, stores `params` → Realtime → toast; the app renders the text from
   ≥ 1024 px): sidebar and two-column screens. Inner screens (settings,
   profile…) open over the content area in a centered column; sheets become
   centered windows on wide screens.
+
+## Android app
+
+The same build runs inside a Capacitor shell. `src/platform/native.ts` wraps
+it: the back button goes through one handler stack (`lib/backStack.ts`: open
+dialog or sheet → pushed screen → home tab → background); Google sign-in opens
+in the system browser and, like email links, returns through `smartats://app`,
+where the auth store starts the session; the layout pads for the system bars
+with `env(safe-area-inset-*)`. GitHub Actions builds the APK and publishes it
+as the release of the `package.json` version.
 
 ## Quality gates
 

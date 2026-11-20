@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as authApi from "../../api/auth";
 import { getPendingInvite } from "../../lib/invite";
 import { FormError } from "./shared";
+import { isNative } from "../../platform/native";
 import { t } from "../../i18n";
 
 /** Google's "G" mark, as required on Google sign-in buttons. */
@@ -36,11 +37,10 @@ export function GoogleSignIn({ label = t("المتابعة بحساب Google") }
     setError("");
     setLoading(true);
     const { error: err } = await authApi.signInWithGoogle(getPendingInvite());
-    // On success the browser is already leaving for Google.
-    if (err !== null) {
-      setLoading(false);
-      setError(err);
-    }
+    // Web: on success the page is already leaving for Google. Android: Google
+    // opened in the phone's browser over the app; the button is usable again.
+    if (err !== null) setError(err);
+    if (err !== null || isNative()) setLoading(false);
   };
   return (
     <div className="space-y-4">

@@ -133,6 +133,15 @@
   font-feature-settings: "tnum";
 }
 
+/* System bars on phones (Android app drawn edge to edge, iOS Safari); 0 elsewhere. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar {

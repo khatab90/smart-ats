@@ -4,7 +4,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "dist-*", "coverage", "node_modules", "src/data/database.types.ts"] },
+  { ignores: ["dist", "android", "coverage", "node_modules", "src/data/database.types.ts"] },
   {
     files: ["**/*.{ts,tsx}"],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
@@ -38,6 +38,17 @@ export default tseslint.config(
             { group: ["**/api/client"], message: "Import a domain module from src/api, not the raw client." },
           ],
         },
+      ],
+    },
+  },
+  {
+    // Architecture boundary: only src/platform talks to the native shell.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/platform/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { patterns: [{ group: ["@capacitor/*"], message: "Use src/platform/native instead of Capacitor directly." }] },
       ],
     },
   },

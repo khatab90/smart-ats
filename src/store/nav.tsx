@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { pushBackHandler } from "../lib/backStack";
 
 export type Tab = "home" | "live" | "energy" | "logs" | "more";
 /** Device settings sections, each on its own screen. */
@@ -142,6 +143,26 @@ export function NavProvider({ children }: { children: ReactNode }) {
     setState(next);
     window.history.replaceState(null, "", toHash(next));
   }, []);
+
+  // Android back button (below any open dialog or sheet): close the top
+  // screen, then return to the home tab; at home the press is left to the
+  // platform (the app goes to the background).
+  useEffect(
+    () =>
+      pushBackHandler(() => {
+        const s = ref.current;
+        if (s.stack.length) {
+          back();
+          return true;
+        }
+        if (s.tab !== "home" || s.view) {
+          navigate({ tab: "home", stack: [] });
+          return true;
+        }
+        return false;
+      }),
+    [back, navigate],
+  );
 
   const value = useMemo(
     () => ({ ...state, setTab, push, back, go, setView }),

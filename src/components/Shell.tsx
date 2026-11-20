@@ -52,7 +52,8 @@ export function Logo({ size = 40, className }: { size?: number; className?: stri
 export function AppFrame({ children }: { children: ReactNode }) {
   return (
     <div dir={textDir()} className="relative flex h-dvh w-full flex-col overflow-hidden bg-canvas">
-      <div className="relative min-h-0 flex-1">{children}</div>
+      {/* Keeps content clear of the status bar and the navigation bar. */}
+      <div className="relative min-h-0 flex-1 pt-safe pb-safe">{children}</div>
       <div id="sheet-root" className="pointer-events-none absolute inset-0 z-50" />
     </div>
   );

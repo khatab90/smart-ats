@@ -5,3 +5,4 @@ supabase/dist/
 *.md
 protocol/
 *.toml
+android/
