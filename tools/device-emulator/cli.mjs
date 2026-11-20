@@ -34,7 +34,7 @@ function loadConfig() {
 }
 
 const HELP = `commands:
-  grid on|off|low|high       solar on|off|low|high      gen on|off|low|high
+  grid on|off|low|high|absent   solar …   gen …   (absent = not installed)
   load <watts>               offline <seconds>          interlock on|off
   contactor <source> stuck|ok   (simulate a contactor that will not close)
   clear                      (on-site reset of a protection lockout)
@@ -64,7 +64,7 @@ readline.createInterface({ input: process.stdin }).on("line", (line) => {
   const [a, b] = line.trim().split(/\s+/);
   const w = board.world;
   const src = a === "gen" ? "generator" : a;
-  if (SOURCES.includes(src) && ["on", "off", "low", "high"].includes(b)) w[src] = b;
+  if (SOURCES.includes(src) && ["on", "off", "low", "high", "absent"].includes(b)) w[src] = b;
   else if (a === "load" && Number(b) > 0) w.loadW = Number(b);
   else if (a === "offline") w.offlineUntil = Date.now() + (Number(b) || 40) * 1000;
   else if (a === "interlock") w.interlockWelded = b === "on";

@@ -55,12 +55,15 @@ export class EmulatedBoard {
       energyWh: { grid: 0, solar: 0, generator: 0 },
       runtime: Object.fromEntries(SOURCES.map((s) => [s, { s: 0, since: null }])),
     };
-    // Physical world, driven by CLI / tests.
+    // Physical world, driven by CLI / tests / the simulator app.
+    // Each source is "on" | "off" | "low" | "high", "absent" (not installed),
+    // or { v, f } for an exact reading.
     this.world = {
       grid: "on",
       solar: "on",
       generator: "off", // started outside the ATS
       loadW: 2200,
+      loadDrift: true, // small random walk of the load at each report
       interlockWelded: false,
       stuckOpen: new Set(),
       offlineUntil: 0,
@@ -168,13 +171,16 @@ export class EmulatedBoard {
     const c = this.cfg();
     const noise = (a) => (Math.random() - 0.5) * a;
     const p = this.world[id];
-    if (p === "off") return { v: 0, f: 0 };
+    if (p === "off" || p === "absent") return { v: 0, f: 0 };
+    if (p && typeof p === "object")
+      return { v: p.v > 0 ? p.v + noise(1) : 0, f: p.v > 0 ? p.f + noise(0.02) : 0 };
     const k = p === "low" ? 0.78 : p === "high" ? 1.14 : 1;
     const drift = id === "generator" ? 0.2 : 0; // generators run slightly fast
     return { v: c.nominal_voltage * k + noise(3), f: c.nominal_frequency + drift + noise(0.06) };
   }
 
   reasonFor(id) {
+    if (this.world[id] === "absent") return "not_installed";
     const q = this.qual[id];
     return q.qualified ? null : (q.kind ?? "no_voltage");
   }
@@ -589,10 +595,12 @@ export class EmulatedBoard {
   /** One device_ingest round-trip. Returns false while "offline" or on error. */
   async report(now = this.clock.now()) {
     if (now < this.world.offlineUntil) return false; // events stay buffered
-    this.world.loadW = Math.max(
-      300,
-      Math.min(9000, this.world.loadW + (Math.random() - 0.5) * 120),
-    );
+    if (this.world.loadDrift) {
+      this.world.loadW = Math.max(
+        300,
+        Math.min(9000, this.world.loadW + (Math.random() - 0.5) * 120),
+      );
+    }
     const body = this.payload(now);
     let res;
     try {

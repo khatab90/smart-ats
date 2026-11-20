@@ -310,3 +310,33 @@ describe("accounting", () => {
     );
   });
 });
+
+describe("simulator inputs", () => {
+  test("an exact reading outside the limits trips the source like a real one", () => {
+    const s = setup();
+    s.board.world.grid = { v: 260, f: 50 }; // above 230 V + 10 %
+    s.run(1_000);
+    assert.notEqual(s.board.active, "grid");
+    const lost = s.allEvents().find((e) => e.type === "source_lost" && e.source === "grid");
+    assert.equal(lost.data.reason, "overvoltage");
+    s.board.world.grid = { v: 231, f: 50.1 }; // back inside the recover band
+    s.run(125_000);
+    assert.equal(s.board.active, "grid");
+  });
+
+  test("a source that is not installed is reported as not_installed and never used", async () => {
+    const s = setup({ world: { generator: "absent" } });
+    s.board.world.grid = "off";
+    s.board.world.solar = "off";
+    s.run(3_000);
+    assert.equal(s.board.state, "no_source");
+    await s.board.report(s.clock.t);
+    assert.equal(s.sent.at(-1).sources.generator.reason, "not_installed");
+  });
+
+  test("with loadDrift off the reported load stays where it was set", async () => {
+    const s = setup({ world: { loadDrift: false, loadW: 1500 } });
+    for (let i = 0; i < 5; i++) await s.board.report(s.clock.t);
+    assert.ok(s.sent.every((p) => p.load.w === 1500));
+  });
+});
