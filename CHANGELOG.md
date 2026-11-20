@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.10.0 — 2026-11-20
+
+### Changed
+- **Home is shorter**: today's energy and transfer totals are gone (they are in Energy and Log), and the priority order can no longer be changed from Home, only from Device settings. In smart mode the mode card no longer shows the order.
+- **Power sources never disappear**: a source that is off stays on the list as **Off** with "No voltage", instead of vanishing.
+- **Priority screen redesigned**: the order is shown as a numbered chain ("if not available" between steps). **Change order** asks you to tap the first source, then the second; the last one places itself. Start over and Cancel are always there. Replaces drag-and-drop and arrow buttons.
+- **Every screen agrees on the board's state.** With no board on the account, Home, Monitor, Energy, Log, Device settings and Users all show the same "No device linked to your account" card with **Add device**, under each tab's own title. With a board that has never reported, Home shows what to check (power, Wi-Fi, device ID) and the other tabs show one "Waiting for the board's first data" card instead of empty charts.
+
 ## 2.9.0 — 2026-11-20
 
 Found while testing on the phone: with the phone simulator and the PC emulator both running as ATS-TEST01, the app kept flipping between "no source" and "solar".
