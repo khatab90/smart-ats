@@ -2,68 +2,84 @@
 
 Monitoring and remote-control app for a **3-source automatic transfer switch**
 — national grid, solar inverter and generator — driven by an ESP32 board.
-Arabic, right-to-left, mobile-first. React + TypeScript + Supabase.
+Arabic and English, phone, tablet and laptop. React + TypeScript + Supabase.
 
-- Live state of every installed source, power-flow view, Smart mode with
-  drag-and-drop priority and a schedule for solar, manual mode with safe
-  transfers (all sources are passive: the board never starts the generator)
-- Live readings (V, A, kW, Hz), energy history (day / week / month)
-- Transfer log, runtime hours per source with reset
-- Five notification types, users with admin / viewer roles, email invitations
+## Features
+
+- **Live status** of every installed source with an animated power-flow view, voltage, current, power and frequency.
+- **Smart mode** picks the first qualified source by priority; solar can be limited to set hours. **Manual mode** with safe, confirmed transfers. All sources are passive: the board never starts the generator.
+- **History**: energy by hour, day and month and its split by source; transfer log filtered by source and type; runtime hours per source.
+- **Protection settings** (nominal values, voltage and frequency limits, transfer timers) applied and confirmed by the board.
+- **Notifications** for outages, transfers, electrical faults, failed transfers and lost connection; each type can be muted.
+- **Users**: owner, admins and viewers per board; invitations by email; sign-in with Google or email and password.
+- Arabic or English, light, dark or automatic theme, and a layout for phones, tablets and laptops.
 
 ## Quick start
 
-Requirements: Node.js 20.19+ and a Supabase project.
+Requirements: Node.js 20.19+ (see `.nvmrc`).
 
 ```bash
 npm install
-npm run dev            # http://localhost:5173 (also on your Wi-Fi: see the "Network" URL)
+npm run dev        # http://localhost:5173 — on your Wi-Fi too: see the "Network" URL
 ```
 
-1. Set up the database once — see [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
-2. Register a board (`select public.register_device('ATS-TEST01');`) and keep the token and PIN.
-3. No board yet? Run the emulator: `npm run emulator:bundle`, then `node dist-emulator/ats-emulator.mjs`
-   with an `emulator.config.json` next to it.
-4. In the app: sign up, then **Add device** with the board ID and PIN.
+The app is already connected to its Supabase project. To use another project,
+copy `.env.example` to `.env.local`.
 
-To point the app at another Supabase project, copy `.env.example` to `.env.local`.
+**No board yet?** Run the board emulator in a second terminal. It needs
+`tools/device-emulator/emulator.config.json` (the board ID and its secret
+token; never commit it — git ignores it):
 
-**Permanent web link:** `npm run build:web`, then drop `dist/` on Netlify — step by step in
-[docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md).
+```bash
+npm run emulator   # type "help" for commands: grid off, solar low, load 2000…
+```
+
+**New Supabase project:** follow [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md)
+— run `supabase/dist/full_install.sql`, register a board, then in the app
+sign up and **Add device** with the board ID and PIN.
 
 ## Scripts
 
 | Command | Does |
 |---|---|
 | `npm run dev` | Development server |
-| `npm run build` | Type-check and build to `dist/` (relative paths: works on any host or in a Capacitor WebView) |
-| `npm run build:web` | Public build for hosting (no source maps); see [docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md) |
-| `npm test` | All tests (unit, components, database on PGlite, board ↔ database) |
-| `npm run i18n` | Fails if an Arabic text is not wrapped in `t()` or has no English in `src/i18n/en.ts` |
-| `npm run check` | Type-check + lint + i18n + tests + build — the CI gate |
-| `npm run gen:types` | Regenerate `src/data/database.types.ts` after changing a migration |
+| `npm run build` | Type-check and build to `dist/` |
+| `npm run build:web` | Public build for hosting (no source maps) — see [docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md) |
+| `npm run check` | Types + lint + texts + all tests + build — run before every commit |
+| `npm test` | All tests: unit, components, database (PGlite), board ↔ database |
+| `npm run i18n` | Fails on a text not wrapped in `t()`, without English, or English no code uses |
+| `npm run gen:types` | Regenerate `src/data/database.types.ts` after a migration |
 | `npm run db:bundle` | Regenerate `supabase/dist/full_install.sql` |
-| `npm run emulator` / `emulator:bundle` | Run / package the board emulator |
+| `npm run emulator` | Run the board emulator |
+| `npm run emulator:bundle` | Package the emulator as one file in `dist-emulator/` |
+| `npm run format` | Format the code |
+
+## Project layout
+
+```
+src/
+  api/          the only code that talks to Supabase
+  domain/       business rules (pure, unit-tested)
+  screens/      top-level screens   features/   their sections
+  components/   design system (ui/), charts, shell and navigation
+  store/ hooks/ state and data hooks      i18n/  texts and English catalog
+supabase/       migrations, full_install.sql, email templates
+protocol/       shared test vectors for the board logic
+tools/          board emulator, database tools, text checks
+tests/          unit, components, database, system
+docs/           architecture, decisions, ESP32 protocol, setup guides
+```
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md) — components, layers, data flows, quality gates
+- [Architecture](docs/ARCHITECTURE.md) — parts, layers, data flows, quality gates
 - [Decisions](docs/DECISIONS.md) — why things are the way they are
 - [ESP32 protocol](docs/ESP32_PROTOCOL.md) — what the firmware must implement
-- [Supabase setup](docs/SUPABASE_SETUP.md) — database, auth, devices, emulator (Arabic)
+- [Supabase setup](docs/SUPABASE_SETUP.md) — database, sign-in, email, boards (Arabic)
 - [Web deploy](docs/WEB_DEPLOY.md) — permanent link on Netlify (Arabic)
+- [Contributing](CONTRIBUTING.md) — rules for changing the code
 - [Changelog](CHANGELOG.md)
 
-## Texts and languages
+## License
 
-The app is written in Arabic; English is a translation. Every UI text is
-`t("النص العربي")`, and `src/i18n/en.ts` maps that Arabic text to English
-(`{0}` for values). When you add or change a text, add its English line, then
-run `npm run i18n`. Numbers are always Western in both languages.
-
-## Changing the database
-
-1. Add a new file `supabase/migrations/<timestamp>_<name>.sql` (never edit an applied one).
-2. `npm run gen:types && npm run db:bundle`
-3. Fix whatever `npm run check` reports; add a test in `tests/db/`.
-4. Run the new file once in the Supabase SQL editor.
+Private project. All rights reserved.

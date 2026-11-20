@@ -17,7 +17,7 @@ import { StatusBanners } from "../features/dashboard/StatusBanners";
 import { TodayStats } from "../features/dashboard/TodayStats";
 import { t, uiStart } from "../i18n";
 
-export function greeting() {
+function greeting() {
   const h = new Date().getHours();
   return h >= 5 && h < 12 ? t("صباح الخير") : t("مساء الخير");
 }
@@ -106,7 +106,7 @@ export function Dashboard() {
   );
 }
 
-export function DeviceBody() {
+function DeviceBody() {
   const ad = useActiveDevice();
   if (ad.loading && !ad.status) {
     return (

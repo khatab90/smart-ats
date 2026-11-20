@@ -6,7 +6,7 @@ import {
   Badge,
   Button,
   Card,
-  ConfirmSheet,
+  ConfirmDialog,
   EmptyState,
   ErrorState,
   SectionTitle,
@@ -52,7 +52,7 @@ const STATE_TYPES = [
   "controller_restarted",
 ];
 
-export const STATE_COLOR: Record<FeedState, string> = {
+const STATE_COLOR: Record<FeedState, string> = {
   grid: SOURCE_META.grid.color,
   solar: SOURCE_META.solar.color,
   generator: SOURCE_META.generator.color,
@@ -324,7 +324,7 @@ export function RuntimeLog() {
           )}
         </Card>
       </div>
-      <ConfirmSheet
+      <ConfirmDialog
         open={confirm !== null}
         onClose={() => setConfirm(null)}
         title={confirm && confirm.length > 1 ? t("تصفير جميع العدادات") : t("تصفير عداد المصدر")}
@@ -345,12 +345,12 @@ export function RuntimeLog() {
             )}
           </p>
         )}
-      </ConfirmSheet>
+      </ConfirmDialog>
     </>
   );
 }
 
-export function DayStrip({
+function DayStrip({
   timeline,
   from,
   to,

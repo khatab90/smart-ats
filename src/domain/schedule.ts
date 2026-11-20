@@ -23,7 +23,7 @@ export interface SolarSchedule {
 }
 
 export const MAX_PERIODS = 8;
-export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 /** Display order for an Iraqi week (Saturday first). */
 export const WEEK_ORDER = [6, 0, 1, 2, 3, 4, 5] as const;
 export const DAY_SHORT: Record<number, string> = {
@@ -36,7 +36,7 @@ export const DAY_SHORT: Record<number, string> = {
   6: t("سبت"),
 };
 
-export const DEFAULT_SCHEDULE: SolarSchedule = { enabled: false, periods: [] };
+const DEFAULT_SCHEDULE: SolarSchedule = { enabled: false, periods: [] };
 export const DEFAULT_PERIOD: SchedulePeriod = { days: [...ALL_DAYS], start: "08:00", end: "17:00" };
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;

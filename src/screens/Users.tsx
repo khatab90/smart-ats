@@ -15,7 +15,7 @@ import { useState } from "react";
 import {
   Button,
   Card,
-  ConfirmSheet,
+  ConfirmDialog,
   EmptyState,
   ErrorState,
   ScreenHeader,
@@ -335,7 +335,7 @@ export function Users() {
         )}
       </Sheet>
 
-      <ConfirmSheet
+      <ConfirmDialog
         open={pending !== null}
         onClose={() => setPending(null)}
         loading={busy}
@@ -376,7 +376,7 @@ export function Users() {
           {pending?.kind === "revoke" &&
             t("لن يعمل رابط الدعوة المرسل إلى {0} بعد الآن.", { 0: pending.invitation.email })}
         </p>
-      </ConfirmSheet>
+      </ConfirmDialog>
     </div>
   );
 }

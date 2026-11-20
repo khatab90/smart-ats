@@ -3,25 +3,6 @@ import { useState, type ReactNode } from "react";
 import { cn } from "../../lib/cn";
 import { t } from "../../i18n";
 
-export function ProgressBar({
-  value,
-  color,
-  className,
-}: {
-  value: number;
-  color: string;
-  className?: string;
-}) {
-  return (
-    <div className={cn("h-1.5 overflow-hidden rounded-full bg-track", className)}>
-      <div
-        className="h-full rounded-full transition-[width] duration-700"
-        style={{ width: `${Math.max(0, Math.min(100, value))}%`, background: color }}
-      />
-    </div>
-  );
-}
-
 export function EmptyState({
   icon: Icon,
   title,

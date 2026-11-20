@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.6.1 — 2026-11-20
+
+Project clean-up; no change to what the app does.
+
+### Fixed
+- `supabase/dist/full_install.sql` (the file the setup guide runs on a new Supabase project) was excluded by `.gitignore` and missing from the packages. It is now included and checked by CI.
+
+### Removed
+- Dead code: 8 unused functions and constants, the old `ConfirmSheet` name, the phone-frame shadow style, the one-off translation script `tools/i18n/wrap.mjs`, and `supabase/test_device.sql` (same command as in the setup guide).
+
+### Changed
+- Database tools moved together into `tools/db/` (`gen-types.mjs`, `bundle-migrations.mjs`).
+- README rewritten; contributor rules moved to `CONTRIBUTING.md`; architecture and decisions updated for languages and screen sizes (ADR-013 to ADR-015).
+- Added `.editorconfig` and `.nvmrc` (Node 22); CI uses it and runs the text checks; `npm run format` formats code only.
+
 ## 2.6.0 — 2026-11-20
 
 Fits every screen: phone, tablet (iPad) and laptop.

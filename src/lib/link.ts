@@ -7,7 +7,7 @@ import type { DeviceStatus } from "../data/types";
  */
 export type LinkState = "never" | "live" | "stale" | "offline";
 
-export const OFFLINE_AFTER_MS = 30_000;
+const OFFLINE_AFTER_MS = 30_000;
 
 export function classifyLink(
   status: Pick<DeviceStatus, "online" | "last_seen_at" | "interval_ms"> | null,

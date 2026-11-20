@@ -5,7 +5,7 @@ import { fmtAgo } from "../../lib/format";
 import { useActiveDevice, useNow } from "../../store/devices";
 import { t } from "../../i18n";
 
-export function SignalBars({ rssi, on }: { rssi: number | null; on: boolean }) {
+function SignalBars({ rssi, on }: { rssi: number | null; on: boolean }) {
   const level = !on || rssi === null ? 0 : rssi > -55 ? 4 : rssi > -65 ? 3 : rssi > -75 ? 2 : 1;
   return (
     <span

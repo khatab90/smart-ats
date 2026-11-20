@@ -1,2 +1,7 @@
+# Generated
 src/data/database.types.ts
 supabase/dist/
+# Hand-formatted: docs, test vectors and config keep their own layout
+*.md
+protocol/
+*.toml

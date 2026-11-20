@@ -140,7 +140,7 @@ export function StatusBanners() {
   return banners.length ? <div className="space-y-3">{banners}</div> : null;
 }
 
-export function Banner({
+function Banner({
   tone,
   icon: Icon,
   title,

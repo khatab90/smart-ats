@@ -1,5 +1,5 @@
 import { LoaderCircle, type LucideIcon } from "lucide-react";
-import { type ButtonHTMLAttributes, type ReactNode } from "react";
+import { type ButtonHTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -90,18 +90,6 @@ export function IconButton({
           {badge > 9 ? "9+" : badge}
         </span>
       ) : null}
-    </button>
-  );
-}
-
-export function TextAction({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-[13px] font-semibold text-brand-600 hover:text-brand-700"
-    >
-      {children}
     </button>
   );
 }

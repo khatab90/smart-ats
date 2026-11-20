@@ -99,3 +99,30 @@ when a period ends, the board moves to the next source or disconnects. The
 user can still switch to solar manually at any time. The board evaluates the
 schedule locally (UTC + `utc_offset_min`), so it works offline.
 
+## ADR-013 — Arabic source texts with an English catalog
+
+**Decision.** UI texts stay written in Arabic in the code and go through
+`t()`; `src/i18n/en.ts` maps each Arabic text to English. Changing the
+language reloads the app.
+
+**Why.** Arabic is the primary language, so the code reads like the screen.
+Keys that are the text itself cannot drift from what users see, and the
+`npm run i18n` check catches a missing or stale translation. A reload keeps
+module-level texts and layout direction simple and correct.
+
+## ADR-014 — Western digits only
+
+**Decision.** Numbers are shown with Western digits (12355) in both
+languages. The Arabic-Indic digits option of 2.3.0 was removed.
+
+**Why.** The owner found Arabic-Indic digits hard to read in readings and
+times; one digit system also keeps readings, IDs and inputs consistent.
+
+## ADR-015 — One responsive code base for phone, tablet and laptop
+
+**Decision.** The same screens adapt with breakpoints (bottom bar → side
+rail → sidebar; one column → two columns) instead of separate phone and
+desktop apps.
+
+**Why.** One code base to test and maintain; the Android app later wraps the
+same build.

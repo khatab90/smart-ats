@@ -6,9 +6,9 @@
 // Columns with an `IN (...)` check constraint become string-literal unions,
 // so a typo like "smrt" is a compile error in the app.
 import { writeFileSync } from "node:fs";
-import { bootDatabase } from "./db/pglite.mjs";
+import { bootDatabase } from "./pglite.mjs";
 
-const OUT = new URL("../src/data/database.types.ts", import.meta.url);
+const OUT = new URL("../../src/data/database.types.ts", import.meta.url);
 const db = await bootDatabase();
 const q = async (sql) => (await db.query(sql)).rows;
 

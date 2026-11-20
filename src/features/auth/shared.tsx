@@ -14,7 +14,7 @@ export function FormError({ msg }: { msg: string }) {
   );
 }
 
-export function useCooldown() {
+function useCooldown() {
   const [cooldown, setCooldown] = useState(0);
   useEffect(() => {
     if (cooldown <= 0) return;

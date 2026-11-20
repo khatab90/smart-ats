@@ -39,7 +39,7 @@ export function AuthHero({ compact }: { compact: boolean }) {
   );
 }
 
-export function FlowIllustration() {
+function FlowIllustration() {
   const nodes = [
     { x: 40, y: 20, c: "#5b9bff", l: t("الشبكة") },
     { x: 40, y: 62, c: "#f5c542", l: t("الشمسية") },

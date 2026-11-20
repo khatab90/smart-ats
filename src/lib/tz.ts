@@ -44,7 +44,7 @@ export function isValidTimeZone(tz: string) {
 }
 
 /** Offset (local - UTC) in ms at instant t. */
-export function tzOffsetMs(t: number, tz: string) {
+function tzOffsetMs(t: number, tz: string) {
   const p = parts(t, tz);
   return (
     Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(t / 1000) * 1000
@@ -64,10 +64,6 @@ export function startOfDayInTz(t: number, tz: string) {
 export function addDaysInTz(t: number, n: number, tz: string) {
   const start = startOfDayInTz(t, tz);
   return startOfDayInTz(start + n * 86_400_000 + 12 * 3_600_000, tz);
-}
-
-export function hourInTz(t: number, tz: string) {
-  return parts(t, tz).hour;
 }
 
 export function dayOfMonthInTz(t: number, tz: string) {

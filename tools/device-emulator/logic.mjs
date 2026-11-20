@@ -29,7 +29,7 @@ export function classify(reading, s) {
 }
 
 /** Trip delay for a fault kind, in ms. */
-export function tripDelayMs(kind, s) {
+function tripDelayMs(kind, s) {
   if (kind === "undervoltage") return s.uv_delay_ms;
   if (kind === "overvoltage") return s.ov_delay_ms;
   if (kind === "underfrequency" || kind === "overfrequency") return s.f_delay_ms;

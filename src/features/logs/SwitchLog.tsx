@@ -12,7 +12,7 @@ import { useActiveDevice, useNow } from "../../store/devices";
 import { StatTile, num } from "./StatTile";
 import { t, uiStart } from "../../i18n";
 
-export const SWITCH_TYPES = [
+const SWITCH_TYPES = [
   "transfer_completed",
   "transfer_failed",
   "no_source_started",

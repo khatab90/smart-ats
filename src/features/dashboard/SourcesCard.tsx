@@ -7,15 +7,14 @@ import { fmtReading } from "../../lib/format";
 import { useActiveDevice } from "../../store/devices";
 import { t, uiStart } from "../../i18n";
 
-export const fmtVf = (r: SourceReport | undefined) =>
-  `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
+const fmtVf = (r: SourceReport | undefined) => `${fmtReading(r?.v)} V • ${fmtReading(r?.f, 1)} Hz`;
 
 /**
  * Sources worth showing right now: every installed source when nothing
  * feeds the load (each with its reason), otherwise the ones delivering
  * power or qualifying.
  */
-export function visibleSources(status: DeviceStatus | null): SourceId[] {
+function visibleSources(status: DeviceStatus | null): SourceId[] {
   const noSource = status?.system_state === "no_source";
   return installedSources(status).filter((id) => {
     const r = status?.sources?.[id];

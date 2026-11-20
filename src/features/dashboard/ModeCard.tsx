@@ -2,7 +2,7 @@ import { ArrowLeftRight, BrainCircuit, Clock3, Hand, ShieldCheck, Zap } from "lu
 import { priorityText } from "../settings/summaries";
 import { useState } from "react";
 import { CommandProgress } from "../../components/control";
-import { Card, ConfirmSheet, Segmented, SourceIcon } from "../../components/ui";
+import { Card, ConfirmDialog, Segmented, SourceIcon } from "../../components/ui";
 import { MODE_LABEL, SOURCE_META, SOURCE_ORDER } from "../../data/meta";
 import type { SourceId, SystemMode } from "../../data/types";
 import { useCommand } from "../../hooks/useCommand";
@@ -120,7 +120,7 @@ export function ModeCard() {
         </div>
       )}
 
-      <ConfirmSheet
+      <ConfirmDialog
         open={confirm?.kind === "mode"}
         onClose={() => setConfirm(null)}
         title={
@@ -165,9 +165,9 @@ export function ModeCard() {
             )}
           </p>
         )}
-      </ConfirmSheet>
+      </ConfirmDialog>
 
-      <ConfirmSheet
+      <ConfirmDialog
         open={confirm?.kind === "source"}
         onClose={() => setConfirm(null)}
         title={t("تأكيد التحويل اليدوي")}
@@ -211,7 +211,7 @@ export function ModeCard() {
             </ul>
           </div>
         )}
-      </ConfirmSheet>
+      </ConfirmDialog>
     </Card>
   );
 }

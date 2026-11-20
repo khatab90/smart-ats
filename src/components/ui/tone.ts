@@ -8,9 +8,3 @@ export const TONE: Record<Tone, { text: string; bg: string; dot: string }> = {
   brand: { text: "text-white", bg: "bg-brand-800", dot: "bg-white" },
   neutral: { text: "text-ink-2", bg: "bg-canvas", dot: "bg-faint" },
 };
-
-export const toneText = (t: Tone) => TONE[t].text;
-
-export const toneBg = (t: Tone) => TONE[t].bg;
-
-export const toneDot = (t: Tone) => TONE[t].dot;

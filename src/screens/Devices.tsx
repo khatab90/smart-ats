@@ -4,7 +4,7 @@ import {
   Badge,
   Button,
   Card,
-  ConfirmSheet,
+  ConfirmDialog,
   EmptyState,
   ErrorState,
   Field,
@@ -278,7 +278,7 @@ export function Devices() {
         )}
       </Sheet>
 
-      <ConfirmSheet
+      <ConfirmDialog
         open={confirm !== null}
         onClose={() => setConfirm(null)}
         title={confirm?.kind === "release" ? t("إزالة الجهاز") : t("مغادرة الجهاز")}
@@ -294,7 +294,7 @@ export function Devices() {
               )
             : t("ستفقد الوصول إلى هذا الجهاز وإشعاراته.")}
         </p>
-      </ConfirmSheet>
+      </ConfirmDialog>
     </div>
   );
 }

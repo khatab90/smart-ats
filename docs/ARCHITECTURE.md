@@ -35,17 +35,18 @@ grid, solar inverter, generator). Three parts, one source of truth each:
 | `protocol/logic-vectors.json` | Shared test vectors for the ATS decision logic (JS + firmware) |
 | `docs/ESP32_PROTOCOL.md` | Board ↔ server protocol |
 | `tools/device-emulator/` | Reference board: `logic.mjs` (pure rules), `board.mjs` (state machine), `cli.mjs`, `transport-supabase.mjs` |
-| `tools/db/pglite.mjs` | Postgres-in-WASM with the real migrations (tests, type generation) |
-| `tools/gen-db-types.mjs` | Generates `src/data/database.types.ts` from the migrations |
+| `tools/db/` | `pglite.mjs` (Postgres-in-WASM with the real migrations, for tests), `gen-types.mjs` (generates `src/data/database.types.ts`), `bundle-migrations.mjs` (writes `full_install.sql`) |
+| `tools/i18n/` | Text checks: every Arabic text goes through `t()` and has an English line |
 | `src/config/` | Environment (Supabase URL / anon key / app environment) |
-| `src/api/` | **The only code that talks to Supabase.** Typed functions returning `Result<T>` with user-facing Arabic errors |
+| `src/api/` | **The only code that talks to Supabase.** Typed functions returning `Result<T>` with user-facing errors |
+| `src/i18n/` | `t()`, current language and direction; `en.ts` maps each Arabic text to English |
 | `src/data/` | Generated DB types, derived domain types, display metadata |
 | `src/domain/` | Pure business rules: sources (installed, feeding, priority), settings schema, notification text |
 | `src/lib/` | Pure helpers: time zones, formatting, series, timeline, link state, storage, errors |
 | `src/store/` | React contexts: auth, devices (meta + live split), notifications, navigation, toasts |
 | `src/hooks/` | Data hooks (telemetry window, events, energy, members) and the command lifecycle |
 | `src/components/` | Design-system primitives (`ui/`), shared controls, charts, shell |
-| `src/features/<area>/` | Screen sections (dashboard, logs, auth, profile, users) |
+| `src/features/<area>/` | Screen sections (dashboard, logs, auth, profile, settings, users) |
 | `src/screens/` | Top-level screens that compose features |
 | `tests/` | `unit/`, `components/` (jsdom), `db/` (PGlite), `system/` (board ↔ DB) |
 
@@ -87,14 +88,27 @@ maps it to one of five types, applies each member's preferences and a dedupe
 window, stores `params` → Realtime → toast; the app renders the text from
 `params` (`domain/notifications.ts`).
 
+## Languages and screens
+
+- **Arabic and English.** Arabic is the source text: every UI string is
+  `t("…")`, and `src/i18n/en.ts` holds its English. The language is read from
+  local storage before the first render (which also sets `<html lang dir>`);
+  changing it reloads the app. Numbers are always Western digits.
+- **One layout for every screen size.** Phones: bottom bar, one column.
+  Tablets (`md`, ≥ 768 px): side rail, one centered column. Laptops (`lg`,
+  ≥ 1024 px): sidebar and two-column screens. Inner screens (settings,
+  profile…) open over the content area in a centered column; sheets become
+  centered windows on wide screens.
+
 ## Quality gates
 
-`npm run check` = `tsc` + ESLint + all tests + production build. CI also fails
-when the generated DB types or the bundled install SQL are out of date.
+`npm run check` = `tsc` + ESLint + text checks + all tests + production build.
+CI also fails when the generated DB types or the bundled install SQL are out
+of date.
 
 | Suite | What it proves |
 |---|---|
-| `tests/unit` | Domain rules, time zones, timeline, navigation, storage |
+| `tests/unit` | Domain rules, time zones, timeline, navigation, storage, translations, settings summaries |
 | `tests/components` | Controls render and behave (priority list, link badge, command progress) |
 | `tests/db` | RLS, every RPC, ingestion robustness, retention, privileges, settings schema ↔ CHECK constraints |
 | `tools/device-emulator/*.test.mjs` | Shared logic vectors; board state machine (protection, close verification, lockout, de-dup) |

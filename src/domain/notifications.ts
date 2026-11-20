@@ -5,7 +5,7 @@
  * owns the wording, so changing it never needs a database migration.
  */
 import { SOURCE_META } from "../data/meta";
-import type { NotificationRow, NotificationType, SourceId } from "../data/types";
+import type { NotificationRow, SourceId } from "../data/types";
 import { t } from "../i18n";
 
 const src = (id: SourceId | null | undefined) => (id ? SOURCE_META[id].name : t("مصدر غير معروف"));
@@ -91,6 +91,3 @@ export function notificationText(n: Pick<NotificationRow, "type" | "title" | "bo
       return { title: n.title, body: n.body };
   }
 }
-
-/** Types that interrupt power or protection; muting them shows a warning. */
-export const CRITICAL_TYPES: readonly NotificationType[] = ["source_outage", "transfer_failed"];

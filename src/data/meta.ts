@@ -51,7 +51,7 @@ export const UNAVAILABLE_REASON: Record<string, string> = {
 };
 
 /** Transfer reasons reported by the board in event.data.reason. */
-export const TRANSFER_REASON: Record<string, string> = {
+const TRANSFER_REASON: Record<string, string> = {
   source_lost: t("انقطاع المصدر"),
   no_voltage: t("انقطاع الجهد"),
   source_restored: t("عودة مصدر بعد انقطاع كلي"),

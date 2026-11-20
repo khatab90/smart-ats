@@ -147,6 +147,3 @@ export function ConfirmDialog({
   );
   return host ? createPortal(node, host) : node;
 }
-
-/** Kept for existing callers; every confirmation is now a centered dialog. */
-export const ConfirmSheet = ConfirmDialog;

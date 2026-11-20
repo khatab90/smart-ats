@@ -161,13 +161,6 @@
     0 6px 18px -8px rgba(16, 24, 40, 0.1);
 }
 
-@utility phone-shadow {
-  box-shadow:
-    0 0 0 10px #0b1526,
-    0 0 0 11px #22324d,
-    0 40px 90px -20px rgba(5, 17, 36, 0.55);
-}
-
 @keyframes flow {
   to {
     stroke-dashoffset: -24;
