@@ -2,12 +2,13 @@ import { MailPlus, TriangleAlert, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ROLE_META } from "../../data/meta";
 import { pushBackHandler } from "../../lib/backStack";
-import { clearPendingInvite, usePendingInvite } from "../../lib/invite";
+import { clearPendingInvite, usePendingInvite } from "../../store/invite";
 import { AuthLayout } from "./AuthLayout";
 import { Forgot } from "./Forgot";
 import { Login } from "./Login";
 import { Signup } from "./Signup";
-import { sameEmail, useInvitePreview } from "./useInvitePreview";
+import { sameEmail } from "../../domain/email";
+import { useInvitePreview } from "./useInvitePreview";
 import { t, uiStart } from "../../i18n";
 
 export type View = "login" | "signup" | "forgot";

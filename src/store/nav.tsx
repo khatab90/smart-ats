@@ -25,7 +25,7 @@ export const SETTINGS_SECTIONS = [
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 
 /** Profile sections, each on its own screen. */
-export const PROFILE_SECTIONS = ["name", "email", "phone", "password"] as const;
+export const PROFILE_SECTIONS = ["name", "email", "password"] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 
 export type Route =

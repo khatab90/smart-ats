@@ -14,10 +14,6 @@ export const EN: Record<string, string> = {
   "إعادة التحقق": "Check again",
   "تسجيل الخروج": "Sign out",
   "كلمة المرور الحالية غير صحيحة": "Current password is incorrect",
-  "تتوفر نسخة أحدث من التطبيق": "A newer version of the app is available",
-  "حُدّث التطبيق بعد فتح هذه الصفحة. حمّل النسخة الجديدة للمتابعة.":
-    "The app was updated after this page was opened. Load the new version to continue.",
-  "تحميل النسخة الجديدة": "Load the new version",
   "تعذر عرض هذه الشاشة": "This screen couldn't be displayed",
   "حدث خطأ غير متوقع أثناء العرض. يمكنك إعادة المحاولة.":
     "An unexpected error occurred while displaying it. You can try again.",
@@ -235,8 +231,6 @@ export const EN: Record<string, string> = {
     "Create your account, then add your Smart ATS device.",
   "إنشاء حساب بـ Google": "Sign up with Google",
   "الاسم الكامل": "Full name",
-  "يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب. يمكنك إضافة رقم الهاتف والتحقق منه لاحقاً من الملف الشخصي.":
-    "A confirmation link is sent to this address before the account is activated. You can add and verify a phone number later in your profile.",
   "8 أحرف على الأقل": "At least 8 characters",
   ضعيفة: "Weak",
   متوسطة: "Medium",
@@ -434,21 +428,6 @@ export const EN: Record<string, string> = {
   "تغيير كلمة المرور": "Change password",
   "كلمة المرور الحالية": "Current password",
   "تحديث كلمة المرور": "Update password",
-  "أدخل الرقم بالصيغة الدولية: + ثم رمز الدولة ثم الرقم بدون مسافات":
-    "Enter the number in international format: + then the country code then the number, without spaces",
-  "تم التحقق من رقم الهاتف وحفظه": "Phone number verified and saved",
-  "رقم الهاتف": "Phone number",
-  "رقم موثّق:": "Verified number:",
-  "لا يوجد رقم موثّق": "No verified number",
-  "رقم جديد": "New number",
-  "+ رمز الدولة ثم الرقم": "+ country code then number",
-  "يُرسل رمز تحقق برسالة SMS، ولا يُعتمد الرقم قبل إدخاله.":
-    "A verification code is sent by SMS; the number isn't saved until you enter it.",
-  "إرسال رمز التحقق": "Send verification code",
-  "رمز التحقق": "Verification code",
-  "تحقق واحفظ": "Verify and save",
-  "أدخل الرمز المرسل إلى": "Enter the code sent to",
-  الرمز: "Code",
   المظهر: "Appearance",
   تلقائي: "Automatic",
   فاتح: "Light",
@@ -539,8 +518,6 @@ export const EN: Record<string, string> = {
   "كلمة المرور قصيرة جداً.": "The password is too short.",
   "طلبات كثيرة خلال وقت قصير. انتظر قليلاً ثم أعد المحاولة.":
     "Too many requests in a short time. Wait a moment and try again.",
-  "التحقق من رقم الهاتف عبر SMS غير مفعّل في الخادم بعد.":
-    "Phone verification by SMS isn't enabled on the server yet.",
   "الرمز غير صحيح أو انتهت صلاحيته.": "The code is incorrect or has expired.",
   "كلمة المرور الجديدة يجب أن تختلف عن الحالية.":
     "The new password must be different from the current one.",
@@ -702,7 +679,6 @@ export const EN: Record<string, string> = {
   "إعدادات الجهاز": "Device settings",
   الحساب: "Account",
   "الملف الشخصي": "Profile",
-  "الاسم والبريد والهاتف وكلمة المرور": "Name, email, phone and password",
   "المستخدمون والصلاحيات": "Users & roles",
   "المسؤولون والمشاهدون والدعوات": "Admins, viewers and invitations",
   "الانقطاع والتحويل والخلل الكهربائي والاتصال":
@@ -867,4 +843,7 @@ export const EN: Record<string, string> = {
   "؛ لن تُقبل بهذا البريد.": "; it can't be accepted with this email.",
   "أنت تختار المصدر يدوياً • يعود للذكي خلال {0} د":
     "You choose the source • back to smart in {0} min",
+  "يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب.":
+    "A confirmation link is sent to this email before the account is activated.",
+  "الاسم والبريد وكلمة المرور": "Name, email and password",
 };

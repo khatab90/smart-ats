@@ -6,7 +6,7 @@ import { t } from "../../i18n";
 import type { ThemePref } from "../../lib/prefs";
 import { usePrefs } from "../../store/prefs";
 
-/** Theme and language for this phone or browser (not the account). */
+/** Theme and language for this phone (not the account). */
 const LANG_NAME: Record<Lang, string> = { ar: "العربية", en: "English" };
 /** Said in the new language too, so the choice is clear to a reader of either. */
 const RELOAD_IN: Record<Lang, string> = {

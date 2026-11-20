@@ -46,7 +46,8 @@ export function Logo({ size = 40, className }: { size?: number; className?: stri
 }
 
 /**
- * The app fills the whole screen on every device: phone, tablet or laptop.
+ * The app fills the whole screen on every device: phones (portrait or
+ * landscape), foldables and tablets.
  * Sheets and dialogs mount in #sheet-root, above everything.
  */
 export function AppFrame({ children }: { children: ReactNode }) {
@@ -105,26 +106,27 @@ export function BottomNav() {
 }
 
 /**
- * Tablets: a rail of icons with short labels. Laptops: a sidebar with the
- * app name, full labels and the signed-in user.
+ * Phones in landscape and tablets: a rail of icons with short labels.
+ * Large tablets in landscape (lg): a sidebar with the app name, full labels
+ * and the signed-in user. Short screens get a compact rail.
  */
 export function SideNav({ footer }: { footer?: ReactNode }) {
   const { tab, setTab } = useNav();
   return (
     <nav
       aria-label={t("التنقل الرئيسي")}
-      className="hidden w-[92px] shrink-0 flex-col border-e border-line bg-surface px-3 pt-6 pb-4 md:flex lg:w-[260px] lg:px-4"
+      className="no-scrollbar hidden w-[92px] shrink-0 flex-col overflow-y-auto border-e border-line bg-surface px-3 pt-6 pb-4 md:flex lg:w-[260px] lg:px-4 short:w-[76px] short:pt-3 short:pb-3"
     >
       <div className="flex items-center justify-center gap-3 lg:justify-start lg:px-2">
-        <Logo size={42} />
-        <div className="hidden min-w-0 lg:block">
+        <Logo size={42} className="short:hidden" />
+        <div className="hidden min-w-0 lg:block short:hidden">
           <p className="text-[17px] leading-tight font-bold tracking-tight text-ink" dir="ltr">
             Smart ATS
           </p>
           <p className="text-[11px] leading-4 text-muted">{t("نظام التحويل التلقائي الذكي")}</p>
         </div>
       </div>
-      <div className="mt-8 flex flex-col gap-1.5">
+      <div className="mt-8 flex flex-col gap-1.5 short:mt-0 short:gap-1">
         {TABS.map((item) => {
           const active = tab === item.id;
           return (
@@ -134,19 +136,21 @@ export function SideNav({ footer }: { footer?: ReactNode }) {
               onClick={() => setTab(item.id)}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 transition lg:flex-row lg:gap-3 lg:px-3.5 lg:py-3",
+                "flex flex-col items-center gap-1 rounded-2xl px-2 py-2.5 transition lg:flex-row lg:gap-3 lg:px-3.5 lg:py-3 short:py-1.5 short:lg:flex-col short:lg:gap-0.5 short:lg:px-2 short:lg:py-1.5",
                 active
                   ? "bg-brand-800 text-white shadow-[0_8px_20px_-10px_rgba(10,31,61,0.7)]"
                   : "text-muted hover:bg-canvas hover:text-ink",
               )}
             >
               <item.icon className="size-5 shrink-0" strokeWidth={active ? 2.1 : 1.8} />
-              <span className="text-[11px] font-semibold lg:text-[14px]">{item.label}</span>
+              <span className="text-[11px] font-semibold lg:text-[14px] short:text-[10px] short:lg:text-[10px]">
+                {item.label}
+              </span>
             </button>
           );
         })}
       </div>
-      {footer && <div className="mt-auto">{footer}</div>}
+      {footer && <div className="mt-auto pt-3 short:hidden">{footer}</div>}
     </nav>
   );
 }

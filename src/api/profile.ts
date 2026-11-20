@@ -3,7 +3,7 @@ import { run } from "./result";
 
 /** Raw variant for schema detection at startup (needs the error object). */
 export const probeProfile = (userId: string) =>
-  supabase.from("profiles").select("id, email, phone, full_name").eq("id", userId).maybeSingle();
+  supabase.from("profiles").select("id, email, full_name").eq("id", userId).maybeSingle();
 
 export async function updateName(userId: string, fullName: string) {
   const r = await run(

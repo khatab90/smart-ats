@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { previewInvitation, type InvitationPreview } from "../../api/members";
-import { clearPendingInvite, usePendingInvite } from "../../lib/invite";
+import { clearPendingInvite, usePendingInvite } from "../../store/invite";
 
 /**
  * The invitation this phone opened a link for, as the sign-in screen needs
@@ -24,7 +24,3 @@ export function useInvitePreview(): InvitationPreview | null {
   }, [token]);
   return token && preview?.token === token ? preview.info : null;
 }
-
-/** Same address, ignoring case and spaces. */
-export const sameEmail = (a: string, b: string) =>
-  a.trim().toLowerCase() === b.trim().toLowerCase();

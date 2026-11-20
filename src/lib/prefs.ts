@@ -27,12 +27,9 @@ export function systemPrefersDark(): boolean {
   }
 }
 
-/** Sets the theme on <html> (CSS tokens follow it) and the browser bar colour. */
+/** Sets the theme on <html>; the CSS tokens follow it. */
 export function applyTheme(theme: "light" | "dark") {
   document.documentElement.dataset.theme = theme;
-  document
-    .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", theme === "dark" ? "#0b1220" : "#0a1f3d");
 }
 
 /** Called once in main.tsx, before React renders, so there is no flash. */

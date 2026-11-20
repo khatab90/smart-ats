@@ -1,6 +1,4 @@
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export const PHONE_RE = /^\+[1-9]\d{7,14}$/;
+export { EMAIL_RE } from "../../domain/email";
 
 export function Msg({ text, tone }: { text: string; tone: "error" | "ok" }) {
   return (

@@ -86,7 +86,7 @@ export function More() {
             <Row
               icon={UserRound}
               title={t("الملف الشخصي")}
-              subtitle={t("الاسم والبريد والهاتف وكلمة المرور")}
+              subtitle={t("الاسم والبريد وكلمة المرور")}
               onClick={() => push("profile")}
             />
             {device && (

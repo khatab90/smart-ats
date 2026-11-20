@@ -2,8 +2,9 @@ import type { ReactNode } from "react";
 import { AuthHero } from "./AuthHero";
 
 /**
- * Sign-in screens. Phones: brand header above the form. Tablets: the same,
- * with the form in a centered column. Laptops: brand panel beside the form.
+ * Sign-in screens. Phones: brand header above the form (just the name on
+ * short screens). Tablets: the same, with the form in a centered column.
+ * Large tablets in landscape: brand panel beside the form.
  */
 export function AuthLayout({
   compact,

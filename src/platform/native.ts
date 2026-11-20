@@ -3,9 +3,8 @@ import { Browser } from "@capacitor/browser";
 import { Capacitor } from "@capacitor/core";
 
 /**
- * The only module that talks to the native shell (Capacitor). Everything here
- * is a no-op in the browser, so the same build runs on the web and inside
- * the Android app.
+ * The only module that talks to the native shell (Capacitor). Outside the
+ * app (unit tests, the development preview) everything here is a no-op.
  */
 
 export const isNative = () => Capacitor.isNativePlatform();
@@ -57,7 +56,7 @@ export function onAppLink(fn: (url: string) => void): Unsubscribe {
   };
 }
 
-/** The app (or browser tab) came back to the foreground. */
+/** The app came back to the foreground. */
 export function onAppResume(fn: () => void): Unsubscribe {
   const onVisibility = () => {
     if (document.visibilityState === "visible") fn();

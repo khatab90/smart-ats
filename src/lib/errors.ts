@@ -40,10 +40,6 @@ const AUTH: [RegExp, string][] = [
     /rate limit|too many requests|security purposes/i,
     t("طلبات كثيرة خلال وقت قصير. انتظر قليلاً ثم أعد المحاولة."),
   ],
-  [
-    /phone.*(disabled|provider)|unsupported phone provider|sms/i,
-    t("التحقق من رقم الهاتف عبر SMS غير مفعّل في الخادم بعد."),
-  ],
   [/token has expired|otp.*(expired|invalid)|invalid.*otp/i, t("الرمز غير صحيح أو انتهت صلاحيته.")],
   [/same.*password|different from the old/i, t("كلمة المرور الجديدة يجب أن تختلف عن الحالية.")],
   [/check constraint/i, t("إحدى القيم خارج النطاق المسموح.")],

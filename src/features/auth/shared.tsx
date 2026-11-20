@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/ui";
 import { t } from "../../i18n";
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export { EMAIL_RE } from "../../domain/email";
 
 export function FormError({ msg }: { msg: string }) {
   if (!msg) return null;

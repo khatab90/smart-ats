@@ -1,9 +1,9 @@
 # Smart ATS
 
-Monitoring and remote-control app for a **3-source automatic transfer switch**
-— national grid, solar inverter and generator — driven by an ESP32 board.
-Arabic and English, phone, tablet and laptop. React + TypeScript + Supabase,
-with an **Android app** built from the same code (Capacitor).
+**Android app** for monitoring and controlling a **3-source automatic transfer
+switch** — national grid, solar inverter and generator — driven by an ESP32
+board. Arabic and English; phones (portrait and landscape), foldables and
+tablets. React + TypeScript inside a Capacitor shell, Supabase backend.
 
 ## Features
 
@@ -13,23 +13,26 @@ with an **Android app** built from the same code (Capacitor).
 - **Protection settings** (nominal values, voltage and frequency limits, transfer timers) applied and confirmed by the board.
 - **Notifications** for outages, transfers, electrical faults, failed transfers and lost connection; each type can be muted.
 - **Users**: owner, admins and viewers per board; invitations by email; sign-in with Google or email and password.
-- Arabic or English, light, dark or automatic theme, and a layout for phones, tablets and laptops.
+- Arabic or English, light, dark or automatic theme; layouts for every screen size, from a 320 px phone to a tablet in landscape.
 
 ## Quick start
 
 Requirements: Node.js 20.19+ (see `.nvmrc`).
 
+**Install:** every push to `main` on GitHub builds `smart-ats.apk` and
+publishes it under **Releases** — see [docs/ANDROID_BUILD.md](docs/ANDROID_BUILD.md)
+(one Supabase setting is needed for Google sign-in and email links).
+
+**Develop:**
+
 ```bash
 npm install
-npm run dev        # http://localhost:5173 — on your Wi-Fi too: see the "Network" URL
+npm run dev        # development preview of the app's screens
+npm run check      # everything CI checks
 ```
 
 The app is already connected to its Supabase project. To use another project,
 copy `.env.example` to `.env.local`.
-
-**Android app:** every push to `main` on GitHub builds `smart-ats.apk` and
-publishes it under **Releases** — see [docs/ANDROID_BUILD.md](docs/ANDROID_BUILD.md)
-(one Supabase setting is needed for Google sign-in and email links).
 
 **No board yet?** Use the separate **smart-ats-simulator** project: a phone
 app (and a PC emulator) that plays the board against the same server, with
@@ -43,9 +46,8 @@ sign up and **Add device** with the board ID and PIN.
 
 | Command | Does |
 |---|---|
-| `npm run dev` | Development server |
-| `npm run build` | Type-check and build to `dist/` |
-| `npm run build:web` | Public build for hosting (no source maps) — see [docs/WEB_DEPLOY.md](docs/WEB_DEPLOY.md) |
+| `npm run dev` | Development preview of the app's screens (live reload) |
+| `npm run build` | Type-check and bundle the screens into `dist/` |
 | `npm run check` | Types + lint + texts + all tests + build — run before every commit |
 | `npm test` | All tests: unit, components, database (PGlite), board ↔ database |
 | `npm run i18n` | Fails on a text not wrapped in `t()`, without English, or English no code uses |
@@ -59,12 +61,11 @@ sign up and **Add device** with the board ID and PIN.
 
 ```
 src/
-  api/          the only code that talks to Supabase
-  domain/       business rules (pure, unit-tested)
-  screens/      top-level screens   features/   their sections
-  components/   design system (ui/), charts, shell and navigation
-  store/ hooks/ state and data hooks      i18n/  texts and English catalog
-  platform/     the only code that talks to the Android shell (Capacitor)
+  screens/      one file per screen          features/   sections of screens
+  components/   ui/ design system; shell, charts, shared controls
+  store/ hooks/ app state and data hooks     api/        the only Supabase code
+  domain/ lib/  pure rules and helpers       data/       DB types and metadata
+  i18n/         texts and English catalog    platform/   the only Capacitor code
 android/        Android project (Capacitor)
 supabase/       migrations, full_install.sql, email templates
 protocol/       test vectors for the board logic (the firmware must pass them)
@@ -80,7 +81,6 @@ docs/           architecture, decisions, ESP32 protocol, setup guides
 - [ESP32 protocol](docs/ESP32_PROTOCOL.md) — what the firmware must implement
 - [Supabase setup](docs/SUPABASE_SETUP.md) — database, sign-in, email, boards (Arabic)
 - [Android app](docs/ANDROID_BUILD.md) — install, Supabase setting, how it behaves (Arabic)
-- [Web deploy](docs/WEB_DEPLOY.md) — permanent link on Netlify (Arabic)
 - [Contributing](CONTRIBUTING.md) — rules for changing the code
 - [Changelog](CHANGELOG.md)
 

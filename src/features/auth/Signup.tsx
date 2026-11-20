@@ -87,9 +87,7 @@ export function Signup({
         value={form.email}
         onChange={set("email")}
         autoComplete="email"
-        hint={t(
-          "يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب. يمكنك إضافة رقم الهاتف والتحقق منه لاحقاً من الملف الشخصي.",
-        )}
+        hint={t("يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب.")}
       />
       <InviteEmailWarning email={form.email} inviteEmail={inviteEmail} />
       <div>

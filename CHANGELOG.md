@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.11.0 — 2026-11-20
+
+The project is now an Android app only, with no phone numbers and a stricter structure.
+
+### Removed
+- **Web version**: Netlify files, security headers and robots for hosting, the web deploy guide, the "newer version available" reload, the web sign-in redirect and `?invite=` page links. Every email link and the Google sign-in return to the app through `smartats://app`.
+- **Phone numbers**, everywhere: the profile item and its SMS screen, the members list and the database column (migration 6, `drop_phone`).
+
+### Changed
+- **Loading placeholders only when something is really loading**: data fetched once is kept for the session (cleared when the account changes), so opening a screen again shows it at once and refreshes quietly; a placeholder appears only if a load takes longer than 300 ms.
+- **Every screen size**: phones in landscape and split screen get a compact side rail (all five tabs fit) and a short sign-in header; checked from a 320 px phone to a tablet in landscape.
+- **Structure enforced by ESLint**: `domain/` and `lib/` are pure (no React, nothing from upper layers), `components/ui` is app-agnostic, features never import screens. The invitation store moved from `lib/` to `store/`; email rules live once in `domain/email.ts`.
+- Docs updated for app-only (README, architecture, decisions ADR-019, Android and Supabase guides).
+
 ## 2.10.1 — 2026-11-20
 
 ### Fixed

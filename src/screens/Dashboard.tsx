@@ -118,7 +118,7 @@ function DeviceBody() {
     );
   }
   if (awaiting) return <WaitingForBoard />;
-  // Phones: one column in reading order. Laptops: two columns — what is
+  // Phones: one column in reading order. Large tablets in landscape: two columns — what is
   // happening (hero, sources) and what you control (mode, board). Today's
   // totals live in Energy and Log, the priority order in Device settings.
   return (

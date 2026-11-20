@@ -5,7 +5,7 @@ import { AppFrame, BottomNav, Logo, SideNav, ToastHost } from "./components/Shel
 import { initialOf } from "./lib/format";
 import { Skeleton } from "./components/ui";
 import { dispatchBack } from "./lib/backStack";
-import { usePendingInvite } from "./lib/invite";
+import { usePendingInvite } from "./store/invite";
 import { moveToBackground, onHardwareBack } from "./platform/native";
 import { AuthFlow } from "./features/auth/AuthFlow";
 import { RecoveryScreen } from "./features/auth/RecoveryScreen";
@@ -49,7 +49,7 @@ const AddDevice = lazy(() =>
   })),
 );
 
-export default function App({ linkError = null }: { linkError?: string | null }) {
+export default function App() {
   // Android back button: the top-most handler (dialog, sheet, screen, tab)
   // wins; with nothing left to close, the app goes to the background.
   useEffect(
@@ -62,7 +62,7 @@ export default function App({ linkError = null }: { linkError?: string | null })
   return (
     <PrefsProvider>
       <ToastProvider>
-        <AuthProvider initialLinkError={linkError}>
+        <AuthProvider>
           <AppFrame>
             <Root />
           </AppFrame>
@@ -76,7 +76,10 @@ function Splash() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4">
       <Logo size={56} />
-      <LoaderCircle className="size-5 animate-spin text-brand-600" />
+      {/* Only if starting takes a while (normally the session is read at once). */}
+      <span className="appear-late">
+        <LoaderCircle className="size-5 animate-spin text-brand-600" />
+      </span>
     </div>
   );
 }

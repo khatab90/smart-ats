@@ -26,8 +26,12 @@ export function EmptyState({
   );
 }
 
+/**
+ * Loading placeholder. It appears only if loading takes longer than 300 ms,
+ * so fast answers (and data already in memory) never flash a placeholder.
+ */
 export function Skeleton({ className }: { className?: string }) {
-  return <span className={cn("block animate-pulse rounded-xl bg-skeleton", className)} />;
+  return <span aria-hidden className={cn("skeleton block rounded-xl bg-skeleton", className)} />;
 }
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {

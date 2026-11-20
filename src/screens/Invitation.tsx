@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, ErrorState, Skeleton } from "../components/ui";
 import { ROLE_META } from "../data/meta";
 import { fmtDateTime } from "../lib/format";
-import { clearPendingInvite } from "../lib/invite";
+import { clearPendingInvite } from "../store/invite";
 import { acceptInvitation, getInvitation, type InvitationInfo } from "../api/members";
 import { useAuth } from "../store/auth";
 import { useDevices } from "../store/devices";

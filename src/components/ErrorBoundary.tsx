@@ -1,5 +1,4 @@
 import { Component, type ReactNode } from "react";
-import { isStaleBuildError } from "../lib/staleBuild";
 import { t } from "../i18n";
 
 /** Keeps a rendering error in one screen from blanking the whole app. */
@@ -23,24 +22,6 @@ export class ErrorBoundary extends Component<
 
   override render() {
     if (!this.state.error) return this.props.children;
-    if (isStaleBuildError(this.state.error)) {
-      // Retrying cannot help: the old screen file no longer exists.
-      return (
-        <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-          <p className="text-base font-bold text-ink">{t("تتوفر نسخة أحدث من التطبيق")}</p>
-          <p className="mt-2 text-[13px] leading-6 text-muted">
-            {t("حُدّث التطبيق بعد فتح هذه الصفحة. حمّل النسخة الجديدة للمتابعة.")}
-          </p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="mt-5 rounded-2xl bg-brand-800 px-5 py-3 text-sm font-semibold text-white"
-          >
-            {t("تحميل النسخة الجديدة")}
-          </button>
-        </div>
-      );
-    }
     return (
       <div className="flex h-full flex-col items-center justify-center px-8 text-center">
         <p className="text-base font-bold text-ink">{t("تعذر عرض هذه الشاشة")}</p>

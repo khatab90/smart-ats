@@ -696,7 +696,6 @@ export type Database = {
           email: string | null;
           full_name: string;
           id: string;
-          phone: string | null;
           updated_at: string;
         };
         Insert: {
@@ -704,7 +703,6 @@ export type Database = {
           email?: string | null;
           full_name?: string;
           id: string;
-          phone?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -712,7 +710,6 @@ export type Database = {
           email?: string | null;
           full_name?: string;
           id?: string;
-          phone?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -846,7 +843,7 @@ export type Database = {
       };
       list_device_members: {
         Args: { p_device_id: string };
-        Returns: { user_id: string | null; role: string | null; added_at: string | null; is_owner: boolean | null; full_name: string | null; email: string | null; phone: string | null }[];
+        Returns: { user_id: string | null; role: string | null; added_at: string | null; is_owner: boolean | null; full_name: string | null; email: string | null }[];
       };
       my_invitations: {
         Args: Record<PropertyKey, never>;

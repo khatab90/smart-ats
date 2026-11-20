@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../config/supabase";
 import { run } from "./result";
 
-/** Members with phones visible to admins only (enforced in SQL). */
+/** Members of a board, with name and email (members only, enforced in SQL). */
 export const listMembers = (deviceId: string) =>
   run(supabase.rpc("list_device_members", { p_device_id: deviceId }), (rows) =>
     rows.map((r): MemberRow => ({
@@ -14,7 +14,6 @@ export const listMembers = (deviceId: string) =>
       is_owner: Boolean(r.is_owner),
       full_name: r.full_name ?? "",
       email: r.email,
-      phone: r.phone,
     })),
   );
 

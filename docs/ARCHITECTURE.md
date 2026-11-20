@@ -12,8 +12,9 @@ grid, solar inverter, generator). Three parts, one source of truth each:
         │ reference behaviour + test vectors                          │ RLS reads, Realtime,
  ┌──────┴───────────────┐                                             │ checked RPCs
  │ smart-ats-simulator  │                                  ┌──────────▼──────────┐
- │ (separate project)   │                                  │  React app (this    │
- └──────────────────────┘                                  │  repo, src/)        │
+ │ (separate project)   │                                  │  Android app (this  │
+ └──────────────────────┘                                  │  repo: React in     │
+                                                           │  Capacitor)         │
                                                            └─────────────────────┘
 ```
 
@@ -51,25 +52,28 @@ project owns the protocol they follow.
 | `src/components/` | Design-system primitives (`ui/`), shared controls, charts, shell |
 | `src/features/<area>/` | Screen sections (dashboard, logs, auth, profile, settings, users) |
 | `src/screens/` | Top-level screens that compose features |
-| `src/platform/` | **The only code that talks to the Android shell** (back button, app links, system browser); no-ops in the browser |
-| `android/` | Capacitor Android project; `npm run android:sync` copies the web build in |
+| `src/platform/` | **The only code that talks to the Android shell** (back button, app links, system browser); no-ops in tests and the development preview |
+| `android/` | Capacitor Android project; `npm run android:sync` bundles the screens and copies them in |
 | `tests/` | `unit/`, `components/` (jsdom), `db/` (PGlite), `system/` (board ↔ DB) |
 
 ## Dependency rules
 
 ```
-screens → features → components/ui
-   │          │
-   └────┬─────┘
-        ▼
-  store / hooks ──▶ api ──▶ Supabase
-        │            │
-        ▼            ▼
-      domain ◀──── data (generated types)
-        │
-        ▼
-       lib
+screens ──▶ features ──▶ components ──▶ components/ui
+   │            │            │
+   └────────────┴─────┬──────┘
+                      ▼
+          store / hooks ──▶ api ──▶ Supabase       platform ──▶ Capacitor
+                      │      │
+                      ▼      ▼
+                 domain / lib ◀── data (generated types), i18n
 ```
+
+Arrows point to what a layer may import; nothing imports upwards. ESLint
+enforces the boundaries: only `api/` imports Supabase and only `platform/`
+imports Capacitor; `domain/` and `lib/` are pure (no React, no I/O);
+`components/ui` takes everything through props; features never import
+screens.
 
 - Only `src/api/**` imports `@supabase/supabase-js` (enforced by ESLint).
 - `domain/` and `lib/` are pure: no React, no I/O — unit-tested directly.
@@ -99,15 +103,21 @@ window, stores `params` → Realtime → toast; the app renders the text from
   `t("…")`, and `src/i18n/en.ts` holds its English. The language is read from
   local storage before the first render (which also sets `<html lang dir>`);
   changing it reloads the app. Numbers are always Western digits.
-- **One layout for every screen size.** Phones: bottom bar, one column.
-  Tablets (`md`, ≥ 768 px): side rail, one centered column. Laptops (`lg`,
-  ≥ 1024 px): sidebar and two-column screens. Inner screens (settings,
-  profile…) open over the content area in a centered column; sheets become
-  centered windows on wide screens.
+- **One layout for every screen size.** Phones in portrait (from 320 px):
+  bottom bar, one column. Phones in landscape, foldables and tablets (`md`,
+  ≥ 768 px): side rail, one centered column. Large tablets in landscape
+  (`lg`, ≥ 1024 px): sidebar and two-column screens. Short screens (`short`,
+  height ≤ 520 px): compact rail, no illustration on sign-in. Inner screens
+  (settings, profile…) open over the content area in a centered column;
+  sheets become centered windows on wide screens.
+- **Loading only when loading.** Data hooks keep what they fetched for the
+  session (`lib/cache.ts`, cleared when the account changes): a screen opened
+  again shows its data at once and refreshes quietly. Placeholders appear only
+  if a load takes longer than 300 ms.
 
 ## Android app
 
-The same build runs inside a Capacitor shell. `src/platform/native.ts` wraps
+The screens are bundled into a Capacitor shell; there is no web version. `src/platform/native.ts` wraps
 it: the back button goes through one handler stack (`lib/backStack.ts`: open
 dialog or sheet → pushed screen → home tab → background); Google sign-in opens
 in the system browser and, like email links, returns through `smartats://app`,

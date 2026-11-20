@@ -2,6 +2,8 @@
 
 /* dark: utilities follow the app's theme (data-theme on <html>), not only the OS. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Short screens: phones in landscape, split screen. */
+@custom-variant short (@media (max-height: 520px));
 
 @theme {
   --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
@@ -50,8 +52,6 @@
   --color-track: #e9eef6;
   --color-skeleton: #e6ebf3;
   --color-toggle-off: #d0d6e2;
-  /* Desktop backdrop behind the phone frame */
-  --color-backdrop: #dfe6f1;
 
   --animate-flow: flow 1.1s linear infinite;
   --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
@@ -76,7 +76,6 @@
   --color-track: #1c2740;
   --color-skeleton: #1a2438;
   --color-toggle-off: #3a4760;
-  --color-backdrop: #060b14;
 
   --color-ink: #e9eef7;
   --color-ink-2: #c3cddd;
@@ -116,7 +115,7 @@
   body {
     min-width: 320px;
     min-height: 100dvh;
-    background: var(--color-backdrop);
+    background: var(--color-canvas);
   }
 
   button {
@@ -133,7 +132,7 @@
   font-feature-settings: "tnum";
 }
 
-/* System bars on phones (Android app drawn edge to edge, iOS Safari); 0 elsewhere. */
+/* Android system bars (the app is drawn edge to edge); 0 where there are none. */
 @utility pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -244,5 +243,38 @@
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* Loading placeholder: hidden for the first 300 ms, then a soft pulse. */
+.skeleton {
+  animation:
+    skeleton-in 0.2s ease-out 0.3s both,
+    skeleton-pulse 1.8s ease-in-out 0.5s infinite;
+}
+
+/* Anything that should show only when waiting lasts longer than 300 ms. */
+.appear-late {
+  animation: skeleton-in 0.2s ease-out 0.3s both;
+}
+
+@keyframes skeleton-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: skeleton-in 0.01s linear 0.3s both;
   }
 }

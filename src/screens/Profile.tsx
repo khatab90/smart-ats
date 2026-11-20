@@ -1,4 +1,4 @@
-import { KeyRound, LogOut, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { KeyRound, LogOut, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { useState } from "react";
 import { signInMethods } from "../api/auth";
 import { Card, ConfirmDialog, Row, RowGroup, ScreenHeader } from "../components/ui";
@@ -24,7 +24,6 @@ export function Profile() {
   const { back, push } = useNav();
   const { hasPassword, hasGoogle } = useSignInMethods();
   const [signingOut, setSigningOut] = useState(false);
-  const phone = user?.phone ? `+${user.phone.replace(/^\+/, "")}` : null;
 
   return (
     <div className="pb-10">
@@ -57,12 +56,6 @@ export function Profile() {
               onClick={() => push("profile.email")}
             />
           )}
-          <Row
-            icon={Phone}
-            title={t("رقم الهاتف")}
-            subtitle={phone ? ltr(phone) : t("غير مضاف")}
-            onClick={() => push("profile.phone")}
-          />
         </RowGroup>
 
         <RowGroup title={t("الأمان")}>

@@ -8,7 +8,8 @@ export function AuthHero({ compact }: { compact: boolean }) {
       className={cn(
         "hero-surface relative shrink-0 overflow-hidden px-6 text-white transition-all md:px-[max(1.5rem,calc((100%-28rem)/2))]",
         compact ? "pt-6 pb-14" : "pt-8 pb-16",
-        // Laptops: a full-height brand panel beside the form.
+        "short:pt-4 short:pb-12",
+        // Large tablets in landscape: a full-height brand panel beside the form.
         "lg:flex lg:w-[46%] lg:max-w-[680px] lg:flex-col lg:justify-center lg:px-14 lg:py-14",
       )}
     >
@@ -22,7 +23,7 @@ export function AuthHero({ compact }: { compact: boolean }) {
           <p className="text-[12px] text-white/60">{t("نظام التحويل التلقائي الذكي")}</p>
         </div>
       </div>
-      <div className={cn("relative", compact && "hidden lg:block")}>
+      <div className={cn("relative short:hidden", compact && "hidden lg:block")}>
         <>
           <FlowIllustration />
           <h1 className="relative mt-2 text-[26px] leading-tight font-bold tracking-tight lg:text-[38px]">

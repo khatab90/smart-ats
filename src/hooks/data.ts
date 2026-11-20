@@ -4,9 +4,14 @@ import * as membersApi from "../api/members";
 import { subscribeTelemetry } from "../api/realtime";
 import type { EventRow, InvitationRow, MemberRow, TelemetryRow } from "../data/types";
 import { useDeviceMeta } from "../store/devices";
+import { cacheGet, cacheSet, cachedWindow } from "../lib/cache";
 
 export type { EnergyRow } from "../api/history";
 
+/**
+ * `loading` is true only while there is nothing to show yet: data fetched
+ * earlier in the session is shown at once and refreshed in the background.
+ */
 interface Result<T> {
   data: T;
   loading: boolean;
@@ -20,16 +25,25 @@ export function useTelemetryWindow(
   windowMs: number,
 ): Result<TelemetryRow[]> {
   const { serverNow } = useDeviceMeta();
-  const [rows, setRows] = useState<TelemetryRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const key = `telemetry:${deviceId}:${windowMs}`;
+  const fromCache = () =>
+    cachedWindow<TelemetryRow>(key, serverNow() - windowMs, (r) => Date.parse(r.device_ts));
+  const [rows, setRows] = useState<TelemetryRow[]>(() => fromCache() ?? []);
+  const [loading, setLoading] = useState(() => !fromCache());
   const [error, setError] = useState<string | null>(null);
   const [loadedFor, setLoadedFor] = useState(deviceId);
 
   if (loadedFor !== deviceId) {
+    const cached = fromCache();
     setLoadedFor(deviceId);
-    setRows([]);
-    setLoading(true);
+    setRows(cached ?? []);
+    setLoading(!cached);
   }
+
+  // Live rows are kept in the cache too, so returning to the screen is instant.
+  useEffect(() => {
+    if (deviceId && !loading) cacheSet(key, { since: serverNow() - windowMs, rows });
+  }, [key, deviceId, loading, rows, serverNow, windowMs]);
 
   const reload = useCallback(async () => {
     if (!deviceId) return;
@@ -81,10 +95,12 @@ export function useEvents(
   sinceMs: number,
 ): Result<EventRow[]> {
   const { onEvent } = useDeviceMeta();
-  const [rows, setRows] = useState<EventRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const typesKey = types.join(",");
+  const key = `events:${deviceId}:${typesKey}`;
+  const fromCache = () => cachedWindow<EventRow>(key, sinceMs, (r) => Date.parse(r.occurred_at));
+  const [rows, setRows] = useState<EventRow[]>(() => fromCache() ?? []);
+  const [loading, setLoading] = useState(() => !fromCache());
+  const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     if (!deviceId) return;
@@ -97,9 +113,10 @@ export function useEvents(
     else {
       setRows(data);
       setError(null);
+      cacheSet(key, { since: sinceMs, rows: data });
     }
     setLoading(false);
-  }, [deviceId, typesKey, sinceMs]);
+  }, [deviceId, typesKey, sinceMs, key]);
 
   useEffect(() => {
     void reload();
@@ -133,8 +150,11 @@ export function useEnergy(
   fromMs: number,
   refreshMs = 60_000,
 ): Result<history.EnergyRow[]> {
-  const [rows, setRows] = useState<history.EnergyRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const key = `energy:${deviceId}`;
+  const fromCache = () =>
+    cachedWindow<history.EnergyRow>(key, fromMs, (r) => Date.parse(r.hour_start));
+  const [rows, setRows] = useState<history.EnergyRow[]>(() => fromCache() ?? []);
+  const [loading, setLoading] = useState(() => !fromCache());
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -147,9 +167,10 @@ export function useEnergy(
     else {
       setRows(data);
       setError(null);
+      cacheSet(key, { since: fromMs, rows: data });
     }
     setLoading(false);
-  }, [deviceId, fromMs]);
+  }, [deviceId, fromMs, key]);
 
   useEffect(() => {
     void reload();
@@ -161,9 +182,11 @@ export function useEnergy(
 }
 
 export function useMembers(deviceId: string | null, includeInvitations: boolean) {
-  const [members, setMembers] = useState<MemberRow[]>([]);
-  const [invitations, setInvitations] = useState<InvitationRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const key = `members:${deviceId}:${includeInvitations}`;
+  const cached = cacheGet<{ members: MemberRow[]; invitations: InvitationRow[] }>(key);
+  const [members, setMembers] = useState<MemberRow[]>(cached?.members ?? []);
+  const [invitations, setInvitations] = useState<InvitationRow[]>(cached?.invitations ?? []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
@@ -175,16 +198,17 @@ export function useMembers(deviceId: string | null, includeInvitations: boolean)
       return;
     }
     setMembers(m.data);
+    let inv: InvitationRow[] = [];
     if (includeInvitations) {
-      const inv = await membersApi.listPendingInvitations(deviceId);
-      if (inv.error !== null) setError(inv.error);
-      else setInvitations(inv.data);
-    } else {
-      setInvitations([]);
+      const res = await membersApi.listPendingInvitations(deviceId);
+      if (res.error !== null) setError(res.error);
+      else inv = res.data;
     }
+    setInvitations(inv);
+    cacheSet(key, { members: m.data, invitations: inv });
     setError(null);
     setLoading(false);
-  }, [deviceId, includeInvitations]);
+  }, [deviceId, includeInvitations, key]);
 
   useEffect(() => {
     void reload();

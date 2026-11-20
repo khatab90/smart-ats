@@ -53,6 +53,60 @@ export default tseslint.config(
     },
   },
   {
+    // Architecture boundary: domain/ and lib/ are pure (no React, no I/O,
+    // nothing from the layers above them). See docs/ARCHITECTURE.md.
+    files: ["src/domain/**/*.ts", "src/lib/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [{ name: "react", message: "domain/ and lib/ are pure: put React code in store/ or hooks/." }],
+          patterns: [
+            { group: ["@capacitor/*"], message: "Use src/platform/native instead of Capacitor directly." },
+            {
+              group: ["**/api/**", "**/store/**", "**/hooks/**", "**/components/**", "**/features/**", "**/screens/**", "**/platform/**"],
+              message: "domain/ and lib/ may import only each other, data/ and i18n/.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Architecture boundary: design-system primitives know nothing about the app.
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            { group: ["@capacitor/*"], message: "Use src/platform/native instead of Capacitor directly." },
+            {
+              group: ["**/api/**", "**/store/**", "**/hooks/**", "**/features/**", "**/screens/**"],
+              message: "components/ui is app-agnostic: pass data in through props.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Architecture boundary: features are parts of screens, never the reverse.
+    files: ["src/features/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+    ignores: ["src/components/ui/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            { group: ["@capacitor/*"], message: "Use src/platform/native instead of Capacitor directly." },
+            { group: ["**/screens/**"], message: "Screens compose features and components, not the other way round." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["**/*.{js,mjs}"],
     extends: [js.configs.recommended],
     languageOptions: { ecmaVersion: 2022, globals: globals.node },

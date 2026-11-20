@@ -10,9 +10,7 @@
  * Electrical values are nullable: null means "no reading", never "zero".
  */
 import type { SolarSchedule } from "../domain/schedule";
-import type { Database, Tables } from "./database.types";
-
-type Fn<F extends keyof Database["public"]["Functions"]> = Database["public"]["Functions"][F];
+import type { Tables } from "./database.types";
 
 // ----------------------------------------------------------- enumerations
 export type SourceId = NonNullable<Tables<"device_status">["active_source"]>;
@@ -152,9 +150,8 @@ export type NotificationPrefs = Pick<
   | "sound"
 >;
 
-export type Profile = Pick<Tables<"profiles">, "id" | "email" | "phone" | "full_name">;
+export type Profile = Pick<Tables<"profiles">, "id" | "email" | "full_name">;
 
-type MemberFnRow = Fn<"list_device_members">["Returns"][number];
 export interface MemberRow {
   user_id: string;
   role: Role;
@@ -162,8 +159,6 @@ export interface MemberRow {
   is_owner: boolean;
   full_name: string;
   email: string | null;
-  /** Visible to admins and to the member themself only. */
-  phone: MemberFnRow["phone"];
 }
 
 export type InvitationRow = Pick<

@@ -26,8 +26,9 @@ the newest file must survive a second paste. New projects use the generated
 **Context.** Confirmation and invitation links are often opened on another
 device or browser than the one that requested them; PKCE requires the same
 browser.
-**Decision.** Keep `flowType: "implicit"` for the web app. Revisit when the
-mobile app uses native Google Sign-In (tokens then never travel in a URL).
+**Decision.** Keep `flowType: "implicit"`: links come back to the app through
+`smartats://app` carrying the session. Revisit if the app moves to native
+Google Sign-In (tokens then never travel in a URL).
 
 ## ADR-004 — Non-owner admins may manage other admins
 
@@ -120,14 +121,15 @@ languages. The Arabic-Indic digits option of 2.3.0 was removed.
 **Why.** The owner found Arabic-Indic digits hard to read in readings and
 times; one digit system also keeps readings, IDs and inputs consistent.
 
-## ADR-015 — One responsive code base for phone, tablet and laptop
+## ADR-015 — One responsive code base for every screen size
 
 **Decision.** The same screens adapt with breakpoints (bottom bar → side
-rail → sidebar; one column → two columns) instead of separate phone and
-desktop apps.
+rail → sidebar; one column → two columns; a compact rail on short screens)
+for phones in portrait and landscape, foldables and tablets, instead of
+separate layouts per device.
 
-**Why.** One code base to test and maintain; the Android app later wraps the
-same build.
+**Why.** One code base to test and maintain; Android devices come in every
+size and are turned in both orientations.
 
 ## ADR-016 — Simulation lives in its own project
 
@@ -147,7 +149,7 @@ a separate native app. Google sign-in runs in the system browser and returns
 through the `smartats://app` link (also used by email links). The APK is
 built by GitHub Actions and published as a release, debug-signed for now.
 
-**Why.** One code base for phone, tablet, laptop and the Android app. Google
+**Why.** One code base for every Android screen size. Google
 blocks OAuth inside web views, so the system browser is required; a custom
 link needs no Android OAuth client and no verified domain.
 
@@ -167,4 +169,16 @@ minutes after the last return.
 **Why.** The app stays consistent and safe (one board, one command target)
 without guessing which device is "real"; the owner decides by disconnecting
 the extra one. A later step for a copied token is rotating the board's token.
+
+## ADR-019 — Android app only; no web version, no phone numbers
+
+**Decision.** The product is the Android app. The web hosting setup (Netlify
+files, security headers, robots, the stale-build reload, the web sign-in
+redirect and `?invite=` page links) was removed; every link and the Google
+sign-in return to `smartats://app`. Phone numbers were removed from the app
+and the database (migration 6): accounts are identified by their verified
+email only.
+
+**Why.** One target to build, test and support. Phone verification needed a
+paid SMS provider and gave nothing the email does not already give.
 

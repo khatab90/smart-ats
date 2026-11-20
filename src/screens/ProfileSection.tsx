@@ -2,7 +2,6 @@ import { ScreenHeader } from "../components/ui";
 import { EmailCard } from "../features/profile/EmailCard";
 import { NameCard } from "../features/profile/NameCard";
 import { PasswordCard } from "../features/profile/PasswordCard";
-import { PhoneCard } from "../features/profile/PhoneCard";
 import { useAuth } from "../store/auth";
 import { useNav, type ProfileSection } from "../store/nav";
 import { useToast } from "../store/toast";
@@ -11,7 +10,6 @@ import { t } from "../i18n";
 const TITLE: Record<ProfileSection, string> = {
   name: t("الاسم"),
   email: t("البريد الإلكتروني"),
-  phone: t("رقم الهاتف"),
   password: t("كلمة المرور"),
 };
 
@@ -35,7 +33,6 @@ export function ProfileSectionScreen({ section }: { section: ProfileSection }) {
           />
         )}
         {section === "email" && <EmailCard />}
-        {section === "phone" && <PhoneCard onVerified={refreshProfile} />}
         {section === "password" && <PasswordCard />}
       </div>
     </div>

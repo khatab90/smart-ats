@@ -1,6 +1,6 @@
 {
   "name": "smart-ats",
-  "version": "2.10.1",
+  "version": "2.11.0",
   "private": true,
   "description": "Smart ATS — monitoring and control app for a 3-source automatic transfer switch (grid / solar / generator) driven by an ESP32 board.",
   "license": "UNLICENSED",
@@ -8,8 +8,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:web": "tsc --noEmit && vite build --mode web",
-    "preview": "vite preview",
     "android:sync": "tsc --noEmit && vite build --mode native && cap sync android",
     "android:open": "cap open android",
     "typecheck": "tsc --noEmit",

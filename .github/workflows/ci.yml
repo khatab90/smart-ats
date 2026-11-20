@@ -23,5 +23,5 @@ jobs:
       - run: npm run lint
       - run: npm run i18n
       - run: npm test
-      - name: Public web build
-        run: npx vite build --mode web
+      - name: App bundle builds
+        run: npx vite build --mode native

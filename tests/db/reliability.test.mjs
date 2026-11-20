@@ -322,24 +322,17 @@ describe("Passive generator and solar schedule", () => {
   });
 });
 
-describe("SEC-4: profiles are private, phones visible to admins only", () => {
-  test("a viewer sees members' names and emails but not their phones", async () => {
-    await h.as(null);
-    await h.db.query("update auth.users set phone = '9647700000001' where id = $1", [U1]);
+describe("SEC-4: profiles are private; members see each other's names and emails", () => {
+  test("a member sees the members list, a stranger does not", async () => {
     await h.as(U2, "viewer@x.io");
     assert.equal((await h.rows("select id from public.profiles")).length, 1);
     const m = await h.rows(
-      "select email, phone, is_owner from public.list_device_members('ATS-R00001') order by email",
+      "select email, is_owner from public.list_device_members('ATS-R00001') order by email",
     );
     assert.deepEqual(m, [
-      { email: "owner@x.io", phone: null, is_owner: true },
-      { email: "viewer@x.io", phone: null, is_owner: false },
+      { email: "owner@x.io", is_owner: true },
+      { email: "viewer@x.io", is_owner: false },
     ]);
-    await h.as(U1, "owner@x.io");
-    const a = await h.one(
-      "select phone from public.list_device_members('ATS-R00001') where email='owner@x.io'",
-    );
-    assert.equal(a.phone, "9647700000001");
     await h.as(U3, "stranger@x.io");
     await h.rejects("select * from public.list_device_members('ATS-R00001')", [], /NOT_MEMBER/);
   });

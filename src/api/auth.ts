@@ -1,5 +1,5 @@
 import type { Session } from "@supabase/supabase-js";
-import { isNative, openInBrowser } from "../platform/native";
+import { openInBrowser } from "../platform/native";
 import { appBaseUrl, supabase } from "./client";
 import { fail, ok, run, type Result } from "./result";
 import { t } from "../i18n";
@@ -57,39 +57,28 @@ export async function changePassword(
 export const requestEmailChange = (email: string) =>
   run(supabase.auth.updateUser({ email }, { emailRedirectTo: appBaseUrl() }), () => null);
 
-export const requestPhoneChange = (phone: string) =>
-  run(supabase.auth.updateUser({ phone }), () => null);
-
-export const verifyPhoneChange = (phone: string, token: string) =>
-  run(supabase.auth.verifyOtp({ phone, token, type: "phone_change" }), () => null);
-
 export const signOut = () => supabase.auth.signOut();
 
 /**
- * Google sign-in (OAuth through Supabase). The browser leaves for Google and
- * comes back to `redirectTo` with the session; a pending invitation token is
- * carried along so the invitation screen still opens.
- */
-/**
- * Google sign-in. Web: the page goes to Google and comes back. Android: Google
- * opens in the phone's browser (it refuses sign-in inside an app) and returns
- * to the app through smartats://app, where the auth store starts the session.
+ * Google sign-in. Google opens in the phone's browser (it refuses sign-in
+ * inside an app) and returns to the app through smartats://app, where the
+ * auth store starts the session. A pending invitation token is carried along
+ * so the invitation screen still opens.
  */
 export async function signInWithGoogle(invite?: string | null) {
   const redirectTo = invite ? `${appBaseUrl()}?invite=${encodeURIComponent(invite)}` : appBaseUrl();
-  const native = isNative();
   const res = await run(
     supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo,
         queryParams: { prompt: "select_account" },
-        skipBrowserRedirect: native,
+        skipBrowserRedirect: true,
       },
     }),
     (d) => d.url ?? null,
   );
-  if (native && res.error === null && res.data) await openInBrowser(res.data);
+  if (res.error === null && res.data) await openInBrowser(res.data);
   return res;
 }
 

@@ -13,10 +13,11 @@ import { isSchemaMissing } from "../lib/errors";
 import * as authApi from "../api/auth";
 import { APP_LINK_BASE } from "../config/app";
 import { isAppLink, parseAuthLink } from "../lib/authLink";
-import { savePendingInvite } from "../lib/invite";
+import { savePendingInvite } from "./invite";
 import { closeBrowser, onAppLink } from "../platform/native";
 import { probeProfile } from "../api/profile";
 import { useToast } from "./toast";
+import { cacheClear } from "../lib/cache";
 import { t } from "../i18n";
 
 interface AuthCtx {
@@ -33,23 +34,9 @@ interface AuthCtx {
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
-let linkErrorShown = false;
 
-export function AuthProvider({
-  children,
-  initialLinkError = null,
-}: {
-  children: ReactNode;
-  /** Error from the email link or Google sign-in the page was opened with (main.tsx). */
-  initialLinkError?: string | null;
-}) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const { pushToast } = useToast();
-  useEffect(() => {
-    // Once per page load (the tree is re-mounted when the digit style changes).
-    if (!initialLinkError || linkErrorShown) return;
-    linkErrorShown = true;
-    pushToast({ kind: "error", title: t("تعذر تسجيل الدخول"), body: initialLinkError });
-  }, [initialLinkError, pushToast]);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -115,6 +102,9 @@ export function AuthProvider({
   useEffect(() => {
     if (userId) void refreshProfile();
   }, [userId, refreshProfile]);
+
+  // Another account (or none): nothing fetched for the previous one is kept.
+  useEffect(() => cacheClear, [userId]);
 
   const signOut = useCallback(async () => {
     await authApi.signOut();

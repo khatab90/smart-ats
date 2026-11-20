@@ -10,8 +10,8 @@ const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), 
 };
 
 export default defineConfig(({ mode }) => ({
-  // Relative base so the same build works on any host path and inside a
-  // Capacitor WebView (file / capacitor:// origins).
+  // The app's screens, bundled into the Android app by Capacitor
+  // (capacitor.config.ts → webDir "dist"). Relative paths for its local origin.
   base: "./",
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [react(), tailwindcss()],
@@ -19,7 +19,6 @@ export default defineConfig(({ mode }) => ({
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   server: { host: true, port: 5173 },
-  // Public web build (`--mode web`) and the Android app (`--mode native`):
-  // no source maps.
-  build: { sourcemap: mode !== "web" && mode !== "native", target: "es2020" },
+  // The Android app (`--mode native`) ships without source maps.
+  build: { sourcemap: mode !== "native", target: "es2020" },
 }));

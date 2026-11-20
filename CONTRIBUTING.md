@@ -19,13 +19,14 @@ code base healthy; `npm run check` enforces most of them.
 
 ## Android
 
-- Only `src/platform/native.ts` imports `@capacitor/*` (ESLint enforces it); everything there must be a no-op in the browser.
+- Only `src/platform/native.ts` imports `@capacitor/*` (ESLint enforces it); everything there must be a no-op outside the app (tests, development preview).
 - Anything that opens over the screen (a dialog, a sheet, a guarded screen) registers with `pushBackHandler` so the Android back button closes it first.
 - Raising `version` in `package.json` publishes a new APK release on the next push to `main`.
 
 ## Screens
 
-- One code base for phone, tablet and laptop. Phone first, then `md:` (tablet: side rail, one column) and `lg:` (laptop: sidebar, two columns).
+- Every screen must work from a 320 px phone to a tablet in landscape. Phone first, then `md:` (phone in landscape, foldable, tablet: side rail, one column), `lg:` (large tablet in landscape: sidebar, two columns) and `short:` (height ≤ 520 px: compact rail and headers).
+- Loading placeholders (`Skeleton`) appear only after 300 ms; data hooks keep what they fetched for the session, so returning to a screen shows it at once.
 - Anything that changes the board or the app asks first with `ConfirmDialog`.
 
 ## Database
@@ -45,3 +46,7 @@ npm run check   # types, lint, texts, all tests, production build
 ```
 
 Add a line to [CHANGELOG.md](CHANGELOG.md) for anything a user would notice.
+
+## Layers
+
+- ESLint enforces the layers in docs/ARCHITECTURE.md: `domain/` and `lib/` are pure (no React, nothing from the layers above), `components/ui` knows nothing about the app, and features never import screens.
