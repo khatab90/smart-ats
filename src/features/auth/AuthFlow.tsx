@@ -12,12 +12,21 @@ import { useInvitePreview } from "./useInvitePreview";
 import { t, uiStart } from "../../i18n";
 
 export type View = "login" | "signup" | "forgot";
+/** Opens another auth screen, optionally carrying the email typed so far. */
+export type Navigate = (v: View, email?: string) => void;
 
 export function AuthFlow() {
   const [view, setView] = useState<View>("login");
+  const [carried, setCarried] = useState("");
+  const go: Navigate = (v, email) => {
+    if (email !== undefined) setCarried(email);
+    setView(v);
+  };
+
   const hasInvite = Boolean(usePendingInvite());
   const invite = useInvitePreview();
   const inviteEmail = invite?.email;
+  const startEmail = carried || inviteEmail || "";
   // Back from "create account" / "forgot password" returns to sign-in.
   useEffect(
     () =>
@@ -73,12 +82,22 @@ export function AuthFlow() {
       )}
       {/* Keyed by the invited email so the form opens with it filled in. */}
       {view === "login" && (
-        <Login key={inviteEmail ?? ""} onNavigate={setView} inviteEmail={inviteEmail} />
+        <Login
+          key={inviteEmail ?? ""}
+          onNavigate={go}
+          inviteEmail={inviteEmail}
+          startEmail={startEmail}
+        />
       )}
       {view === "signup" && (
-        <Signup key={inviteEmail ?? ""} onNavigate={setView} inviteEmail={inviteEmail} />
+        <Signup
+          key={inviteEmail ?? ""}
+          onNavigate={go}
+          inviteEmail={inviteEmail}
+          startEmail={startEmail}
+        />
       )}
-      {view === "forgot" && <Forgot onNavigate={setView} />}
+      {view === "forgot" && <Forgot onNavigate={go} startEmail={startEmail} />}
     </AuthLayout>
   );
 }

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.15.0 — 2026-11-21
+
+Sign-in, sign-up and invitations say what is going on and what to do next.
+
+### Fixed
+- **Invitation screen contradicted itself** ("you are signed in as X, the invitation is for another email" with the same email). The invitation link switches the session; the screen kept the answer read under the previous account. It now reloads when the account changes and compares the emails itself.
+- **"Email or password incorrect" for an email without an account.** A refused sign-in now asks the server what the account is and says so: no account (with "Create an account with this email", the email carried over), not confirmed yet (resend the link), no password yet because an invitation link created it, or Google-only (send a link to set a password), or simply a wrong password.
+- **Sign-up "sent" a confirmation that never came** when the email already had an account (Supabase answers without an error and sends nothing). The screen now says the email has an account and offers to sign in, or to set a password when it has none.
+
+### Added
+- **First password after an email link.** An account opened by an invitation link has no password; after the link signs it in, the app offers to set one (or "Later"). Profile → Password sets a first password without asking for the current one.
+- **Invitation emails to new addresses read as invitations**: the app sends the device and the inviter's name with the link, and the "Confirm signup" template uses them (see `supabase/email-templates.txt`, also a new "Change Email Address" template).
+- **Migration 10** `account_status(email)` (none / unconfirmed / ready, with or without a password or Google) and `latest_app_version = 2.15.0`.
+
 ## 2.14.0 — 2026-11-21
 
 Easier to read for everyone in the house: plainer charts, simpler filters, no "?" hints.

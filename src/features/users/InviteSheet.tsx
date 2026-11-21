@@ -6,6 +6,7 @@ import type { Role } from "../../data/types";
 import { cn } from "../../lib/cn";
 import { createInvitation, sendInvitationEmail } from "../../api/members";
 import { useToast } from "../../store/toast";
+import { useAuth } from "../../store/auth";
 import { t } from "../../i18n";
 
 export const ROLES: Role[] = ["admin", "viewer"];
@@ -48,14 +49,17 @@ export function InviteSheet({
   open,
   onClose,
   deviceId,
+  deviceName,
   onSent,
 }: {
   open: boolean;
   onClose: () => void;
   deviceId: string;
+  deviceName: string;
   onSent: () => Promise<void>;
 }) {
   const { pushToast } = useToast();
+  const { profile } = useAuth();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("viewer");
   const [error, setError] = useState("");
@@ -72,7 +76,10 @@ export function InviteSheet({
       setLoading(false);
       return setError(err);
     }
-    const mail = await sendInvitationEmail(e, data.token);
+    const mail = await sendInvitationEmail(e, data.token, {
+      device: deviceName,
+      inviter: profile?.full_name ?? null,
+    });
     setLoading(false);
     await onSent();
     if (mail.error !== null) {

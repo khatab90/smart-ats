@@ -19,6 +19,7 @@ const SUPABASE_STUBS = `
   grant usage on schema auth to anon, authenticated;
   grant usage on schema public to anon, authenticated;
   create table auth.users (id uuid primary key, email text, phone text, raw_user_meta_data jsonb default '{}',
+    raw_app_meta_data jsonb default '{}', encrypted_password text default '',
     email_confirmed_at timestamptz default now());
   create function auth.uid() returns uuid language sql stable as
     $$ select nullif(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub', '')::uuid $$;

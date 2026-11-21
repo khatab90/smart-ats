@@ -90,13 +90,15 @@ function Splash() {
 }
 
 function Root() {
-  const { loading, session, recovery, dbError } = useAuth();
+  const { loading, session, recovery, firstPassword, dbError } = useAuth();
   const version = useAppVersion();
   if (loading) return <Splash />;
   // An installed version the server no longer supports never reaches the
   // screens that would fail; it asks for the update instead.
   if (version.state === "required" || dbError === "outdated") return <UpdateRequired />;
   if (session && recovery) return <RecoveryScreen />;
+  if (session && firstPassword === "checking") return <Splash />;
+  if (session && firstPassword === "ask") return <RecoveryScreen first />;
   if (!session) {
     return (
       <>

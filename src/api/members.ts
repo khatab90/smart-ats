@@ -124,14 +124,24 @@ const inviteMailer = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
-/** Emails a one-time sign-in link that lands on the invitation screen. */
-export const sendInvitationEmail = (email: string, token: string) =>
+/**
+ * Emails a one-time sign-in link that lands on the invitation screen.
+ * An address without an account gets one made, and Supabase then sends its
+ * "Confirm signup" email instead of "Magic Link"; `invited_to`/`invited_by`
+ * (kept only on such a new account) let that template read as an invitation.
+ */
+export const sendInvitationEmail = (
+  email: string,
+  token: string,
+  about: { device: string; inviter: string | null },
+) =>
   run(
     inviteMailer.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${appBaseUrl()}?invite=${encodeURIComponent(token)}`,
         shouldCreateUser: true,
+        data: { invited_to: about.device, invited_by: about.inviter ?? "" },
       },
     }),
     () => null,

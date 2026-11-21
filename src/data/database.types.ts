@@ -821,6 +821,10 @@ export type Database = {
         Args: { p_invitation_id: string };
         Returns: Json;
       };
+      account_status: {
+        Args: { p_email: string };
+        Returns: Json;
+      };
       app_requirements: {
         Args: Record<PropertyKey, never>;
         Returns: Json;

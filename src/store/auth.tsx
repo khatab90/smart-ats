@@ -17,6 +17,7 @@ import { savePendingInvite } from "./invite";
 import { closeBrowser, onAppLink } from "../platform/native";
 import { probeProfile } from "../api/profile";
 import { useToast } from "./toast";
+import { needsFirstPassword } from "../domain/account";
 import { cacheClear } from "../lib/cache";
 import { t } from "../i18n";
 
@@ -29,6 +30,12 @@ interface AuthCtx {
   dbError: "schema" | "outdated" | "network" | null;
   recovery: boolean;
   clearRecovery: () => void;
+  /**
+   * After an email link (invitation or confirmation) opened an account that
+   * has no password: "checking" while asking the server, "ask" to offer one.
+   */
+  firstPassword: "checking" | "ask" | null;
+  clearFirstPassword: () => void;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -42,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dbError, setDbError] = useState<AuthCtx["dbError"]>(null);
   const [recovery, setRecovery] = useState(false);
+  const [firstPassword, setFirstPassword] = useState<AuthCtx["firstPassword"]>(null);
 
   useEffect(() => {
     let alive = true;
@@ -76,11 +84,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         if (!link.tokens) return;
         const recoveryLink = link.type === "recovery";
+        // Invitation and confirmation links can open an account that was
+        // made without a password (the invitation link creates it).
+        const emailLink = link.type === "magiclink" || link.type === "signup";
         // Set before the session starts so the main screen never flashes.
         if (recoveryLink) setRecovery(true);
-        void authApi.startSessionFromLink(link.tokens).then(({ error }) => {
-          if (!error) return;
+        if (emailLink) setFirstPassword("checking");
+        void authApi.startSessionFromLink(link.tokens).then(async ({ data: email, error }) => {
+          if (error === null) {
+            if (!emailLink) return;
+            const status = email ? await authApi.accountStatus(email) : null;
+            setFirstPassword(
+              status?.error === null && needsFirstPassword(status.data) ? "ask" : null,
+            );
+            return;
+          }
           if (recoveryLink) setRecovery(false);
+          if (emailLink) setFirstPassword(null);
           pushToast({ kind: "error", title: t("تعذر تسجيل الدخول من الرابط"), body: error });
         });
       }),
@@ -122,10 +142,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       dbError,
       recovery,
       clearRecovery: () => setRecovery(false),
+      firstPassword,
+      clearFirstPassword: () => setFirstPassword(null),
       refreshProfile,
       signOut,
     }),
-    [loading, session, profile, dbError, recovery, refreshProfile, signOut],
+    [loading, session, profile, dbError, recovery, firstPassword, refreshProfile, signOut],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

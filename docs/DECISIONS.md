@@ -193,3 +193,18 @@ are written as short notes under each number instead of "?" pop-ups.
 **Why.** Users in one house share one time zone, and a free-text IANA name
 ("Asia/Baghdad") was hard to get right. The pop-up hints were rarely opened
 and made the cards look busy; a few plain words under the value say the same.
+
+
+## ADR-021 — Sign-in screens may reveal whether an email has an account
+
+**Decision.** `account_status(email)` is callable without a session and
+returns whether the email has an account, whether it is confirmed, and
+whether it has a password or Google. The sign-in and sign-up screens use it
+only after Supabase refuses or would silently do nothing.
+
+**Why.** "Email or password incorrect" left people stuck: invitation links
+create accounts without a password, and signing up again with such an email
+sends nothing. Saying which case it is (and offering the fix) matters more
+for a household app than hiding which emails are registered — Supabase's
+own sign-up already reveals that. No other account detail is returned.
+

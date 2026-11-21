@@ -46,7 +46,7 @@ export type Pending =
   | { kind: "revoke"; invitation: InvitationRow };
 
 export function Users() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { device, isAdmin, isOwner } = useActiveDevice();
   const { refresh } = useDevices();
   const { back } = useNav();
@@ -94,7 +94,10 @@ export function Users() {
   const resend = async (inv: InvitationRow) => {
     const { data: res, error: err } = await membersApi.resendInvitation(inv.id);
     if (err !== null) return pushToast({ kind: "error", title: t("تعذر إعادة الإرسال"), body: err });
-    const mail = await membersApi.sendInvitationEmail(res.email, res.token);
+    const mail = await membersApi.sendInvitationEmail(res.email, res.token, {
+      device: device?.name || device?.id || "",
+      inviter: profile?.full_name ?? null,
+    });
     if (mail.error !== null)
       return pushToast({
         kind: "error",
@@ -276,6 +279,7 @@ export function Users() {
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
         deviceId={device.id}
+        deviceName={device.name || device.id}
         onSent={reload}
       />
 

@@ -4,20 +4,23 @@ import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import { cn } from "../../lib/cn";
 import * as authApi from "../../api/auth";
-import { InviteEmailWarning, type View } from "./AuthFlow";
-import { BackHeader, EMAIL_RE, FormError, SentScreen, strength } from "./shared";
+import type { AccountStatus } from "../../domain/account";
+import { InviteEmailWarning, type Navigate } from "./AuthFlow";
+import { BackHeader, EMAIL_RE, FormError, Notice, SentScreen, strength } from "./shared";
 import { t } from "../../i18n";
 
 export function Signup({
   onNavigate,
   inviteEmail,
+  startEmail,
 }: {
-  onNavigate: (v: View) => void;
+  onNavigate: Navigate;
   inviteEmail?: string;
+  startEmail: string;
 }) {
   const [form, setForm] = useState({
     name: "",
-    email: inviteEmail ?? "",
+    email: startEmail,
     password: "",
     confirm: "",
   });
@@ -25,8 +28,13 @@ export function Signup({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  /** The email already has a confirmed account: sign in instead (no email is sent). */
+  const [existing, setExisting] = useState<AccountStatus | null>(null);
+  const [linkSent, setLinkSent] = useState(false);
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (k === "email") setExisting(null);
     setForm((f) => ({ ...f, [k]: e.target.value }));
+  };
   const s = strength(form.password);
   const mismatch = form.confirm.length > 0 && form.confirm !== form.password;
   const email = form.email.trim().toLowerCase();
@@ -40,11 +48,23 @@ export function Signup({
     if (form.password !== form.confirm) return setError(t("كلمتا المرور غير متطابقتين"));
     if (!agree) return setError(t("يجب الموافقة على الشروط وسياسة الخصوصية"));
     setLoading(true);
+    const known = await authApi.accountStatus(email);
+    if (known.error === null && known.data.status === "ready") {
+      setLoading(false);
+      return setExisting(known.data);
+    }
     const { data, error: err } = await authApi.signUp(email, form.password, form.name.trim());
     setLoading(false);
     if (err !== null) return setError(err);
+    if (data.exists) return setExisting({ status: "ready", password: true, google: false });
     // With email confirmation enabled no session is returned until the link is opened.
     if (!data.signedIn) setSent(true);
+  };
+
+  const sendPasswordLink = async () => {
+    const { error: err } = await authApi.sendPasswordReset(email);
+    if (err !== null) return setError(err);
+    setLinkSent(true);
   };
 
   if (sent) {
@@ -53,7 +73,7 @@ export function Signup({
         title={t("أكّد بريدك الإلكتروني")}
         body={t("أرسلنا رابط تأكيد الحساب إلى")}
         email={email}
-        onBack={() => onNavigate("login")}
+        onBack={() => onNavigate("login", email)}
         onResend={async () => {
           const { error: err } = await authApi.resendConfirmation(email);
           return err;
@@ -67,10 +87,40 @@ export function Signup({
       <BackHeader
         title={t("إنشاء حساب")}
         subtitle={t("أنشئ حسابك ثم أضف جهاز Smart ATS الخاص بك.")}
-        onBack={() => onNavigate("login")}
+        onBack={() => onNavigate("login", email)}
       />
       <GoogleSignIn label={t("إنشاء حساب بـ Google")} />
       <FormError msg={error} />
+      {existing && existing.status !== "none" && (
+        <Notice
+          tone="warn"
+          text={
+            existing.password
+              ? t("هذا البريد لديه حساب بالفعل. سجّل الدخول به، أو استعد كلمة المرور إن نسيتها.")
+              : existing.google
+                ? t("هذا البريد لديه حساب يدخل بحساب Google. استخدم زر Google بالأعلى.")
+                : t(
+                    "هذا البريد لديه حساب أُنشئ من رابط دعوة، وليست له كلمة مرور بعد. أرسل لنفسك رابطاً لتعيينها.",
+                  )
+          }
+        >
+          {linkSent ? (
+            <p className="text-[12px] leading-5 font-semibold text-ok">
+              {t(
+                "أُرسل رابط تعيين كلمة المرور إلى بريدك. إن لم تجده فافحص الرسائل غير المرغوب بها.",
+              )}
+            </p>
+          ) : existing.password || existing.google ? (
+            <Button full size="sm" onClick={() => onNavigate("login", email)}>
+              {t("تسجيل الدخول بهذا البريد")}
+            </Button>
+          ) : (
+            <Button full size="sm" variant="outline" onClick={sendPasswordLink}>
+              {t("أرسل رابط تعيين كلمة المرور")}
+            </Button>
+          )}
+        </Notice>
+      )}
       <Field
         label={t("الاسم الكامل")}
         icon={User}
@@ -155,7 +205,7 @@ export function Signup({
         {t("لديك حساب بالفعل؟")}{" "}
         <button
           type="button"
-          onClick={() => onNavigate("login")}
+          onClick={() => onNavigate("login", email)}
           className="font-bold text-brand-700"
         >
           {t("تسجيل الدخول")}

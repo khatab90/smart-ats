@@ -6,6 +6,7 @@ import { fmtDateTime } from "../lib/format";
 import { clearPendingInvite } from "../store/invite";
 import { acceptInvitation, getInvitation, type InvitationInfo } from "../api/members";
 import { useAuth } from "../store/auth";
+import { sameEmail } from "../domain/email";
 import { useDevices } from "../store/devices";
 import { useToast } from "../store/toast";
 import { t } from "../i18n";
@@ -34,10 +35,16 @@ export function InvitationScreen({ token }: { token: string }) {
     if (err !== null) setError(err);
     else setInfo(data);
   };
+  // Reloaded when the account changes: the invitation link itself switches
+  // the session, and a result read under the previous account would claim
+  // the invitation belongs to someone else.
+  const userId = user?.id;
   useEffect(() => {
+    setInfo(null);
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, userId]);
+  const forMe = Boolean(info?.email && user?.email && sameEmail(info.email, user.email));
 
   const finish = () => {
     clearPendingInvite();
@@ -93,7 +100,7 @@ export function InvitationScreen({ token }: { token: string }) {
               {t("صالحة حتى")} {info.expires_at ? fmtDateTime(Date.parse(info.expires_at)) : "—"}{" "}
               {t("• مرسلة إلى")} <span dir="ltr">{info.email}</span>
             </p>
-            {info.email_matches ? (
+            {forMe || info.email_matches ? (
               <Button full size="lg" loading={busy} onClick={accept}>
                 {t("قبول الدعوة")}
               </Button>

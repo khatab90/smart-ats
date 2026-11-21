@@ -1,6 +1,7 @@
 import { ArrowRight, MailCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "../../components/ui";
+import { cn } from "../../lib/cn";
 import { t } from "../../i18n";
 
 export { EMAIL_RE } from "../../domain/email";
@@ -11,6 +12,37 @@ export function FormError({ msg }: { msg: string }) {
     <p className="rounded-2xl bg-danger-soft px-4 py-3 text-[13px] font-medium text-danger-strong">
       {msg}
     </p>
+  );
+}
+
+/** A sign-in problem with the one action that solves it. */
+export function Notice({
+  tone,
+  text,
+  children,
+}: {
+  tone: "warn" | "danger";
+  text: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div
+      role="alert"
+      className={cn(
+        "space-y-3 rounded-2xl px-4 py-3",
+        tone === "warn" ? "border border-warn/30 bg-warn-soft" : "bg-danger-soft",
+      )}
+    >
+      <p
+        className={cn(
+          "text-[13px] leading-6 font-medium",
+          tone === "warn" ? "text-warn-strong" : "text-danger-strong",
+        )}
+      >
+        {text}
+      </p>
+      {children}
+    </div>
   );
 }
 

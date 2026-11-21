@@ -203,7 +203,6 @@ export const EN: Record<string, string> = {
   "أدخل البريد الإلكتروني وكلمة المرور": "Enter your email and password",
   "تسجيل الدخول": "Sign in",
   "سجّل الدخول لمتابعة أجهزتك.": "Sign in to follow your devices.",
-  "تم إرسال رابط التأكيد مجدداً": "Confirmation link sent again",
   "إعادة إرسال رابط التأكيد": "Resend confirmation link",
   "كلمة المرور": "Password",
   "نسيت كلمة المرور؟": "Forgot password?",
@@ -876,4 +875,31 @@ export const EN: Record<string, string> = {
   ناجحة: "Successful",
   "فاشلة ({0})": "Failed ({0})",
   "الصلاحيات خاصة بهذا الجهاز فقط.": "Permissions apply to this device only.",
+  "لا يوجد حساب بهذا البريد. أنشئ حساباً جديداً به.":
+    "There is no account with this email. Create a new one with it.",
+  "هذا الحساب لم يُؤكَّد بعد. افتح رابط التأكيد المرسل إلى بريدك.":
+    "This account is not confirmed yet. Open the confirmation link sent to your email.",
+  "هذا الحساب ليست له كلمة مرور بعد، لأنه أُنشئ من رابط دعوة. أرسل لنفسك رابطاً لتعيين كلمة مرور.":
+    "This account has no password yet because it was created from an invitation link. Send yourself a link to set one.",
+  "هذا الحساب يدخل بحساب Google. استخدم زر Google بالأعلى، أو عيّن كلمة مرور له.":
+    "This account signs in with Google. Use the Google button above, or set a password for it.",
+  "كلمة المرور غير صحيحة.": "The password is incorrect.",
+  "أُرسل رابط التأكيد إلى بريدك. إن لم تجده فافحص الرسائل غير المرغوب بها.":
+    "A confirmation link was sent to your email. If you can't find it, check your spam folder.",
+  "أُرسل رابط تعيين كلمة المرور إلى بريدك. إن لم تجده فافحص الرسائل غير المرغوب بها.":
+    "A link to set your password was sent to your email. If you can't find it, check your spam folder.",
+  "إنشاء حساب بهذا البريد": "Create an account with this email",
+  "أرسل رابط تعيين كلمة المرور": "Send a link to set the password",
+  "عيّن كلمة مرور لحسابك": "Set a password for your account",
+  "دخلت من رابط البريد. عيّن كلمة مرور لتدخل بها لاحقاً بالبريد وكلمة المرور.":
+    "You signed in from an email link. Set a password so you can sign in later with your email and password.",
+  "هذا البريد لديه حساب بالفعل. سجّل الدخول به، أو استعد كلمة المرور إن نسيتها.":
+    "This email already has an account. Sign in with it, or reset the password if you forgot it.",
+  "هذا البريد لديه حساب يدخل بحساب Google. استخدم زر Google بالأعلى.":
+    "This email has an account that signs in with Google. Use the Google button above.",
+  "هذا البريد لديه حساب أُنشئ من رابط دعوة، وليست له كلمة مرور بعد. أرسل لنفسك رابطاً لتعيينها.":
+    "This email has an account created from an invitation link, with no password yet. Send yourself a link to set one.",
+  "تسجيل الدخول بهذا البريد": "Sign in with this email",
+  "حسابك ليست له كلمة مرور بعد. عيّن واحدة لتدخل بها بالبريد وكلمة المرور.":
+    "Your account has no password yet. Set one to sign in with your email and password.",
 };

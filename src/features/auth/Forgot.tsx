@@ -2,12 +2,12 @@ import { Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import * as authApi from "../../api/auth";
-import { type View } from "./AuthFlow";
+import { type Navigate } from "./AuthFlow";
 import { BackHeader, EMAIL_RE, FormError, SentScreen } from "./shared";
 import { t } from "../../i18n";
 
-export function Forgot({ onNavigate }: { onNavigate: (v: View) => void }) {
-  const [email, setEmail] = useState("");
+export function Forgot({ onNavigate, startEmail }: { onNavigate: Navigate; startEmail: string }) {
+  const [email, setEmail] = useState(startEmail);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
@@ -35,7 +35,7 @@ export function Forgot({ onNavigate }: { onNavigate: (v: View) => void }) {
         title={t("تحقق من بريدك")}
         body={t("إذا كان هناك حساب مسجّل، فسيصل رابط تعيين كلمة مرور جديدة إلى")}
         email={em}
-        onBack={() => onNavigate("login")}
+        onBack={() => onNavigate("login", em)}
         onResend={request}
       />
     );
@@ -46,7 +46,7 @@ export function Forgot({ onNavigate }: { onNavigate: (v: View) => void }) {
       <BackHeader
         title={t("استعادة كلمة المرور")}
         subtitle={t("أدخل بريدك وسنرسل لك رابطاً لتعيين كلمة مرور جديدة.")}
-        onBack={() => onNavigate("login")}
+        onBack={() => onNavigate("login", em)}
       />
       <FormError msg={error} />
       <Field

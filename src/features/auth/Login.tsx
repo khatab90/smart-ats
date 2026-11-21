@@ -2,44 +2,70 @@ import { Lock, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field } from "../../components/ui";
 import * as authApi from "../../api/auth";
-import { InviteEmailWarning, type View } from "./AuthFlow";
+import { signInProblem, type SignInProblem } from "../../domain/account";
+import { InviteEmailWarning, type Navigate } from "./AuthFlow";
 import { GoogleSignIn } from "./GoogleButton";
-import { FormError } from "./shared";
+import { FormError, Notice } from "./shared";
 import { t } from "../../i18n";
+
+const PROBLEM_TEXT: Record<SignInProblem, string> = {
+  no_account: t("لا يوجد حساب بهذا البريد. أنشئ حساباً جديداً به."),
+  unconfirmed: t("هذا الحساب لم يُؤكَّد بعد. افتح رابط التأكيد المرسل إلى بريدك."),
+  no_password: t(
+    "هذا الحساب ليست له كلمة مرور بعد، لأنه أُنشئ من رابط دعوة. أرسل لنفسك رابطاً لتعيين كلمة مرور.",
+  ),
+  google: t("هذا الحساب يدخل بحساب Google. استخدم زر Google بالأعلى، أو عيّن كلمة مرور له."),
+  wrong_password: t("كلمة المرور غير صحيحة."),
+};
 
 export function Login({
   onNavigate,
   inviteEmail,
+  startEmail,
 }: {
-  onNavigate: (v: View) => void;
+  onNavigate: Navigate;
   inviteEmail?: string;
+  startEmail: string;
 }) {
-  const [email, setEmail] = useState(inviteEmail ?? "");
+  const [email, setEmail] = useState(startEmail);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [unconfirmed, setUnconfirmed] = useState(false);
-  const [resent, setResent] = useState(false);
+  const [problem, setProblem] = useState<SignInProblem | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState("");
+  const em = email.trim().toLowerCase();
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-    setUnconfirmed(false);
-    const em = email.trim().toLowerCase();
+    setProblem(null);
+    setSent("");
     if (!em || !password) return setError(t("أدخل البريد الإلكتروني وكلمة المرور"));
     setLoading(true);
     const r = await authApi.signIn(em, password);
+    if (r.error === null) return setLoading(false);
+    // "Email or password incorrect" hides what to do next; ask what the account is.
+    const status = r.refused || r.unconfirmed ? await authApi.accountStatus(em) : null;
     setLoading(false);
-    if (r.error !== null) {
-      setError(r.error);
-      setUnconfirmed(Boolean(r.unconfirmed));
-    }
+    if (status?.error === null) setProblem(signInProblem(status.data));
+    else setError(r.unconfirmed ? PROBLEM_TEXT.unconfirmed : r.error);
   };
 
-  const resend = async () => {
-    const { error: err } = await authApi.resendConfirmation(email.trim().toLowerCase());
-    if (err !== null) setError(err);
-    else setResent(true);
+  /** Sends a confirmation link again, or a link that sets a (first) password. */
+  const sendLink = async (kind: "confirm" | "password") => {
+    setSending(true);
+    const { error: err } =
+      kind === "confirm"
+        ? await authApi.resendConfirmation(em)
+        : await authApi.sendPasswordReset(em);
+    setSending(false);
+    if (err !== null) return setError(err);
+    setSent(
+      kind === "confirm"
+        ? t("أُرسل رابط التأكيد إلى بريدك. إن لم تجده فافحص الرسائل غير المرغوب بها.")
+        : t("أُرسل رابط تعيين كلمة المرور إلى بريدك. إن لم تجده فافحص الرسائل غير المرغوب بها."),
+    );
   };
 
   return (
@@ -50,10 +76,39 @@ export function Login({
       </div>
       <GoogleSignIn />
       <FormError msg={error} />
-      {unconfirmed && (
-        <Button variant="secondary" full onClick={resend} disabled={resent}>
-          {resent ? t("تم إرسال رابط التأكيد مجدداً") : t("إعادة إرسال رابط التأكيد")}
-        </Button>
+      {problem && (
+        <Notice
+          tone={problem === "wrong_password" ? "danger" : "warn"}
+          text={PROBLEM_TEXT[problem]}
+        >
+          {sent ? (
+            <p className="text-[12px] leading-5 font-semibold text-ok">{sent}</p>
+          ) : problem === "no_account" ? (
+            <Button full size="sm" onClick={() => onNavigate("signup", em)}>
+              {t("إنشاء حساب بهذا البريد")}
+            </Button>
+          ) : problem === "unconfirmed" ? (
+            <Button
+              full
+              size="sm"
+              variant="outline"
+              loading={sending}
+              onClick={() => sendLink("confirm")}
+            >
+              {t("إعادة إرسال رابط التأكيد")}
+            </Button>
+          ) : problem === "wrong_password" ? null : (
+            <Button
+              full
+              size="sm"
+              variant="outline"
+              loading={sending}
+              onClick={() => sendLink("password")}
+            >
+              {t("أرسل رابط تعيين كلمة المرور")}
+            </Button>
+          )}
+        </Notice>
       )}
       <Field
         label={t("البريد الإلكتروني")}
@@ -63,7 +118,10 @@ export function Login({
         autoComplete="email"
         placeholder="name@example.com"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          setProblem(null);
+        }}
       />
       <InviteEmailWarning email={email} inviteEmail={inviteEmail} />
       <div>
@@ -79,7 +137,7 @@ export function Login({
         />
         <button
           type="button"
-          onClick={() => onNavigate("forgot")}
+          onClick={() => onNavigate("forgot", em)}
           className="mt-2 text-[13px] font-semibold text-brand-600 hover:text-brand-700"
         >
           {t("نسيت كلمة المرور؟")}
@@ -92,7 +150,7 @@ export function Login({
         {t("ليس لديك حساب؟")}{" "}
         <button
           type="button"
-          onClick={() => onNavigate("signup")}
+          onClick={() => onNavigate("signup", em)}
           className="font-bold text-brand-700"
         >
           {t("إنشاء حساب جديد")}
