@@ -59,7 +59,7 @@ export function subscribeDevice(
 export function subscribeTelemetry(
   deviceId: string,
   onRow: (row: TelemetryRow) => void,
-  onSubscribed: () => void,
+  onState: (s: "live" | "polling") => void,
 ): RealtimeUnsubscribe {
   const channel = supabase
     .channel(`telemetry:${deviceId}`)
@@ -69,7 +69,9 @@ export function subscribeTelemetry(
       (p) => onRow(asRow<TelemetryRow>(p.new)),
     )
     .subscribe((state) => {
-      if (state === "SUBSCRIBED") onSubscribed();
+      if (state === "SUBSCRIBED") onState("live");
+      else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED")
+        onState("polling");
     });
   return () => void supabase.removeChannel(channel);
 }

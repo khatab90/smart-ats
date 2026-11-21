@@ -207,27 +207,17 @@ function SectionBody({
           <Note>{t("حسب شبكة موقع التركيب. حدود الجهد والتردد تُحسب كنسب من هذه القيم.")}</Note>
         </>
       );
-    case "timezone":
-      return (
-        <>
-          <Card className="p-4">
-            <input
-              dir="ltr"
-              disabled={readOnly}
-              value={draft.timezone}
-              onChange={(e) => set("timezone", e.target.value.trim())}
-              aria-label={t("المنطقة الزمنية")}
-              className="h-11 w-full rounded-2xl border border-line bg-surface px-4 text-start text-[14px] outline-none focus:border-brand-500 disabled:bg-canvas"
-            />
-          </Card>
-          <Note>{t("تحدد منتصف الليل لعدّادات «اليوم» وأوقات السجل. مثال: Asia/Baghdad")}</Note>
-        </>
-      );
     default: {
       const g = SETTINGS_GROUPS.find((x) => x.id === section);
       if (!g) return null;
-      const range =
-        section === "voltage"
+      // The allowed range is shown only for values that are themselves allowed.
+      const fieldsOk = g.fields.every((f) => {
+        const v = draft[f.key];
+        return v === null ? Boolean(f.optional) : Number.isFinite(v) && v >= f.min && v <= f.max;
+      });
+      const range = !fieldsOk
+        ? null
+        : section === "voltage"
           ? voltageRange(draft)
           : section === "frequency"
             ? frequencyRange(draft)

@@ -59,6 +59,11 @@ export function useTelemetryWindow(
 
   useEffect(() => {
     if (!deviceId) return;
+    // Load at once; live rows then arrive over realtime. If realtime is not
+    // connected (blocked network, server hiccup), the window is re-read every
+    // 5 s instead, so the chart never stays empty waiting for it.
+    let live = false;
+    void reload();
     const unsubscribe = subscribeTelemetry(
       deviceId,
       (row) =>
@@ -68,8 +73,16 @@ export function useTelemetryWindow(
           next.sort((a, b) => Date.parse(a.device_ts) - Date.parse(b.device_ts));
           return next;
         }),
-      () => void reload(),
+      (state) => {
+        const wasLive = live;
+        live = state === "live";
+        // Fill the gap between the first load and the moment realtime started.
+        if (live && !wasLive) void reload();
+      },
     );
+    const poll = setInterval(() => {
+      if (!live) void reload();
+    }, 5000);
     // Trim the window even when no new rows arrive (board offline).
     const trim = setInterval(() => {
       const cutoff = serverNow() - windowMs;
@@ -80,6 +93,7 @@ export function useTelemetryWindow(
       );
     }, 5000);
     return () => {
+      clearInterval(poll);
       clearInterval(trim);
       unsubscribe();
     };

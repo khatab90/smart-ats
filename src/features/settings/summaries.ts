@@ -58,8 +58,6 @@ export function sectionSummary(
       return d.manual_revert_min
         ? t("يعود للوضع الذكي بعد {0} دقيقة", { 0: d.manual_revert_min })
         : t("يبقى يدوياً حتى تغييره");
-    case "timezone":
-      return ltr(d.timezone);
     default:
       return "";
   }

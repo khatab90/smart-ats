@@ -69,3 +69,13 @@ export function addDaysInTz(t: number, n: number, tz: string) {
 export function dayOfMonthInTz(t: number, tz: string) {
   return parts(t, tz).day;
 }
+
+/** The phone's own time zone (IANA name), or null if the system does not say. */
+export function phoneTimeZone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz && isValidTimeZone(tz) ? tz : null;
+  } catch {
+    return null;
+  }
+}

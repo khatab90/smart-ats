@@ -1,5 +1,33 @@
 # Changelog
 
+## 2.14.0 — 2026-11-21
+
+Easier to read for everyone in the house: plainer charts, simpler filters, no "?" hints.
+
+### Changed
+- **Energy, per-hour chart** redone: one colour, hours on a 12-hour clock ("6 ص", "12 م"), the hours still to come shown as empty slots, and the selected bar shows its value. The current hour is selected at start; the box under the chart says how much it used and from which source. Week and month are now "7 days" and "30 days" (that is what they always showed).
+- **Total consumption compared in words**, not a percentage: "4.2 kWh more than yesterday", "about the same as yesterday", with what yesterday (or the previous week / month) used by the same time. 225% was hard to read.
+- **Monitor chart** redone: the allowed voltage range as two labelled dashed lines (max / min) instead of a green fill over the whole chart, the latest reading marked and printed next to the title, the line broken during a total outage with a red band (the zeros no longer squash the scale), and the legend only when there is an outage or a transfer in view. The footnotes are gone.
+- **Monitor tiles**: voltage, current and frequency in one row; power appears once, in the big card. The source picker is a simple switch: Load / Grid / Solar / Generator.
+- **Log tiles** redone with an icon, the number, a plain name and a short note: "Transfers today", "Failed transfers", "Power gap during a transfer", "Outage detection time". The "?" buttons are removed everywhere.
+- **Transfer history**: one filter — All / Successful / Failed / Outage — instead of two rows of source and type chips. Each entry shows the reason and the power gap; the detection time is in the Log tiles.
+- **Daily runtime**: pick a day from a row of seven days; the day strip has 12-hour clock labels and each source's time is shown as a bar with hours and minutes. Replaces the stacked weekly chart.
+- **Notifications**: All / Unread instead of a scrolling row of types.
+- Times in milliseconds and seconds are written in the app's language ("21 ملي ثانية", "1.0 ث").
+- Device info: temperature, board voltage and Wi-Fi signal (dBm) display correctly in Arabic.
+- Confirmation messages ("Settings saved") close after 3 seconds instead of 4.5, so they no longer sit over the back button; error messages stay 6 seconds.
+
+### Removed
+- **Time zone setting.** The device takes the phone's time zone when it is added, and every settings save brings it up to date with the phone that saves. ADR-020.
+- Developer wording in the users screen and the old "web version" note on Add device.
+
+### Fixed
+- An invalid limit (e.g. 99 %) no longer shows a meaningless allowed range ("2–246 V"); the range appears only for allowed values.
+- **Monitor chart stuck on loading** when the live (realtime) connection could not be made: the last 3 minutes now load at once and refresh every 5 seconds until realtime connects.
+
+### Database
+- `app_config.latest_app_version` raised to 2.14.0 (migration 9), so 2.13.0 offers the update.
+
 ## 2.13.0 — 2026-11-21
 
 ### Changed

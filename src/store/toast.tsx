@@ -26,7 +26,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const pushToast = useCallback((t: Omit<Toast, "id">) => {
     const id = `t${++seq}`;
     setToasts((prev) => [...prev.slice(-1), { ...t, id }]);
-    setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), 4500);
+    // Confirmations go quickly (they sit over the screen header); problems stay
+    // longer so they can be read. A tap closes any of them at once.
+    const ms = t.kind === "success" || t.kind === "info" ? 3000 : 6000;
+    setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), ms);
   }, []);
   const value = useMemo(
     () => ({ toasts, pushToast, dismissToast }),

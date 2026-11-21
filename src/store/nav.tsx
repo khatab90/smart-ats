@@ -20,7 +20,6 @@ export const SETTINGS_SECTIONS = [
   "frequency",
   "timers",
   "manual",
-  "timezone",
 ] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 

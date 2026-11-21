@@ -1,7 +1,7 @@
-import { Activity, Gauge, Waves, Zap } from "lucide-react";
+import { Activity, Waves, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { LineChart } from "../components/charts";
-import { Card, Chips, ErrorState, Segmented, Skeleton } from "../components/ui";
+import { Card, ErrorState, Segmented, Skeleton } from "../components/ui";
 import {
   NoDevice,
   PageHeading,
@@ -23,6 +23,8 @@ type Channel = "load" | SourceId;
 type Metric = "v" | "a" | "kw" | "f";
 
 const WINDOW_MS = 3 * 60_000;
+const OUTAGE = "#e5372b";
+const TRANSFER = "#f27a1a";
 const CHANNEL_COLOR: Record<Channel, string> = {
   load: "#12b76a",
   grid: SOURCE_META.grid.color,
@@ -33,7 +35,7 @@ const METRIC: Record<Metric, { label: string; unit: string; digits: number }> = 
   v: { label: t("الجهد"), unit: "V", digits: 0 },
   a: { label: t("التيار"), unit: "A", digits: 1 },
   kw: { label: t("القدرة"), unit: "kW", digits: 2 },
-  f: { label: t("التردد"), unit: "Hz", digits: 2 },
+  f: { label: t("التردد"), unit: "Hz", digits: 1 },
 };
 
 /** One reading from a telemetry row; source current/power use the shared feeding rule. */
@@ -106,9 +108,11 @@ export function Live() {
 
   const now = serverNow();
   const from = now - WINDOW_MS;
+  // During a total outage the load has no power: the line breaks there and a
+  // red band marks it, so the zeros do not squash the scale of the rest.
   const samples: Sample[] = telemetry.data.map((r) => ({
     t: Date.parse(r.device_ts),
-    v: readRow(r, channel, metric),
+    v: channel === "load" && r.system_state === "no_source" ? null : readRow(r, channel, metric),
   }));
   const interval = status?.interval_ms ?? 2000;
   const segments = splitSegments(samples, Math.max(3 * interval, 6000));
@@ -127,9 +131,9 @@ export function Live() {
       const t = Date.parse(r.device_ts);
       const color2 =
         r.system_state === "no_source"
-          ? "#e5372b"
+          ? OUTAGE
           : r.system_state === "transferring"
-            ? "#f27a1a"
+            ? TRANSFER
             : null;
       if (color2 && !open) open = { from: t, color: color2 };
       if (!color2 && open) {
@@ -171,11 +175,11 @@ export function Live() {
         <LinkBadge link={link} />
       </div>
 
-      <Chips
+      <Segmented
         value={channel}
         onChange={setChannel}
         options={[
-          { value: "load" as Channel, label: t("الخرج (الحمل)") },
+          { value: "load" as Channel, label: t("الحمل") },
           ...installedSources(status).map((id) => ({
             value: id as Channel,
             label: SOURCE_META[id].short,
@@ -222,20 +226,15 @@ export function Live() {
           </p>
         </section>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
           <Tile icon={Zap} label={t("الجهد")} value={fmtReading(current.v)} unit="V" color={color}>
-            <p className="text-[10px] text-muted">
-              {range ? (
-                <>
-                  {t("النطاق المسموح")}{" "}
-                  <bdi>
-                    {range.min}–{range.max} V
-                  </bdi>
-                </>
-              ) : (
-                t("لم يُضبط الجهد الاسمي في الإعدادات")
-              )}
-            </p>
+            {range ? (
+              <bdi>
+                {range.min}–{range.max} V
+              </bdi>
+            ) : (
+              t("غير مضبوط")
+            )}
           </Tile>
           <Tile
             icon={Waves}
@@ -245,37 +244,38 @@ export function Live() {
             color={color}
           />
           <Tile
-            icon={Gauge}
-            label={t("القدرة")}
-            value={fmtReading(current.kw, 2)}
-            unit="kW"
-            color={color}
-          />
-          <Tile
             icon={Activity}
             label={t("التردد")}
-            value={fmtReading(current.f, 2)}
+            value={fmtReading(current.f, 1)}
             unit="Hz"
             color={color}
           >
-            <p className="text-[10px] text-muted">
-              {settings?.nominal_frequency ? (
-                <>
-                  {t("الاسمي")} <span dir="ltr">{settings.nominal_frequency} Hz</span>
-                </>
-              ) : (
-                t("لم يُضبط التردد الاسمي")
-              )}
-            </p>
+            {settings?.nominal_frequency ? (
+              <>
+                {t("الاسمي")} <bdi>{settings.nominal_frequency} Hz</bdi>
+              </>
+            ) : (
+              t("غير مضبوط")
+            )}
           </Tile>
         </div>
       </div>
       {feedingNote && <p className="px-1 text-[11px] leading-5 text-muted">{feedingNote}</p>}
 
       <Card className="p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-[15px] font-bold text-ink">{t("الرسم البياني التفصيلي")}</p>
-          <span className="text-[11px] text-muted">{t("آخر 3 دقائق")}</span>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[15px] font-bold text-ink">{t("آخر 3 دقائق")}</p>
+            <p className="text-[12px] text-muted">{t("كيف تغيّرت القراءة")}</p>
+          </div>
+          <div className="text-end">
+            <p className="text-[11px] text-muted">{t("الآن")}</p>
+            <p className="num text-[16px] font-bold" style={{ color }}>
+              <bdi>
+                {fmtReading(current[metric], mm.digits)} {mm.unit}
+              </bdi>
+            </p>
+          </div>
         </div>
         <Segmented
           value={metric}
@@ -287,13 +287,13 @@ export function Live() {
             { value: "f", label: t("التردد") },
           ]}
         />
-        <div className="mt-4">
+        <div className="mt-5">
           {telemetry.error ? (
             <ErrorState message={telemetry.error} onRetry={telemetry.reload} />
           ) : telemetry.loading ? (
-            <Skeleton className="h-[160px]" />
+            <Skeleton className="h-[180px]" />
           ) : segments.length === 0 ? (
-            <div className="flex h-[160px] items-center justify-center rounded-2xl bg-canvas px-6 text-center text-[13px] text-muted">
+            <div className="flex h-[180px] items-center justify-center rounded-2xl bg-canvas px-6 text-center text-[13px] text-muted">
               {t("لا توجد قراءات لهذا القياس خلال آخر 3 دقائق.")}
             </div>
           ) : (
@@ -309,43 +309,54 @@ export function Live() {
               yMin={y0}
               yMax={y1}
               bands={bands}
-              safe={metric === "v" && range ? { from: range.min, to: range.max } : undefined}
+              limits={
+                metric === "v" && range
+                  ? [
+                      { value: range.max, label: t("الحد الأعلى {0}", { 0: range.max }) },
+                      { value: range.min, label: t("الحد الأدنى {0}", { 0: range.min }) },
+                    ]
+                  : []
+              }
               xLabels={[
                 { t: now, label: t("الآن") },
                 { t: now - 60_000, label: t("قبل دقيقة") },
                 { t: now - 120_000, label: t("قبل دقيقتين") },
-                { t: now - WINDOW_MS, label: t("قبل 3 د") },
+                { t: now - WINDOW_MS, label: t("قبل 3 دقائق") },
               ]}
             />
           )}
         </div>
-        <div className="mt-3 flex flex-wrap gap-3 text-[10px] text-muted">
-          <span className="flex items-center gap-1">
-            <span className="size-2.5 rounded-sm bg-danger/40" /> {t("لا يوجد مصدر")}
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="size-2.5 rounded-sm bg-warn/40" /> {t("تحويل")}
-          </span>
-          <span>{t("الفراغ في الخط = لا توجد قراءة")}</span>
-        </div>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        {bands.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-4 text-[11px] text-muted">
+            {bands.some((b) => b.color === OUTAGE) && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-3 rounded-sm bg-danger/30" /> {t("انقطاع الكهرباء")}
+              </span>
+            )}
+            {bands.some((b) => b.color === TRANSFER) && (
+              <span className="flex items-center gap-1.5">
+                <span className="size-3 rounded-sm bg-warn/30" /> {t("تحويل بين المصادر")}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
           {[
             { l: t("الأدنى"), v: stats?.min },
             { l: t("المتوسط"), v: stats?.avg },
             { l: t("الأعلى"), v: stats?.max },
           ].map((s) => (
-            <div key={s.l} className="rounded-xl bg-canvas py-2">
-              <p className="text-[10px] text-muted">{s.l}</p>
-              <p className="num text-[13px] font-bold text-ink" dir="ltr">
-                {s.v === undefined ? "—" : fmtNum(s.v, mm.digits)}{" "}
-                <span className="text-[10px] font-medium text-muted">{mm.unit}</span>
+            <div key={s.l} className="rounded-2xl bg-canvas py-2.5">
+              <p className="text-[11px] text-muted">{s.l}</p>
+              <p className="num mt-0.5 text-[15px] font-bold text-ink">
+                <bdi>
+                  {s.v === undefined ? "—" : fmtNum(s.v, mm.digits)}{" "}
+                  <span className="text-[11px] font-medium text-muted">{mm.unit}</span>
+                </bdi>
               </p>
             </div>
           ))}
         </div>
-        <p className="mt-2 text-[10px] text-faint">
-          {t("الإحصائيات تشمل القراءات الصفرية أثناء الانقطاع.")}
-        </p>
       </Card>
     </div>
   );
@@ -367,20 +378,20 @@ function Tile({
   children?: React.ReactNode;
 }) {
   return (
-    <Card className="flex flex-col p-3.5">
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-semibold text-muted">{label}</span>
-        <Icon className="size-4" style={{ color }} />
+    <Card className="flex min-w-0 flex-col p-3">
+      <div className="flex items-center gap-1.5">
+        <Icon className="size-3.5 shrink-0" style={{ color }} />
+        <span className="truncate text-[12px] font-semibold text-muted">{label}</span>
       </div>
       <p
-        className="num mt-2 text-[24px] leading-none font-bold text-ink"
+        className="num mt-2 truncate text-[20px] leading-none font-bold text-ink"
         dir="ltr"
         style={{ textAlign: uiStart() }}
       >
         {value}
-        <span className="ms-1 text-[12px] font-medium text-muted">{unit}</span>
+        <span className="ms-0.5 text-[11px] font-medium text-muted">{unit}</span>
       </p>
-      {children && <div className="mt-2">{children}</div>}
+      {children && <p className="num mt-1.5 truncate text-[10px] text-faint">{children}</p>}
     </Card>
   );
 }

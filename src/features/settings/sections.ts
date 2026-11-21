@@ -1,4 +1,4 @@
-import { Activity, Gauge, Globe, Hand, ListOrdered, Sun, Timer, Zap } from "lucide-react";
+import { Activity, Gauge, Hand, ListOrdered, Sun, Timer, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { SettingsSection } from "../../store/nav";
 import { t } from "../../i18n";
@@ -14,5 +14,4 @@ export const SECTION_META: Record<
   voltage: { title: t("حدود الجهد"), icon: Zap },
   frequency: { title: t("حدود التردد"), icon: Activity },
   timers: { title: t("مؤقتات التحويل"), icon: Timer },
-  timezone: { title: t("المنطقة الزمنية"), icon: Globe },
 };

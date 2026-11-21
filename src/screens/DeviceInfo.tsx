@@ -102,7 +102,7 @@ export function DeviceInfo() {
               <Item
                 icon={Wifi}
                 label={t("قوة إشارة الواي فاي")}
-                value={signal ? `${signal} (${rssi} dBm)` : "—"}
+                value={signal ? `${signal} (\u2066${rssi} dBm\u2069)` : "—"}
                 note={!live && lastSeen ? t("تظهر أثناء اتصال البورد.") : undefined}
               />
             </RowGroup>
@@ -121,12 +121,16 @@ export function DeviceInfo() {
               <Item
                 icon={Thermometer}
                 label={t("حرارة المتحكم")}
-                value={live && c?.temp_c !== undefined ? `${Math.round(c.temp_c)} °C` : "—"}
+                value={
+                  live && c?.temp_c !== undefined ? `\u2066${Math.round(c.temp_c)} °C\u2069` : "—"
+                }
               />
               <Item
                 icon={Zap}
                 label={t("جهد تغذية البورد")}
-                value={live && c?.supply_v !== undefined ? `${c.supply_v.toFixed(2)} V` : "—"}
+                value={
+                  live && c?.supply_v !== undefined ? `\u2066${c.supply_v.toFixed(2)} V\u2069` : "—"
+                }
               />
             </RowGroup>
 

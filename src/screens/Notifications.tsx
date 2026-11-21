@@ -12,11 +12,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import {
-  Chips,
   EmptyState,
   ErrorState,
   IconButton,
   ScreenHeader,
+  Segmented,
   Sheet,
   Skeleton,
   Toggle,
@@ -46,10 +46,10 @@ export function Notifications() {
   const { memberships, setActiveId } = useDevices();
   const { back, go } = useNav();
   const now = useNow(15_000);
-  const [filter, setFilter] = useState<"all" | NotificationType>("all");
+  const [filter, setFilter] = useState<"all" | "unread">("all");
   const [settings, setSettings] = useState(false);
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const list = items.filter((n) => filter === "all" || n.type === filter);
+  const list = items.filter((n) => filter === "all" || !n.read_at);
   const dayStart = startOfDayInTz(now, tz);
   const today = list.filter((n) => Date.parse(n.created_at) >= dayStart);
   const earlier = list.filter((n) => Date.parse(n.created_at) < dayStart);
@@ -85,16 +85,15 @@ export function Notifications() {
         }
       />
       <div className="space-y-4 px-5">
-        <Chips
+        <Segmented
           value={filter}
           onChange={setFilter}
           options={[
-            { value: "all", label: t("الكل"), count: items.length },
-            ...NOTIF_ORDER.map((t) => ({
-              value: t,
-              label: NOTIF_META[t].label,
-              count: items.filter((n) => n.type === t).length,
-            })),
+            { value: "all", label: t("الكل") },
+            {
+              value: "unread",
+              label: unreadCount ? t("غير المقروءة ({0})", { 0: unreadCount }) : t("غير المقروءة"),
+            },
           ]}
         />
         {error && <ErrorState message={error} onRetry={reload} />}
@@ -103,6 +102,12 @@ export function Notifications() {
             <Skeleton className="h-20" />
             <Skeleton className="h-20" />
           </div>
+        ) : list.length === 0 && filter === "unread" ? (
+          <EmptyState
+            icon={CheckCheck}
+            title={t("قرأت كل الإشعارات")}
+            body={t("لا توجد إشعارات جديدة.")}
+          />
         ) : list.length === 0 ? (
           <EmptyState
             icon={BellOff}

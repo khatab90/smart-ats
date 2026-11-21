@@ -92,9 +92,16 @@ export const fmtReading = (v: number | null | undefined, digits = 0) =>
 export const fmtKw = (w: number | null | undefined, digits = 2) =>
   w === null || w === undefined || !Number.isFinite(w) ? "—" : fmtNum(w / 1000, digits);
 
-/** Transfer timing measured by the board, in ms or seconds. */
+/** Transfer timing measured by the board, in milliseconds or seconds. */
 export const fmtMs = (ms: number) =>
-  ms >= 1000 ? `${fmtNum(ms / 1000, 1)} s` : `${fmtNum(ms)} ms`;
+  ms >= 1000 ? tr("{0} ث", { 0: fmtNum(ms / 1000, 1) }) : tr("{0} ملي ثانية", { 0: fmtNum(ms) });
+
+/** Hour of the day on a 12-hour clock: "6 ص", "12 م" (English "6 am"). */
+export function fmtHour(h: number) {
+  const n = ((h % 24) + 24) % 24;
+  const v = n % 12 === 0 ? 12 : n % 12;
+  return n < 12 ? tr("{0} ص", { 0: v }) : tr("{0} م", { 0: v });
+}
 
 /**
  * Arabic counted noun: 1 → "جهاز واحد", 2 → "جهازان", 3–10 → "3 أجهزة",

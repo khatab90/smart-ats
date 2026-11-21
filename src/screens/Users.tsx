@@ -268,9 +268,7 @@ export function Users() {
               </div>
             ))}
           </div>
-          <p className="px-4 py-3 text-[11px] text-muted">
-            {t("الصلاحيات خاصة بهذا الجهاز، وتُفرض في قاعدة البيانات وليس في الواجهة فقط.")}
-          </p>
+          <p className="px-4 py-3 text-[11px] text-muted">{t("الصلاحيات خاصة بهذا الجهاز فقط.")}</p>
         </Card>
       </div>
 

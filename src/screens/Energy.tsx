@@ -1,4 +1,4 @@
-import { ChartColumn, TrendingDown, TrendingUp } from "lucide-react";
+import { ChartColumn, Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BarChart, Donut, type Bar } from "../components/charts";
 import {
@@ -7,23 +7,16 @@ import {
   WaitingForBoard,
   useAwaitingFirstData,
 } from "../components/DeviceGate";
-import {
-  Card,
-  EmptyState,
-  ErrorState,
-  InfoHint,
-  SectionTitle,
-  Segmented,
-  Skeleton,
-} from "../components/ui";
+import { Card, EmptyState, ErrorState, SectionTitle, Segmented, Skeleton } from "../components/ui";
 import { SOURCE_META, SOURCE_ORDER } from "../data/meta";
 import type { SourceId } from "../data/types";
 import { useEnergy, type EnergyRow } from "../hooks/data";
 import { cn } from "../lib/cn";
-import { fmtDate, fmtNum, fmtShortDay } from "../lib/format";
+import { fmtDate, fmtHour, fmtNum, fmtShortDay, fmtWeekday } from "../lib/format";
 import { addDaysInTz, dayOfMonthInTz, startOfDayInTz } from "../lib/tz";
+import { installedSources } from "../domain/sources";
 import { useActiveDevice, useNow } from "../store/devices";
-import { t } from "../i18n";
+import { t, uiStart } from "../i18n";
 
 type Range = "day" | "week" | "month";
 type Split = Record<SourceId, number>;
@@ -45,8 +38,8 @@ function buildBuckets(range: Range, nowMs: number, tz: string): Bucket[] {
       const from = today + h * 3_600_000;
       return {
         key: `h${h}`,
-        label: String(h),
-        title: t("الساعة {0}:00 – {1}:00", { 0: h, 1: h + 1 }),
+        label: fmtHour(h),
+        title: t("من {0} إلى {1}", { 0: fmtHour(h), 1: fmtHour(h + 1) }),
         from,
         to: from + 3_600_000,
       };
@@ -59,7 +52,7 @@ function buildBuckets(range: Range, nowMs: number, tz: string): Bucket[] {
     return {
       key: `d${from}`,
       label: range === "week" ? fmtShortDay(from, tz) : String(dayOfMonthInTz(from, tz)),
-      title: `${fmtShortDay(from, tz)} ${fmtDate(from, tz)}`,
+      title: `${fmtWeekday(from, tz)} ${fmtDate(from, tz)}`,
       from,
       to,
     };
@@ -75,8 +68,48 @@ function sumRange(rows: EnergyRow[], from: number, to: number): Split {
   return out;
 }
 
+/** kWh with one decimal and its unit, kept left-to-right inside Arabic text. */
+const kwhText = (v: number) => `\u2066${fmtNum(v, v >= 100 ? 0 : 1)} kWh\u2069`;
+
+/**
+ * The comparison with the previous period in plain words: "أكثر من أمس بـ
+ * 3.2 kWh" and what the previous period used, instead of a percentage
+ * (225% was hard to read).
+ */
+function comparison(range: Range, now: number, prev: number) {
+  const diff = now - prev;
+  const same = Math.abs(diff) < Math.max(0.1, prev * 0.05);
+  const words = {
+    day: {
+      more: t("أكثر من أمس بـ {0}"),
+      less: t("أقل من أمس بـ {0}"),
+      same: t("مثل أمس تقريباً"),
+      prev: t("أمس حتى نفس الساعة: {0}"),
+    },
+    week: {
+      more: t("أكثر من الأسبوع السابق بـ {0}"),
+      less: t("أقل من الأسبوع السابق بـ {0}"),
+      same: t("مثل الأسبوع السابق تقريباً"),
+      prev: t("الأسبوع السابق: {0}"),
+    },
+    month: {
+      more: t("أكثر من الشهر السابق بـ {0}"),
+      less: t("أقل من الشهر السابق بـ {0}"),
+      same: t("مثل الشهر السابق تقريباً"),
+      prev: t("الشهر السابق: {0}"),
+    },
+  }[range];
+  return {
+    tone: same ? ("same" as const) : diff > 0 ? ("up" as const) : ("down" as const),
+    text: same
+      ? words.same
+      : (diff > 0 ? words.more : words.less).replace("{0}", kwhText(Math.abs(diff))),
+    prev: words.prev.replace("{0}", kwhText(prev)),
+  };
+}
+
 export function Energy() {
-  const { device, settings, serverNow } = useActiveDevice();
+  const { device, settings, status, serverNow } = useActiveDevice();
   const awaiting = useAwaitingFirstData();
   const tz = settings?.timezone ?? "UTC";
   const [range, setRange] = useState<Range>("day");
@@ -87,7 +120,7 @@ export function Energy() {
   const buckets = useMemo(() => buildBuckets(range, now, tz), [range, tz, tick]); // eslint-disable-line react-hooks/exhaustive-deps
   const periodStart = buckets[0]?.from ?? now;
   const span = (buckets[buckets.length - 1]?.to ?? now) - periodStart;
-  // Fetch the previous comparable period too, for the trend.
+  // Fetch the previous comparable period too, for the comparison.
   const energy = useEnergy(device?.id ?? null, periodStart - span);
 
   const splits = buckets.map((b) => sumRange(energy.data, b.from, b.to));
@@ -98,22 +131,27 @@ export function Energy() {
   const kwh = total(totals);
   const elapsed = Math.min(now, buckets[buckets.length - 1]?.to ?? now) - periodStart;
   const prev = total(sumRange(energy.data, periodStart - span, periodStart - span + elapsed));
-  const trend = prev > 0 ? ((kwh - prev) / prev) * 100 : null;
+  const hasPrev = energy.data.some((r) => Date.parse(r.hour_start) < periodStart);
+  const cmp = hasPrev ? comparison(range, kwh, prev) : null;
   const hasData = energy.data.some((r) => Date.parse(r.hour_start) >= periodStart);
+  // The current hour/day is the last bucket that has started.
+  const currentIndex = Math.max(0, buckets.filter((b) => b.from <= now).length - 1);
   const bars: Bar[] = buckets.map((b, i) => ({
     key: b.key,
     label: b.label,
-    segments: SOURCE_ORDER.map((id) => ({ value: splits[i][id], color: SOURCE_META[id].color })),
+    value: total(splits[i]),
+    future: b.from > now,
   }));
-  const sel = selected !== undefined && selected < bars.length ? selected : undefined;
+  const sel = selected !== undefined && selected <= currentIndex ? selected : currentIndex;
+  // Sources shown: the installed ones, plus any that delivered energy in the period.
+  const shown = SOURCE_ORDER.filter(
+    (id) => installedSources(status).includes(id) || totals[id] > 0,
+  );
 
   if (!device || awaiting) {
     return (
       <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
-        <PageHeading
-          title={t("الطاقة")}
-          subtitle={t("إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر")}
-        />
+        <PageHeading title={t("الطاقة")} subtitle={t("كم استهلكت ومن أي مصدر")} />
         {device ? (
           <WaitingForBoard compact />
         ) : (
@@ -125,12 +163,7 @@ export function Energy() {
 
   return (
     <div className="space-y-4 px-5 pt-4 pb-32 md:px-8 md:pt-8 md:pb-10">
-      <div>
-        <h1 className="text-[22px] font-bold tracking-tight text-ink">{t("الطاقة")}</h1>
-        <p className="text-[13px] text-muted">
-          {t("إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر")}
-        </p>
-      </div>
+      <PageHeading title={t("الطاقة")} subtitle={t("كم استهلكت ومن أي مصدر")} />
 
       <Segmented
         className="lg:max-w-md"
@@ -141,8 +174,8 @@ export function Energy() {
         }}
         options={[
           { value: "day", label: t("اليوم") },
-          { value: "week", label: t("الأسبوع") },
-          { value: "month", label: t("الشهر") },
+          { value: "week", label: t("7 أيام") },
+          { value: "month", label: t("30 يوماً") },
         ]}
       />
 
@@ -150,8 +183,8 @@ export function Energy() {
         <ErrorState message={energy.error} onRetry={energy.reload} />
       ) : energy.loading ? (
         <div className="space-y-4">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-64" />
+          <Skeleton className="h-28" />
+          <Skeleton className="h-72" />
         </div>
       ) : !hasData ? (
         <Card className="pt-2">
@@ -164,38 +197,46 @@ export function Energy() {
       ) : (
         <>
           <Card className="p-4">
-            <p className="flex items-center justify-between text-[12px] text-muted">
-              {t("إجمالي الاستهلاك")}
-              <InfoHint
-                text={t(
-                  "مجموع عدادات الطاقة المرسلة من البورد لكل المصادر، مجمّعة كل ساعة على الخادم وبتوقيت الجهاز.",
-                )}
-              />
+            <p className="text-[13px] font-semibold text-muted">
+              {range === "day"
+                ? t("استهلاك اليوم حتى الآن")
+                : range === "week"
+                  ? t("استهلاك آخر 7 أيام")
+                  : t("استهلاك آخر 30 يوماً")}
             </p>
-            <p className="num mt-1 text-[28px] leading-tight font-bold text-ink">
-              {fmtNum(kwh, 1)} <span className="text-[13px] font-medium text-muted">kWh</span>
+            <p
+              className="num mt-1 text-[32px] leading-tight font-bold text-ink"
+              dir="ltr"
+              style={{ textAlign: uiStart() }}
+            >
+              {fmtNum(kwh, kwh >= 100 ? 0 : 1)}{" "}
+              <span className="text-[14px] font-medium text-muted">kWh</span>
             </p>
-            {trend !== null ? (
-              <p
-                className={cn(
-                  "mt-1 flex items-center gap-1 text-[12px] font-semibold",
-                  trend > 0 ? "text-warn" : "text-ok",
-                )}
-              >
-                {trend > 0 ? (
-                  <TrendingUp className="size-3.5" />
-                ) : (
-                  <TrendingDown className="size-3.5" />
-                )}
-                <span className="num">{fmtNum(Math.abs(trend), 0)}%</span>
-                {range === "day"
-                  ? t("مقارنة بنفس الفترة أمس")
-                  : range === "week"
-                    ? t("مقارنة بالأسبوع السابق")
-                    : t("مقارنة بالثلاثين يوماً السابقة")}
-              </p>
+            {cmp ? (
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold",
+                    cmp.tone === "up"
+                      ? "bg-warn-soft text-warn-strong"
+                      : cmp.tone === "down"
+                        ? "bg-ok-soft text-ok-strong"
+                        : "bg-canvas text-ink-2",
+                  )}
+                >
+                  {cmp.tone === "up" ? (
+                    <TrendingUp className="size-3.5" />
+                  ) : cmp.tone === "down" ? (
+                    <TrendingDown className="size-3.5" />
+                  ) : (
+                    <Minus className="size-3.5" />
+                  )}
+                  {cmp.text}
+                </span>
+                <span className="text-[12px] text-muted">{cmp.prev}</span>
+              </div>
             ) : (
-              <p className="mt-1 text-[12px] text-muted">
+              <p className="mt-2 text-[12px] text-muted">
                 {t("لا توجد بيانات للفترة السابقة للمقارنة")}
               </p>
             )}
@@ -203,81 +244,59 @@ export function Energy() {
 
           <div className="space-y-4 lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:items-start lg:gap-5 lg:space-y-0">
             <Card className="p-4">
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[15px] font-bold text-ink">
-                    {t("الاستهلاك حسب")} {range === "day" ? t("الساعة") : t("اليوم")}
-                  </p>
-                  {sel !== undefined ? (
-                    <p className="text-[12px] text-muted">
-                      {buckets[sel].title} •{" "}
-                      <span className="num font-semibold text-ink">
-                        {fmtNum(total(splits[sel]), 2)} kWh
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="text-[12px] text-muted">
-                      {t("اضغط على عمود لعرض التفاصيل (kWh)")}
-                    </p>
-                  )}
-                </div>
-                {sel !== undefined && (
-                  <button
-                    type="button"
-                    onClick={() => setSelected(undefined)}
-                    className="text-[12px] font-semibold text-brand-600"
-                  >
-                    {t("مسح")}
-                  </button>
-                )}
-              </div>
+              <p className="text-[15px] font-bold text-ink">
+                {range === "day" ? t("الاستهلاك في كل ساعة") : t("الاستهلاك في كل يوم")}
+              </p>
+              <p className="mb-5 text-[12px] text-muted">
+                {t("بالكيلوواط ساعة (kWh) • اضغط على أي عمود لرؤية تفاصيله")}
+              </p>
               <BarChart
                 bars={bars}
                 selected={sel}
-                onSelect={(i) => setSelected(i === sel ? undefined : i)}
-                labelEvery={range === "day" ? 4 : range === "week" ? 1 : 5}
+                onSelect={setSelected}
+                labelEvery={range === "day" ? 6 : range === "week" ? 1 : 7}
                 unit="kWh"
+                formatValue={(v) => fmtNum(v, v >= 10 ? 0 : 1)}
               />
-              {sel !== undefined ? (
-                <div className="mt-4 grid grid-cols-3 gap-2">
-                  {SOURCE_ORDER.map((id) => (
-                    <div
-                      key={id}
-                      className="rounded-xl px-2.5 py-2"
-                      style={{ background: SOURCE_META[id].soft }}
-                    >
-                      <p
-                        className="text-[10px] font-semibold"
-                        style={{ color: SOURCE_META[id].color }}
-                      >
-                        {SOURCE_META[id].short}
-                      </p>
-                      <p className="num text-[13px] font-bold text-ink">
-                        {fmtNum(splits[sel][id], 2)}
-                      </p>
-                    </div>
-                  ))}
+              <div className="mt-4 rounded-2xl bg-canvas p-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[13px] font-bold text-ink">
+                    {buckets[sel].title}
+                    {sel === currentIndex && (
+                      <span className="ms-1.5 text-[11px] font-medium text-muted">
+                        {range === "day" ? t("(الساعة الحالية)") : t("(اليوم)")}
+                      </span>
+                    )}
+                  </p>
+                  <p className="num shrink-0 text-[14px] font-bold text-ink">
+                    <bdi>{fmtNum(total(splits[sel]), 2)} kWh</bdi>
+                  </p>
                 </div>
-              ) : (
-                <div className="mt-4 flex justify-center gap-4">
-                  {SOURCE_ORDER.map((id) => (
-                    <span key={id} className="flex items-center gap-1.5 text-[11px] text-muted">
+                <div className="mt-2.5 flex flex-wrap gap-2">
+                  {shown.map((id) => (
+                    <span
+                      key={id}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-[12px] text-ink-2"
+                    >
                       <span
-                        className="size-2.5 rounded-[3px]"
+                        className="size-2 rounded-full"
                         style={{ background: SOURCE_META[id].color }}
                       />
                       {SOURCE_META[id].short}
+                      <b className="num text-ink">
+                        <bdi>{splits[sel][id] > 0 ? fmtNum(splits[sel][id], 2) : "0"}</bdi>
+                      </b>
                     </span>
                   ))}
                 </div>
-              )}
+              </div>
             </Card>
 
             <Card className="p-4">
-              <SectionTitle title={t("توزيع الاستهلاك على المصادر")} className="mb-4" />
+              <SectionTitle title={t("من أين جاءت الكهرباء؟")} className="mb-4" />
               <div className="flex items-center gap-5">
                 <Donut
-                  segments={SOURCE_ORDER.map((id) => ({
+                  segments={shown.map((id) => ({
                     value: totals[id],
                     color: SOURCE_META[id].color,
                   }))}
@@ -288,12 +307,12 @@ export function Energy() {
                   <p className="mt-1 text-[10px] text-muted">kWh</p>
                 </Donut>
                 <div className="min-w-0 flex-1 space-y-3">
-                  {SOURCE_ORDER.map((id) => (
+                  {shown.map((id) => (
                     <div key={id}>
-                      <div className="flex items-center justify-between text-[12px]">
+                      <div className="flex items-center justify-between text-[13px]">
                         <span className="flex items-center gap-1.5 font-semibold text-ink-2">
                           <span
-                            className="size-2.5 rounded-[3px]"
+                            className="size-2.5 rounded-full"
                             style={{ background: SOURCE_META[id].color }}
                           />
                           {SOURCE_META[id].short}

@@ -4,13 +4,14 @@ import { Button, Card, Field } from "../components/ui";
 import { claimDevice } from "../api/devices";
 import { APP_ENV } from "../config/supabase";
 import { errorMessage } from "../lib/errors";
+import { phoneTimeZone } from "../lib/tz";
 import { useDevices } from "../store/devices";
 import { t } from "../i18n";
 
 /**
  * Claims a factory-registered board with its Device ID and the PIN printed
  * on it (proof of possession, verified on the server). Bluetooth Wi-Fi
- * provisioning is deferred to a native app.
+ * provisioning comes later, together with self-generated board identity.
  */
 export function AddDevice({ onClose }: { onClose: () => void }) {
   const { refresh, setActiveId } = useDevices();
@@ -37,7 +38,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
       environment: APP_ENV,
       name: name.trim(),
       location: location.trim() || null,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone: phoneTimeZone() ?? "UTC",
     });
     setLoading(false);
     if (err !== null) return setError(err);
@@ -138,7 +139,7 @@ export function AddDevice({ onClose }: { onClose: () => void }) {
               <Bluetooth className="mt-0.5 size-5 shrink-0 text-faint" />
               <p className="text-[11px] leading-5 text-muted">
                 {t(
-                  "إعداد شبكة Wi-Fi للبورد عبر Bluetooth غير متاح في نسخة الويب، وينتظر التطبيق الأصلي. يجب أن يكون البورد متصلاً بالإنترنت ليرسل بياناته بعد الإضافة.",
+                  "تأكد أن البورد متصل بالواي فاي قبل الإضافة حتى يرسل بياناته. ربط البورد بالواي فاي عبر البلوتوث من التطبيق سيتوفر في إصدار قادم.",
                 )}
               </p>
             </div>

@@ -12,9 +12,10 @@ export interface ChartSeries {
 }
 
 /**
- * Time-series line chart. Mirrored for RTL (newest on the left), always
- * clipped to its own area, with optional shaded bands (outages/transfers)
- * and a highlighted safe range.
+ * Time-series line chart, kept deliberately plain: one line, its latest
+ * point marked, light gridlines, optional limit lines (the allowed voltage
+ * range) and shaded bands for outages/transfers. Mirrored for RTL (newest on
+ * the left in Arabic), always clipped to its own area.
  */
 export function LineChart({
   series,
@@ -22,9 +23,9 @@ export function LineChart({
   to,
   yMin,
   yMax,
-  height = 160,
+  height = 180,
   bands = [],
-  safe,
+  limits = [],
   xLabels = [],
   className,
 }: {
@@ -35,8 +36,9 @@ export function LineChart({
   yMax: number;
   height?: number;
   bands?: { from: number; to: number; color: string }[];
-  safe?: { from: number; to: number };
-  /** Time labels under the chart (the newest time is on the left, like every chart in the app). */
+  /** Horizontal reference lines, e.g. the allowed minimum and maximum. */
+  limits?: { value: number; label: string }[];
+  /** Time labels under the chart (the newest time is on the left in Arabic). */
   xLabels?: { t: number; label: string }[];
   className?: string;
 }) {
@@ -48,20 +50,19 @@ export function LineChart({
   // (left in Arabic, right in English), as in the bar charts.
   const rtl = isRtl();
   const x = (t: number) => (rtl ? W - ((t - from) / span) * W : ((t - from) / span) * W);
-  const y = (v: number) => H - 4 - ((v - yMin) / ySpan) * (H - 8);
+  const y = (v: number) => H - 6 - ((v - yMin) / ySpan) * (H - 12);
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
   const ticks = ticksFor(yMin, yMax, 3);
   const step = ticks.length > 1 ? ticks[1] - ticks[0] : niceStep(ySpan / 3);
+  const pct = (v: number) => `${(clamp(y(v), 0, H) / H) * 100}%`;
+  // The newest point of the first series, marked with a dot.
+  const lastSeg = series[0]?.segments[series[0].segments.length - 1];
+  const last = lastSeg?.[lastSeg.length - 1];
   return (
     <div className={cn("flex gap-2", className)}>
-      {/* Value axis on the right, as in the bar charts (RTL). */}
-      <div className="num relative w-8 shrink-0 text-[10px] text-faint" style={{ height }}>
+      <div className="num relative w-8 shrink-0 text-[11px] text-faint" style={{ height }}>
         {ticks.map((v) => (
-          <span
-            key={v}
-            className="absolute end-0 -translate-y-1/2"
-            style={{ top: `${(y(v) / H) * 100}%` }}
-          >
+          <span key={v} className="absolute end-0 -translate-y-1/2" style={{ top: pct(v) }}>
             {formatTick(v, step)}
           </span>
         ))}
@@ -79,37 +80,12 @@ export function LineChart({
               </clipPath>
               {series.map((s, k) => (
                 <linearGradient key={k} id={`${gid}-g${k}`} x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor={s.color} stopOpacity="0.2" />
+                  <stop offset="0%" stopColor={s.color} stopOpacity="0.14" />
                   <stop offset="100%" stopColor={s.color} stopOpacity="0" />
                 </linearGradient>
               ))}
             </defs>
             <g clipPath={`url(#${gid}-clip)`}>
-              {safe && (
-                <rect
-                  x={0}
-                  width={W}
-                  y={clamp(y(safe.to), 0, H)}
-                  height={Math.max(0, clamp(y(safe.from), 0, H) - clamp(y(safe.to), 0, H))}
-                  fill="#12b76a"
-                  opacity={0.08}
-                />
-              )}
-              {bands.map((b, i) => {
-                const x1 = clamp(x(b.to), 0, W);
-                const x2 = clamp(x(b.from), 0, W);
-                return (
-                  <rect
-                    key={i}
-                    x={x1}
-                    width={Math.max(1.5, x2 - x1)}
-                    y={0}
-                    height={H}
-                    fill={b.color}
-                    opacity={0.14}
-                  />
-                );
-              })}
               {ticks.map((v) => (
                 <line
                   key={v}
@@ -118,25 +94,52 @@ export function LineChart({
                   y1={y(v)}
                   y2={y(v)}
                   stroke="var(--color-line)"
-                  strokeDasharray="3 4"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+              {bands.map((b, i) => {
+                const x1 = clamp(Math.min(x(b.from), x(b.to)), 0, W);
+                const x2 = clamp(Math.max(x(b.from), x(b.to)), 0, W);
+                return (
+                  <rect
+                    key={i}
+                    x={x1}
+                    width={Math.max(2, x2 - x1)}
+                    y={0}
+                    height={H}
+                    fill={b.color}
+                    opacity={0.16}
+                  />
+                );
+              })}
+              {limits.map((l) => (
+                <line
+                  key={l.value}
+                  x1={0}
+                  x2={W}
+                  y1={y(l.value)}
+                  y2={y(l.value)}
+                  stroke="#f27a1a"
+                  strokeDasharray="5 4"
+                  strokeWidth={1.25}
                   vectorEffect="non-scaling-stroke"
                 />
               ))}
               {series.map((s, k) =>
                 s.segments.map((seg, j) => {
                   if (seg.length === 0) return null;
-                  const pts = seg.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`);
                   if (seg.length === 1) {
                     return (
                       <circle
                         key={`${k}-${j}`}
                         cx={x(seg[0].t)}
                         cy={y(seg[0].v)}
-                        r={1.6}
+                        r={1.8}
                         fill={s.color}
                       />
                     );
                   }
+                  const pts = seg.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`);
                   const line = `M${pts.join(" L")}`;
                   return (
                     <g key={`${k}-${j}`}>
@@ -150,7 +153,7 @@ export function LineChart({
                         d={line}
                         fill="none"
                         stroke={s.color}
-                        strokeWidth={2}
+                        strokeWidth={2.5}
                         strokeLinejoin="round"
                         strokeLinecap="round"
                         vectorEffect="non-scaling-stroke"
@@ -161,17 +164,37 @@ export function LineChart({
               )}
             </g>
           </svg>
+          {/* Limit labels and the latest-point dot are HTML so they never stretch. */}
+          {limits.map((l) => (
+            <span
+              key={l.value}
+              className="num absolute start-1 -translate-y-[calc(100%+2px)] rounded bg-surface/80 px-1 text-[10px] font-semibold text-warn-strong"
+              style={{ top: pct(l.value) }}
+            >
+              {l.label}
+            </span>
+          ))}
+          {last && (
+            <span
+              className="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface"
+              style={{
+                left: `${(clamp(x(last.t), 0, W) / W) * 100}%`,
+                top: pct(last.v),
+                background: series[0].color,
+              }}
+            />
+          )}
         </div>
         {xLabels.length > 0 && (
-          <div className="num relative mt-1 h-4 text-[10px] text-faint">
+          <div className="num relative mt-1.5 h-4 text-[11px] text-faint">
             {xLabels.map((l) => {
-              const pct = (clamp(x(l.t), 0, W) / W) * 100;
-              const shift = pct < 2 ? "0" : pct > 98 ? "-100%" : "-50%";
+              const p = (clamp(x(l.t), 0, W) / W) * 100;
+              const shift = p < 2 ? "0" : p > 98 ? "-100%" : "-50%";
               return (
                 <span
                   key={l.t}
                   className="absolute top-0 whitespace-nowrap"
-                  style={{ left: `${pct}%`, transform: `translateX(${shift})` }}
+                  style={{ left: `${p}%`, transform: `translateX(${shift})` }}
                 >
                   {l.label}
                 </span>
@@ -186,19 +209,27 @@ export function LineChart({
 
 export interface Bar {
   key: string;
+  /** Label under the bar (shown every `labelEvery` bars). */
   label: string;
-  segments: { value: number; color: string }[];
+  value: number;
+  /** A period that has not started yet (rest of today): drawn as an empty slot. */
+  future?: boolean;
 }
 
-/** Stacked bar chart. Flex order follows the RTL document direction. */
+/**
+ * Bar chart with one plain colour. The selected bar is solid and shows its
+ * value above it; the others fade so the selection is obvious. Flex order
+ * follows the document direction (first bar on the right in Arabic).
+ */
 export function BarChart({
   bars,
-  height = 170,
+  height = 180,
   selected,
   onSelect,
   labelEvery = 1,
   unit = "",
-  maxValue,
+  color = "var(--color-brand-500)",
+  formatValue = (v: number) => v.toFixed(1),
 }: {
   bars: Bar[];
   height?: number;
@@ -206,15 +237,14 @@ export function BarChart({
   onSelect?: (i: number) => void;
   labelEvery?: number;
   unit?: string;
-  maxValue?: number;
+  color?: string;
+  formatValue?: (v: number) => string;
 }) {
-  const totals = bars.map((b) => b.segments.reduce((a, s) => a + s.value, 0));
-  // A fixed scale (24 h in a day) is used as given: 0 / 8 / 16 / 24.
-  const step = maxValue ? maxValue / 3 : niceStep(Math.max(...totals, 0.001) / 3);
+  const step = niceStep(Math.max(...bars.map((b) => b.value), 0.001) / 3);
   const max = step * 3;
   return (
     <div className="flex gap-2">
-      <div className="num relative w-7 text-[10px] text-faint" style={{ height }}>
+      <div className="num relative w-8 shrink-0 text-[11px] text-faint" style={{ height }}>
         {[3, 2, 1, 0].map((k) => (
           <span
             key={k}
@@ -225,61 +255,80 @@ export function BarChart({
           </span>
         ))}
       </div>
-      <div className="relative flex-1">
+      <div className="relative min-w-0 flex-1">
         <div className="absolute inset-x-0 top-0" style={{ height }}>
           {[0, 1, 2, 3].map((k) => (
             <div
               key={k}
-              className="absolute inset-x-0 border-t border-dashed border-line"
+              className={cn(
+                "absolute inset-x-0 border-t",
+                k === 3 ? "border-line" : "border-line/60",
+              )}
               style={{ top: `${(k / 3) * 100}%` }}
             />
           ))}
         </div>
-        <div className="relative flex items-end gap-[3px]" style={{ height }}>
+        <div
+          className={cn("relative flex items-end", bars.length > 12 ? "gap-[3px]" : "gap-2")}
+          style={{ height }}
+        >
           {bars.map((b, i) => {
-            const total = totals[i];
             const active = selected === i;
             const dim = selected !== undefined && !active;
+            const h = (b.value / max) * 100;
             return (
               <button
                 key={b.key}
                 type="button"
-                aria-label={`${b.label}: ${total.toFixed(1)} ${unit}`}
+                aria-label={`${b.label}: ${formatValue(b.value)} ${unit}`}
+                aria-pressed={active}
+                disabled={b.future}
                 onClick={() => onSelect?.(i)}
-                className="group flex h-full flex-1 flex-col justify-end"
+                className="relative flex h-full min-w-0 flex-1 flex-col justify-end"
               >
-                <span
-                  className={cn(
-                    "flex w-full flex-col-reverse overflow-hidden rounded-t-[5px] rounded-b-[2px] transition-opacity",
-                    dim && "opacity-35",
-                  )}
-                  style={{ height: `${(total / max) * 100}%`, minHeight: total > 0 ? 3 : 0 }}
-                >
-                  {b.segments.map((s, k) =>
-                    s.value > 0 ? (
-                      <span
-                        key={k}
-                        style={{ flexGrow: s.value, background: s.color }}
-                        className="block min-h-px"
-                      />
-                    ) : null,
-                  )}
-                </span>
+                {active && (
+                  <span
+                    className="num absolute start-1/2 z-10 -translate-x-1/2 rounded-md bg-ink px-1.5 py-0.5 text-[10px] font-bold whitespace-nowrap text-surface rtl:translate-x-1/2"
+                    style={{ bottom: `calc(${h}% + 6px)` }}
+                  >
+                    {formatValue(b.value)}
+                  </span>
+                )}
+                {b.future ? (
+                  <span className="block h-1 w-full rounded-full bg-track" />
+                ) : (
+                  <span
+                    className={cn(
+                      "block w-full rounded-t-md rounded-b-sm transition-opacity",
+                      dim && "opacity-35",
+                    )}
+                    style={{
+                      height: `${h}%`,
+                      minHeight: b.value > 0 ? 4 : 2,
+                      background: b.value > 0 ? color : "var(--color-track)",
+                    }}
+                  />
+                )}
               </button>
             );
           })}
         </div>
-        <div className="mt-2 flex gap-[3px]">
+        <div className={cn("mt-2 flex", bars.length > 12 ? "gap-[3px]" : "gap-2")}>
           {bars.map((b, i) => (
-            <span key={b.key} className="flex min-w-0 flex-1 justify-center">
-              <span
-                className={cn(
-                  "num whitespace-nowrap text-[10px] text-faint",
-                  selected === i && "font-bold text-ink",
-                )}
-              >
-                {i % labelEvery === 0 || selected === i ? b.label : ""}
-              </span>
+            <span key={b.key} className="relative flex h-4 min-w-0 flex-1 justify-center">
+              {(selected === i ||
+                (i % labelEvery === 0 &&
+                  (selected === undefined ||
+                    Math.abs(selected - i) > (labelEvery > 1 ? 2 : 0)))) && (
+                <span
+                  className={cn(
+                    "num absolute whitespace-nowrap text-[11px]",
+                    selected === i ? "font-bold text-ink" : "text-faint",
+                  )}
+                >
+                  {b.label}
+                </span>
+              )}
             </span>
           ))}
         </div>

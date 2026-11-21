@@ -87,7 +87,6 @@ export function Settings() {
             </RowGroup>
 
             <RowGroup title={t("عام")}>
-              {row("timezone")}
               <Row
                 icon={Info}
                 title={t("معلومات الجهاز")}

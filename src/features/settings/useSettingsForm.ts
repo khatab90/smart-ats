@@ -3,6 +3,7 @@ import { updateSettings } from "../../api/settings";
 import type { DeviceSettings, EditableSettings } from "../../data/types";
 import { EDITABLE_KEYS, changedFields, validateSettings } from "../../domain/settings";
 import { asSchedule } from "../../domain/schedule";
+import { phoneTimeZone } from "../../lib/tz";
 import { useActiveDevice } from "../../store/devices";
 import { useToast } from "../../store/toast";
 import { t } from "../../i18n";
@@ -58,7 +59,11 @@ export function useSettingsForm() {
     }
     setFormError("");
     setSaving(true);
-    const { error } = await updateSettings(device.id, changed);
+    // The time zone is not a setting the user edits: it follows the phone of
+    // whoever saves (it decides midnight for daily totals and the solar hours).
+    const tz = phoneTimeZone();
+    const patch = tz && base && tz !== base.timezone ? { ...changed, timezone: tz } : changed;
+    const { error } = await updateSettings(device.id, patch);
     setSaving(false);
     if (error !== null) {
       setFormError(error);

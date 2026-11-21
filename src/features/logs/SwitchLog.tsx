@@ -1,4 +1,13 @@
-import { ArrowLeft, CircleCheck, CircleX, Hand, History, ZapOff } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  CircleCheck,
+  CircleX,
+  Hand,
+  History,
+  Radar,
+  ZapOff,
+} from "lucide-react";
 import { useMemo } from "react";
 import { Badge, Card, ErrorState, Row, RowGroup, SourceIcon } from "../../components/ui";
 import { useNav } from "../../store/nav";
@@ -22,14 +31,15 @@ const SWITCH_TYPES = [
 /** Restarts bound how long the previous source ran; they are not listed. */
 export const QUERY_TYPES = [...SWITCH_TYPES, "controller_restarted"];
 
-export type Filter = "all" | "smart" | "manual" | "failed" | "no_source";
+/** Transfer history filter: everything, successful transfers, failures, total outages. */
+export type Filter = "all" | "ok" | "failed" | "no_source";
 
 /** Events shown as entries in the log (an outage end is part of its start). */
 export function isListed(e: EventRow) {
   return e.type !== "no_source_ended" && e.type !== "controller_restarted";
 }
 
-const ENTRY_COUNT = {
+export const ENTRY_COUNT = {
   one: t("سجل واحد"),
   two: t("سجلان"),
   few: t("سجلات"),
@@ -172,31 +182,29 @@ export function SwitchLog() {
 
         <div className="grid grid-cols-2 gap-3">
           <StatTile
+            icon={ArrowLeftRight}
             label={t("تحويلات اليوم")}
+            note={t("الناجحة منذ منتصف الليل")}
             value={loading ? null : String(todayCount)}
-            hint={t(
-              "عدد التحويلات الناجحة منذ منتصف الليل بتوقيت الجهاز. المحاولات الفاشلة لا تُحتسب هنا.",
-            )}
           />
           <StatTile
-            label={t("محاولات فاشلة (7 أيام)")}
+            icon={CircleX}
+            label={t("تحويلات فشلت")}
+            note={t("خلال آخر 7 أيام")}
             value={loading ? null : String(failedWeek)}
             tone={failedWeek ? "danger" : undefined}
-            hint={t("عدد مرات تعذّر فيها الانتقال إلى المصدر البديل خلال آخر 7 أيام.")}
           />
           <StatTile
-            label={t("متوسط زمن الانقطاع")}
+            icon={ZapOff}
+            label={t("انقطاع الكهرباء عند التحويل")}
+            note={t("المتوسط • آخر 7 أيام")}
             value={loading ? null : avg(dead) === null ? "—" : fmtMs(avg(dead)!)}
-            hint={t(
-              "متوسط المدة الفعلية بين فصل المصدر القديم وتوصيل الجديد كما قاسها البورد، لكل المصادر بما فيها المولد، خلال آخر 7 أيام.",
-            )}
           />
           <StatTile
-            label={t("متوسط زمن الكشف")}
+            icon={Radar}
+            label={t("سرعة اكتشاف الانقطاع")}
+            note={t("المتوسط • آخر 7 أيام")}
             value={loading ? null : avg(detect) === null ? "—" : fmtMs(avg(detect)!)}
-            hint={t(
-              "متوسط المدة بين خروج المصدر عن الحدود وبدء التحويل كما قاسها البورد، خلال آخر 7 أيام.",
-            )}
           />
         </div>
       </div>
@@ -251,7 +259,6 @@ export function SwitchRow({
     );
   }
   const failed = e.type === "transfer_failed";
-  const detect = num(e.data.detect_ms);
   const dead = num(e.data.dead_ms);
   const reason = transferReasonText(e.data.reason) ?? (failed ? t("سبب غير محدد") : null);
   const restored = !failed && !isSwitch(e);
@@ -281,23 +288,13 @@ export function SwitchRow({
         </p>
         <p className="text-[11px] leading-5 text-muted">
           {reason}
-          {restored
-            ? dead !== null && (
-                <>
-                  {reason && " • "}
-                  {t("مدة الانقطاع")} <bdi className="whitespace-nowrap">{fmtDuration(dead)}</bdi>
-                </>
-              )
-            : !failed &&
-              (detect !== null || dead !== null) && (
-                <>
-                  {reason && " • "}
-                  {t("كشف")}{" "}
-                  <bdi className="whitespace-nowrap">{detect !== null ? fmtMs(detect) : "—"}</bdi>{" "}
-                  {t("• انقطاع")}{" "}
-                  <bdi className="whitespace-nowrap">{dead !== null ? fmtMs(dead) : "—"}</bdi>
-                </>
-              )}
+          {!failed && dead !== null && (
+            <>
+              {reason && " • "}
+              {restored ? t("دام الانقطاع") : t("انقطاع")}{" "}
+              <bdi className="whitespace-nowrap">{restored ? fmtDuration(dead) : fmtMs(dead)}</bdi>
+            </>
+          )}
         </p>
       </div>
       <div className="text-end">

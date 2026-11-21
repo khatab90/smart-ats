@@ -1,5 +1,5 @@
 import { type LucideIcon } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { cn } from "../../lib/cn";
 import { t } from "../../i18n";
 
@@ -48,28 +48,5 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
         </button>
       )}
     </div>
-  );
-}
-
-/** Small "؟" toggle that reveals how a metric is defined (C5). */
-export function InfoHint({ text }: { text: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <span className="relative inline-flex">
-      <button
-        type="button"
-        aria-label={t("تعريف المقياس")}
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className="flex size-5 items-center justify-center rounded-full bg-canvas text-[11px] font-bold text-muted hover:text-ink"
-      >
-        {t("؟")}
-      </button>
-      {open && (
-        <span className="absolute top-6 start-0 z-10 w-52 rounded-xl border border-line bg-surface p-2.5 text-[11px] leading-5 font-normal text-ink-2 shadow-lg">
-          {text}
-        </span>
-      )}
-    </span>
   );
 }

@@ -37,7 +37,6 @@ export const EN: Record<string, string> = {
   "غير متصل": "Offline",
   إغلاق: "Close",
   إلغاء: "Cancel",
-  "تعريف المقياس": "What this means",
   "؟": "?",
   "إخفاء كلمة المرور": "Hide password",
   "إظهار كلمة المرور": "Show password",
@@ -345,19 +344,12 @@ export const EN: Record<string, string> = {
   "غير متوفر": "Unavailable",
   س: "h",
   "تصفير ساعات {0}": "Reset {0} hours",
-  "تُحسب الساعات في ذاكرة البورد فقط عندما يكون المصدر هو المصدر الفعّال الذي يغذي الحمل. وقت التحويل والانقطاع الكلي لا يُحتسب لأي مصدر.":
-    "Hours are counted in the board's memory only while the source is the active one feeding the load. Transfer time and total outages are not counted for any source.",
-  "سجل التشغيل اليومي": "Daily runtime",
   "الأسبوع السابق": "Previous week",
   "الأسبوع التالي": "Next week",
   "لا توجد أحداث تحويل مسجلة لهذه الفترة.": "No transfer events recorded for this period.",
-  ساعة: "hours",
   "حتى الآن": "So far",
   "24 ساعة": "24 hours",
-  "بلا مصدر / تحويل": "No source / transfer",
   "غير معروفة (قبل أول حدث مسجّل).": "unknown (before the first recorded event).",
-  "محسوب من سجل أحداث التحويل. العدادات التراكمية أعلاه من ذاكرة البورد.":
-    "Calculated from the transfer log. The cumulative counters above come from the board's memory.",
   "تصفير جميع العدادات": "Reset all counters",
   "تصفير عداد المصدر": "Reset source counter",
   "تأكيد التصفير": "Confirm reset",
@@ -370,21 +362,8 @@ export const EN: Record<string, string> = {
   "المصدر السابق": "Previous source",
   "عمل {0}": "Ran {0}",
   "آخر تحويل": "Last transfer",
-  "عدد التحويلات الناجحة منذ منتصف الليل بتوقيت الجهاز. المحاولات الفاشلة لا تُحتسب هنا.":
-    "Successful transfers since midnight, device time. Failed attempts are not counted here.",
-  "محاولات فاشلة (7 أيام)": "Failed attempts (7 days)",
-  "عدد مرات تعذّر فيها الانتقال إلى المصدر البديل خلال آخر 7 أيام.":
-    "Times switching to the backup source failed in the last 7 days.",
-  "متوسط زمن الانقطاع": "Average outage time",
-  "متوسط المدة الفعلية بين فصل المصدر القديم وتوصيل الجديد كما قاسها البورد، لكل المصادر بما فيها المولد، خلال آخر 7 أيام.":
-    "Average actual time between disconnecting the old source and connecting the new one, as measured by the board, for all sources including the generator, over the last 7 days.",
-  "متوسط زمن الكشف": "Average detection time",
-  "متوسط المدة بين خروج المصدر عن الحدود وبدء التحويل كما قاسها البورد، خلال آخر 7 أيام.":
-    "Average time between a source going out of limits and the transfer starting, as measured by the board, over the last 7 days.",
   الكل: "All",
-  "الوضع الذكي": "Smart mode",
   فاشلة: "Failed",
-  "انقطاع كلي": "Total outage",
   "لم يسجّل البورد أي عملية مطابقة خلال آخر {0} أيام.":
     "The board recorded no matching operation in the last {0} days.",
   سجل: "entries",
@@ -395,9 +374,6 @@ export const EN: Record<string, string> = {
   "سبب غير محدد": "Unspecified reason",
   "فشل التحويل إلى {0}": "Transfer to {0} failed",
   "إلى {0}": "To {0}",
-  "مدة الانقطاع": "Outage length",
-  كشف: "Detection",
-  "• انقطاع": "• Outage",
   فشل: "Failed",
   ناجح: "Succeeded",
   "هذا هو بريدك الحالي": "This is already your email",
@@ -542,8 +518,6 @@ export const EN: Record<string, string> = {
   "اسم الجهاز": "Device name",
   "مثال: المنزل": "Example: Home",
   "الموقع (اختياري)": "Location (optional)",
-  "إعداد شبكة Wi-Fi للبورد عبر Bluetooth غير متاح في نسخة الويب، وينتظر التطبيق الأصلي. يجب أن يكون البورد متصلاً بالإنترنت ليرسل بياناته بعد الإضافة.":
-    "Setting up the board's Wi-Fi over Bluetooth isn't available in the web version and is waiting for the mobile app. The board must be online to send its data after it is added.",
   "الذهاب إلى لوحة التحكم": "Go to the dashboard",
   "إضافة الجهاز": "Add device",
   "صباح الخير": "Good morning",
@@ -584,26 +558,10 @@ export const EN: Record<string, string> = {
     "The device will be detached from your account and all users, and its stored logs and readings deleted so no later owner sees them. To add it again you'll need its Device ID and PIN.",
   "ستفقد الوصول إلى هذا الجهاز وإشعاراته.":
     "You will lose access to this device and its notifications.",
-  "الساعة {0}:00 – {1}:00": "{0}:00 – {1}:00",
   "أضف جهازاً لعرض إحصائيات الاستهلاك.": "Add a device to see consumption statistics.",
-  "إحصائيات الاستهلاك التاريخية وتوزيعها على المصادر":
-    "Historical consumption and how it splits across sources",
-  الأسبوع: "Week",
-  الشهر: "Month",
   "تظهر الإحصائيات بعد أن يرسل البورد عدادات الطاقة لكل مصدر خلال هذه الفترة.":
     "Statistics appear once the board sends energy counters for each source during this period.",
-  "إجمالي الاستهلاك": "Total consumption",
-  "مجموع عدادات الطاقة المرسلة من البورد لكل المصادر، مجمّعة كل ساعة على الخادم وبتوقيت الجهاز.":
-    "Sum of the energy counters sent by the board for all sources, aggregated hourly on the server in device time.",
-  "مقارنة بنفس الفترة أمس": "Compared with the same time yesterday",
-  "مقارنة بالأسبوع السابق": "Compared with the previous week",
-  "مقارنة بالثلاثين يوماً السابقة": "Compared with the previous 30 days",
   "لا توجد بيانات للفترة السابقة للمقارنة": "No data for the previous period to compare",
-  "الاستهلاك حسب": "Consumption by",
-  الساعة: "hour",
-  "اضغط على عمود لعرض التفاصيل (kWh)": "Tap a bar for details (kWh)",
-  مسح: "Clear",
-  "توزيع الاستهلاك على المصادر": "Consumption by source",
   "تم استخدام هذه الدعوة بالفعل.": "This invitation has already been used.",
   "ألغى المسؤول هذه الدعوة.": "The admin cancelled this invitation.",
   "انتهت صلاحية هذه الدعوة. اطلب من المسؤول إعادة إرسالها.":
@@ -624,28 +582,19 @@ export const EN: Record<string, string> = {
     "Current and power are measured on the load side, and show for this source only when it is the active one.",
   "أضف جهازاً لعرض القراءات اللحظية.": "Add a device to see live readings.",
   "القراءات الكهربائية اللحظية من البورد": "Live electrical readings from the board",
-  "الخرج (الحمل)": "Output (load)",
   "القدرة المسحوبة": "Power drawn",
   "قدرة {0}": "{0} power",
   "البورد غير متصل — لا توجد قراءات حية": "The board is offline — no live readings",
   "هذا المصدر لا يغذي الحمل حالياً": "This source isn't feeding the load right now",
-  "النطاق المسموح": "Allowed range",
-  "لم يُضبط الجهد الاسمي في الإعدادات": "Nominal voltage not set in settings",
   الاسمي: "Nominal",
-  "لم يُضبط التردد الاسمي": "Nominal frequency not set",
-  "الرسم البياني التفصيلي": "Detailed chart",
   "آخر 3 دقائق": "Last 3 minutes",
   "لا توجد قراءات لهذا القياس خلال آخر 3 دقائق.":
     "No readings for this measure in the last 3 minutes.",
   "قبل دقيقة": "1 min ago",
   "قبل دقيقتين": "2 min ago",
-  "قبل 3 د": "3 min ago",
-  "الفراغ في الخط = لا توجد قراءة": "Gap in the line = no reading",
   الأدنى: "Min",
   المتوسط: "Average",
   الأعلى: "Max",
-  "الإحصائيات تشمل القراءات الصفرية أثناء الانقطاع.":
-    "Statistics include zero readings during outages.",
   "أضف جهازاً لعرض السجل.": "Add a device to see the log.",
   "عمليات التحويل وساعات تشغيل المصادر": "Transfers and source runtime",
   التحويلات: "Transfers",
@@ -703,7 +652,6 @@ export const EN: Record<string, string> = {
   "الجهد الاسمي": "Nominal voltage",
   "التردد الاسمي": "Nominal frequency",
   "النطاق المسموح:": "Allowed range:",
-  "المنطقة الزمنية": "Time zone",
   "غير محدد": "Not set",
   "تم تغيير الصلاحية": "Role changed",
   "تمت إزالة المستخدم": "User removed",
@@ -726,8 +674,6 @@ export const EN: Record<string, string> = {
   "إعادة إرسال": "Resend",
   "إلغاء الدعوة": "Cancel invitation",
   الصلاحيات: "Roles",
-  "الصلاحيات خاصة بهذا الجهاز، وتُفرض في قاعدة البيانات وليس في الواجهة فقط.":
-    "Roles apply to this device and are enforced in the database, not only in the app.",
   "إدارة المستخدم": "Manage user",
   "نقل الملكية إلى هذا المستخدم": "Transfer ownership to this user",
   "إزالة المستخدم": "Remove user",
@@ -784,12 +730,7 @@ export const EN: Record<string, string> = {
     "Your changes to “{0}” are not saved. They will be lost if you leave now.",
   "حسب شبكة موقع التركيب. حدود الجهد والتردد تُحسب كنسب من هذه القيم.":
     "As on the grid where the board is installed. Voltage and frequency limits are percentages of these values.",
-  "تحدد منتصف الليل لعدّادات «اليوم» وأوقات السجل. مثال: Asia/Baghdad":
-    "Sets midnight for the “today” counters and the log times. Example: Asia/Baghdad",
   "المسموح من {0} إلى {1}": "Allowed from {0} to {1}",
-  المصدر: "Source",
-  "كل المصادر": "All sources",
-  "نوع العملية": "Type",
   "لا توجد عمليات": "No entries",
   "تعذر تسجيل الدخول من الرابط": "Could not sign in from the link",
   "جهازان يرسلان بنفس المعرّف": "Two devices are sending with the same ID",
@@ -844,64 +785,95 @@ export const EN: Record<string, string> = {
   "نزّله وثبّته فوق الحالي؛ بياناتك تبقى.":
     "Download it and install it over this one; your data stays.",
   تحميل: "Download",
-  "إشارة الواي فاي ضعيفة":
-    "Weak Wi-Fi signal",
+  "إشارة الواي فاي ضعيفة": "Weak Wi-Fi signal",
   "قد تتأخر قراءات البورد أو تنقطع. قرّب الراوتر أو استخدم مقوي إشارة.":
     "The board's readings may be delayed or drop. Move the router closer or add a range extender.",
-  "الإعدادات لم تُطبَّق بعد":
-    "Settings not applied yet",
+  "الإعدادات لم تُطبَّق بعد": "Settings not applied yet",
   "حفظت تعديلاً على الإعدادات ولم يؤكد البورد تطبيقه حتى الآن.":
     "You saved a settings change and the board has not confirmed applying it yet.",
-  "جيدة":
-    "Good",
-  "رجوع الكهرباء للبورد":
-    "Power returned to the board",
-  "إعادة تشغيل من البرنامج":
-    "Restart by the software",
-  "خطأ في البرنامج":
-    "Software error",
-  "توقف البرنامج (مؤقت الحماية)":
-    "Software hang (watchdog)",
-  "انخفاض جهد تغذية البورد":
-    "Low board supply voltage",
-  "زر إعادة التشغيل":
-    "Reset button",
-  "استيقاظ من السكون":
-    "Wake from sleep",
-  "معلومات الجهاز":
-    "Device info",
-  "أضف جهازاً لعرض معلوماته.":
-    "Add a device to see its details.",
-  "الجهاز":
-    "Device",
-  "إصدار برنامج البورد":
-    "Board software version",
-  "الاتصال":
-    "Connection",
-  "آخر تواصل":
-    "Last contact",
-  "قوة إشارة الواي فاي":
-    "Wi-Fi signal strength",
-  "تظهر أثناء اتصال البورد.":
-    "Shown while the board is connected.",
-  "حالة البورد":
-    "Board health",
-  "سبب آخر تشغيل: {0}":
-    "Last start: {0}",
-  "حرارة المتحكم":
-    "Controller temperature",
-  "جهد تغذية البورد":
-    "Board supply voltage",
-  "الإعدادات":
-    "Settings",
-  "آخر تعديل":
-    "Last change",
-  "مطبّقة على البورد.":
-    "Applied on the board.",
+  جيدة: "Good",
+  "رجوع الكهرباء للبورد": "Power returned to the board",
+  "إعادة تشغيل من البرنامج": "Restart by the software",
+  "خطأ في البرنامج": "Software error",
+  "توقف البرنامج (مؤقت الحماية)": "Software hang (watchdog)",
+  "انخفاض جهد تغذية البورد": "Low board supply voltage",
+  "زر إعادة التشغيل": "Reset button",
+  "استيقاظ من السكون": "Wake from sleep",
+  "معلومات الجهاز": "Device info",
+  "أضف جهازاً لعرض معلوماته.": "Add a device to see its details.",
+  الجهاز: "Device",
+  "إصدار برنامج البورد": "Board software version",
+  الاتصال: "Connection",
+  "آخر تواصل": "Last contact",
+  "قوة إشارة الواي فاي": "Wi-Fi signal strength",
+  "تظهر أثناء اتصال البورد.": "Shown while the board is connected.",
+  "حالة البورد": "Board health",
+  "سبب آخر تشغيل: {0}": "Last start: {0}",
+  "حرارة المتحكم": "Controller temperature",
+  "جهد تغذية البورد": "Board supply voltage",
+  الإعدادات: "Settings",
+  "آخر تعديل": "Last change",
+  "مطبّقة على البورد.": "Applied on the board.",
   "محفوظة، وبانتظار أن يطبقها البورد عند اتصاله.":
     "Saved, waiting for the board to apply them when it connects.",
-  "آخر تعديل {0}":
-    "Last change {0}",
-  "المعرّف، إصدار البرنامج، الإشارة وحالة البورد":
-    "ID, software version, signal and board health",
+  "آخر تعديل {0}": "Last change {0}",
+  "المعرّف، إصدار البرنامج، الإشارة وحالة البورد": "ID, software version, signal and board health",
+  "تُحسب ساعات المصدر فقط عندما يكون هو الذي يغذي البيت.":
+    "A source's hours count only while it is the one powering the home.",
+  "التشغيل اليومي": "Daily runtime",
+  "أي مصدر شغّل البيت وكم من الوقت": "Which source powered the home, and for how long",
+  "بدون كهرباء": "No power",
+  "الناجحة منذ منتصف الليل": "Successful, since midnight",
+  "تحويلات فشلت": "Failed transfers",
+  "خلال آخر 7 أيام": "In the last 7 days",
+  "انقطاع الكهرباء عند التحويل": "Power gap during a transfer",
+  "المتوسط • آخر 7 أيام": "Average • last 7 days",
+  "سرعة اكتشاف الانقطاع": "Outage detection time",
+  "دام الانقطاع": "Outage lasted",
+  انقطاع: "Outage",
+  "{0} ملي ثانية": "{0} ms",
+  "{0} ص": "{0} am",
+  "{0} م": "{0} pm",
+  "تأكد أن البورد متصل بالواي فاي قبل الإضافة حتى يرسل بياناته. ربط البورد بالواي فاي عبر البلوتوث من التطبيق سيتوفر في إصدار قادم.":
+    "Make sure the board is on Wi-Fi before adding it, so it can send its data. Connecting the board to Wi-Fi over Bluetooth from the app is coming in a later version.",
+  "من {0} إلى {1}": "{0} – {1}",
+  "أكثر من أمس بـ {0}": "{0} more than yesterday",
+  "أقل من أمس بـ {0}": "{0} less than yesterday",
+  "مثل أمس تقريباً": "About the same as yesterday",
+  "أمس حتى نفس الساعة: {0}": "Yesterday by this time: {0}",
+  "أكثر من الأسبوع السابق بـ {0}": "{0} more than the previous week",
+  "أقل من الأسبوع السابق بـ {0}": "{0} less than the previous week",
+  "مثل الأسبوع السابق تقريباً": "About the same as the previous week",
+  "الأسبوع السابق: {0}": "Previous week: {0}",
+  "أكثر من الشهر السابق بـ {0}": "{0} more than the previous month",
+  "أقل من الشهر السابق بـ {0}": "{0} less than the previous month",
+  "مثل الشهر السابق تقريباً": "About the same as the previous month",
+  "الشهر السابق: {0}": "Previous month: {0}",
+  "كم استهلكت ومن أي مصدر": "How much you used, and from which source",
+  "7 أيام": "7 days",
+  "30 يوماً": "30 days",
+  "استهلاك اليوم حتى الآن": "Used today so far",
+  "استهلاك آخر 7 أيام": "Used in the last 7 days",
+  "استهلاك آخر 30 يوماً": "Used in the last 30 days",
+  "الاستهلاك في كل ساعة": "Use per hour",
+  "الاستهلاك في كل يوم": "Use per day",
+  "بالكيلوواط ساعة (kWh) • اضغط على أي عمود لرؤية تفاصيله":
+    "In kilowatt-hours (kWh) • tap any bar for its details",
+  "(الساعة الحالية)": "(this hour)",
+  "(اليوم)": "(today)",
+  "من أين جاءت الكهرباء؟": "Where the power came from",
+  الحمل: "Load",
+  "غير مضبوط": "Not set",
+  "كيف تغيّرت القراءة": "How the reading changed",
+  "الحد الأعلى {0}": "Max {0}",
+  "الحد الأدنى {0}": "Min {0}",
+  "قبل 3 دقائق": "3 min ago",
+  "انقطاع الكهرباء": "Power outage",
+  "غير المقروءة ({0})": "Unread ({0})",
+  "غير المقروءة": "Unread",
+  "قرأت كل الإشعارات": "All caught up",
+  "لا توجد إشعارات جديدة.": "No new notifications.",
+  ناجحة: "Successful",
+  "فاشلة ({0})": "Failed ({0})",
+  "الصلاحيات خاصة بهذا الجهاز فقط.": "Permissions apply to this device only.",
 };

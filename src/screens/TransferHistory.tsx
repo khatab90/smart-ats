@@ -1,41 +1,31 @@
 import { History } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Card, Chips, EmptyState, ErrorState, ScreenHeader, Skeleton } from "../components/ui";
-import { SOURCE_META } from "../data/meta";
-import type { EventRow, SourceId } from "../data/types";
-import { installedSources } from "../domain/sources";
+import { Card, EmptyState, ErrorState, ScreenHeader, Segmented, Skeleton } from "../components/ui";
+import type { EventRow } from "../data/types";
 import {
+  ENTRY_COUNT,
   QUERY_TYPES,
   SwitchRow,
   isListed,
-  isManual,
   type Filter,
 } from "../features/logs/SwitchLog";
 import { useEvents } from "../hooks/data";
-import { cn } from "../lib/cn";
-import { fmtDayLabel } from "../lib/format";
+import { arCount, fmtDayLabel } from "../lib/format";
 import { addDaysInTz, startOfDayInTz } from "../lib/tz";
 import { useActiveDevice, useNow } from "../store/devices";
 import { useNav } from "../store/nav";
 import { t } from "../i18n";
 
-/** True when the event involves the source: switched to it, away from it, or it failed. */
-function involves(e: EventRow, s: SourceId) {
-  return e.to_source === s || e.from_source === s;
-}
-
-/** The full transfer log, filtered by kind and by source. */
+/** The full transfer log, with one simple filter. */
 export function TransferHistory() {
-  const { device, status, settings, serverNow } = useActiveDevice();
+  const { device, settings, serverNow } = useActiveDevice();
   const { back } = useNav();
   const tz = settings?.timezone ?? "UTC";
   const now = useNow(60_000);
   const [days, setDays] = useState(7);
   const [filter, setFilter] = useState<Filter>("all");
-  const [source, setSource] = useState<SourceId | "all">("all");
   const since = useMemo(() => addDaysInTz(serverNow(), -(days - 1), tz), [days, tz, serverNow]);
   const { data, loading, error, reload } = useEvents(device?.id ?? null, QUERY_TYPES, since);
-  const installed = installedSources(status);
 
   // Pair each total-loss start with its end for the duration.
   const noSourceEnd = useMemo(() => {
@@ -49,10 +39,10 @@ export function TransferHistory() {
     return map;
   }, [data]);
 
-  const bySource = data.filter((e) => isListed(e) && (source === "all" || involves(e, source)));
-  const filtered = bySource.filter((e) => {
-    if (filter === "smart") return e.type === "transfer_completed" && !isManual(e);
-    if (filter === "manual") return e.type === "transfer_completed" && isManual(e);
+  const listed = data.filter(isListed);
+  const failedCount = listed.filter((e) => e.type === "transfer_failed").length;
+  const filtered = listed.filter((e) => {
+    if (filter === "ok") return e.type === "transfer_completed";
     if (filter === "failed") return e.type === "transfer_failed";
     if (filter === "no_source") return e.type === "no_source_started";
     return true;
@@ -75,42 +65,19 @@ export function TransferHistory() {
         onBack={back}
       />
       <div className="space-y-4 px-5">
-        <div>
-          <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{t("المصدر")}</p>
-          <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5">
-            <SourceChip active={source === "all"} onClick={() => setSource("all")}>
-              {t("كل المصادر")}
-            </SourceChip>
-            {installed.map((s) => (
-              <SourceChip key={s} active={source === s} onClick={() => setSource(s)}>
-                <span
-                  className="size-2.5 rounded-full"
-                  style={{ background: SOURCE_META[s].color }}
-                />
-                {SOURCE_META[s].short}
-              </SourceChip>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-2 px-1 text-[12px] font-semibold text-muted">{t("نوع العملية")}</p>
-          <Chips
-            value={filter}
-            onChange={setFilter}
-            options={[
-              { value: "all", label: t("الكل") },
-              { value: "smart", label: t("الوضع الذكي") },
-              { value: "manual", label: t("يدوي") },
-              {
-                value: "failed",
-                label: t("فاشلة"),
-                count: bySource.filter((e) => e.type === "transfer_failed").length,
-              },
-              { value: "no_source", label: t("انقطاع كلي") },
-            ]}
-          />
-        </div>
+        <Segmented
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: "all", label: t("الكل") },
+            { value: "ok", label: t("ناجحة") },
+            {
+              value: "failed",
+              label: failedCount ? t("فاشلة ({0})", { 0: failedCount }) : t("فاشلة"),
+            },
+            { value: "no_source", label: t("انقطاع") },
+          ]}
+        />
 
         {error ? (
           <ErrorState message={error} onRetry={reload} />
@@ -130,7 +97,7 @@ export function TransferHistory() {
               <div className="mb-2 flex items-center justify-between px-1">
                 <p className="text-[13px] font-bold text-ink">{fmtDayLabel(day, now, tz)}</p>
                 <span className="text-[11px] text-muted">
-                  {events.length} {t("سجل")}
+                  {arCount(events.length, ENTRY_COUNT)}
                 </span>
               </div>
               <Card className="divide-y divide-line overflow-hidden">
@@ -153,31 +120,5 @@ export function TransferHistory() {
         )}
       </div>
     </div>
-  );
-}
-
-function SourceChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        "flex h-10 shrink-0 items-center gap-2 rounded-2xl border px-3.5 text-[13px] font-semibold transition",
-        active
-          ? "border-brand-800 bg-brand-800 text-white"
-          : "border-line bg-surface text-ink-2 hover:border-brand-200",
-      )}
-    >
-      {children}
-    </button>
   );
 }

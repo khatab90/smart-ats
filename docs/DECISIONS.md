@@ -182,3 +182,14 @@ email only.
 **Why.** One target to build, test and support. Phone verification needed a
 paid SMS provider and gave nothing the email does not already give.
 
+
+## ADR-020 — The device time zone follows the phone; no "?" hints
+
+**Decision.** The time zone is no longer a setting on its own screen. A new
+device takes the phone's time zone when it is added, and every settings save
+sends the time zone of the phone that saves it when it differs. Explanations
+are written as short notes under each number instead of "?" pop-ups.
+
+**Why.** Users in one house share one time zone, and a free-text IANA name
+("Asia/Baghdad") was hard to get right. The pop-up hints were rarely opened
+and made the cards look busy; a few plain words under the value say the same.
