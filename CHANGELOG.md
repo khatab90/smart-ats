@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.13.0 — 2026-11-21
+
+### Changed
+- **Home no longer has the "Board connection" card.** The device pill and the hero already show whether the board is connected; problems appear as banners only while they last: weak Wi-Fi signal, or settings saved more than 30 seconds ago that the board has not applied.
+- **New "Device info" screen** (Device settings → General): device ID, board software version, last contact, Wi-Fi signal in words and dBm, uptime and the reason of the last start, controller temperature, board supply voltage, and whether the settings are applied. Notes about the board clock, rejected events and a full event memory moved here too.
+- **"Settings version 8 / 8" is replaced by the date of the last change**, in Device settings and in Device info.
+
+### Database
+- `app_config.latest_app_version` raised to 2.13.0 (migration 8), so 2.12.0 offers the update.
+
 ## 2.12.0 — 2026-11-21
 
 Found after 2.11.0: an older app installed on a phone opened to "database not set up" once the database dropped the phone column.
