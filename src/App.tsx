@@ -38,6 +38,7 @@ const Profile = lazy(() => named(import("./screens/Profile"), "Profile"));
 const Users = lazy(() => named(import("./screens/Users"), "Users"));
 const Devices = lazy(() => named(import("./screens/Devices"), "Devices"));
 const Settings = lazy(() => named(import("./screens/Settings"), "Settings"));
+const DeviceInfo = lazy(() => named(import("./screens/DeviceInfo"), "DeviceInfo"));
 const SettingsSectionScreen = lazy(() =>
   import("./screens/SettingsSection").then((m) => ({ default: m.SettingsSectionScreen })),
 );
@@ -176,6 +177,8 @@ function MainApp() {
         return <AddDevice onClose={back} />;
       case "settings":
         return <Settings />;
+      case "deviceInfo":
+        return <DeviceInfo />;
       case "transfers":
         return <TransferHistory />;
     }

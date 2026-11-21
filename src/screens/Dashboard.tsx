@@ -7,7 +7,6 @@ import { useNav } from "../store/nav";
 import { useNotifications } from "../store/notifications";
 import { LinkBadge } from "../components/status";
 import { WaitingForBoard, useAwaitingFirstData } from "../components/DeviceGate";
-import { ConnectionCard } from "../features/dashboard/ConnectionCard";
 import { DeviceSheet } from "../features/dashboard/DeviceSheet";
 import { Hero } from "../features/dashboard/Hero";
 import { ModeCard } from "../features/dashboard/ModeCard";
@@ -136,9 +135,6 @@ function DeviceBody() {
         <div className="contents lg:flex lg:flex-col lg:gap-5">
           <div className="order-2 lg:order-none">
             <ModeCard />
-          </div>
-          <div className="order-4 lg:order-none">
-            <ConnectionCard />
           </div>
         </div>
       </div>

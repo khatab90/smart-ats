@@ -238,18 +238,9 @@ export const EN: Record<string, string> = {
   "العودة لتسجيل الدخول": "Back to sign in",
   "إعادة الإرسال بعد {0} ث": "Resend in {0} s",
   "إعادة الإرسال": "Resend",
-  "قوة الإشارة {0} dBm": "Signal strength {0} dBm",
-  "لا توجد قراءة": "No reading",
-  "الاتصال بالبورد": "Board connection",
   "لم يتصل بعد": "Not connected yet",
-  "تحديث لحظي": "Live updates",
-  "تحديث كل 5 ث": "Updates every 5 s",
-  "جارٍ الاتصال بالخادم": "Connecting to the server",
   "آخر تحديث": "Last update",
   "البرنامج الثابت": "Firmware",
-  "إصدار الإعدادات": "Settings version",
-  مطبّق: "applied",
-  معلّق: "pending",
   "ساعة البورد غير مضبوطة، فيستخدم الخادم وقته لتسجيل القراءات والأحداث. تأكد من وصول البورد إلى خدمة الوقت (NTP).":
     "The board's clock is not set, so the server uses its own time for readings and events. Make sure the board can reach the time service (NTP).",
   "تجاهل الخادم": "The server ignored",
@@ -783,7 +774,6 @@ export const EN: Record<string, string> = {
   "غير مضاف": "Not added",
   الأمان: "Security",
   "الإعدادات مطبَّقة على البورد": "Settings applied on the board",
-  "الإصدار {0} • آخر تعديل {1}": "Version {0} • last change {1}",
   التشغيل: "Operation",
   "الحماية الكهربائية": "Electrical protection",
   عام: "General",
@@ -842,22 +832,76 @@ export const EN: Record<string, string> = {
   "يُرسل رابط تأكيد إلى هذا البريد قبل تفعيل الحساب.":
     "A confirmation link is sent to this email before the account is activated.",
   "الاسم والبريد وكلمة المرور": "Name, email and password",
-  "يلزم تحديث التطبيق":
-    "Update required",
+  "يلزم تحديث التطبيق": "Update required",
   "هذا الإصدار ({0}) لم يعد يعمل مع الخادم. نزّل الإصدار الأحدث وثبّته فوق الحالي؛ حسابك وأجهزتك تبقى كما هي.":
     "This version ({0}) no longer works with the server. Download the latest version and install it over this one; your account and devices stay as they are.",
-  "تحميل الإصدار {0}":
-    "Download version {0}",
-  "تحميل التحديث":
-    "Download the update",
-  "الخدمة غير متاحة حالياً":
-    "Service unavailable",
+  "تحميل الإصدار {0}": "Download version {0}",
+  "تحميل التحديث": "Download the update",
+  "الخدمة غير متاحة حالياً": "Service unavailable",
   "تعذر الوصول إلى بيانات التطبيق على الخادم. حاول مرة أخرى بعد قليل.":
     "The app's data on the server couldn't be reached. Try again in a moment.",
-  "يتوفر الإصدار {0}":
-    "Version {0} is available",
+  "يتوفر الإصدار {0}": "Version {0} is available",
   "نزّله وثبّته فوق الحالي؛ بياناتك تبقى.":
     "Download it and install it over this one; your data stays.",
-  "تحميل":
-    "Download",
+  تحميل: "Download",
+  "إشارة الواي فاي ضعيفة":
+    "Weak Wi-Fi signal",
+  "قد تتأخر قراءات البورد أو تنقطع. قرّب الراوتر أو استخدم مقوي إشارة.":
+    "The board's readings may be delayed or drop. Move the router closer or add a range extender.",
+  "الإعدادات لم تُطبَّق بعد":
+    "Settings not applied yet",
+  "حفظت تعديلاً على الإعدادات ولم يؤكد البورد تطبيقه حتى الآن.":
+    "You saved a settings change and the board has not confirmed applying it yet.",
+  "جيدة":
+    "Good",
+  "رجوع الكهرباء للبورد":
+    "Power returned to the board",
+  "إعادة تشغيل من البرنامج":
+    "Restart by the software",
+  "خطأ في البرنامج":
+    "Software error",
+  "توقف البرنامج (مؤقت الحماية)":
+    "Software hang (watchdog)",
+  "انخفاض جهد تغذية البورد":
+    "Low board supply voltage",
+  "زر إعادة التشغيل":
+    "Reset button",
+  "استيقاظ من السكون":
+    "Wake from sleep",
+  "معلومات الجهاز":
+    "Device info",
+  "أضف جهازاً لعرض معلوماته.":
+    "Add a device to see its details.",
+  "الجهاز":
+    "Device",
+  "إصدار برنامج البورد":
+    "Board software version",
+  "الاتصال":
+    "Connection",
+  "آخر تواصل":
+    "Last contact",
+  "قوة إشارة الواي فاي":
+    "Wi-Fi signal strength",
+  "تظهر أثناء اتصال البورد.":
+    "Shown while the board is connected.",
+  "حالة البورد":
+    "Board health",
+  "سبب آخر تشغيل: {0}":
+    "Last start: {0}",
+  "حرارة المتحكم":
+    "Controller temperature",
+  "جهد تغذية البورد":
+    "Board supply voltage",
+  "الإعدادات":
+    "Settings",
+  "آخر تعديل":
+    "Last change",
+  "مطبّقة على البورد.":
+    "Applied on the board.",
+  "محفوظة، وبانتظار أن يطبقها البورد عند اتصاله.":
+    "Saved, waiting for the board to apply them when it connects.",
+  "آخر تعديل {0}":
+    "Last change {0}",
+  "المعرّف، إصدار البرنامج، الإشارة وحالة البورد":
+    "ID, software version, signal and board health",
 };

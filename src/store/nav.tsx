@@ -35,6 +35,7 @@ export type Route =
   | "devices"
   | "addDevice"
   | "settings"
+  | "deviceInfo"
   | "transfers"
   | `settings.${SettingsSection}`
   | `profile.${ProfileSection}`;
@@ -47,6 +48,7 @@ const ROUTES: readonly Route[] = [
   "devices",
   "addDevice",
   "settings",
+  "deviceInfo",
   "transfers",
   ...SETTINGS_SECTIONS.map((x) => `settings.${x}` as const),
   ...PROFILE_SECTIONS.map((x) => `profile.${x}` as const),

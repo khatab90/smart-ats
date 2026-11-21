@@ -1,4 +1,4 @@
-import { CircleCheck, Eye, LoaderCircle, Settings2 } from "lucide-react";
+import { CircleCheck, Eye, Info, LoaderCircle, Settings2 } from "lucide-react";
 import { NoDevice } from "../components/DeviceGate";
 import { Card, ErrorState, Row, RowGroup, ScreenHeader, Skeleton } from "../components/ui";
 import { installedSources } from "../domain/sources";
@@ -59,9 +59,8 @@ export function Settings() {
                   {settingsApplied ? t("الإعدادات مطبَّقة على البورد") : t("بانتظار تأكيد البورد")}
                 </p>
                 <p className="num text-[11px] text-muted">
-                  {t("الإصدار {0} • آخر تعديل {1}", {
-                    0: settings.version,
-                    1: fmtDateTime(Date.parse(settings.updated_at), settings.timezone),
+                  {t("آخر تعديل {0}", {
+                    0: fmtDateTime(Date.parse(settings.updated_at), settings.timezone),
                   })}
                 </p>
               </div>
@@ -87,7 +86,15 @@ export function Settings() {
               {row("timers")}
             </RowGroup>
 
-            <RowGroup title={t("عام")}>{row("timezone")}</RowGroup>
+            <RowGroup title={t("عام")}>
+              {row("timezone")}
+              <Row
+                icon={Info}
+                title={t("معلومات الجهاز")}
+                subtitle={t("المعرّف، إصدار البرنامج، الإشارة وحالة البورد")}
+                onClick={() => push("deviceInfo")}
+              />
+            </RowGroup>
           </>
         )}
       </div>

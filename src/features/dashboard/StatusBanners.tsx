@@ -4,10 +4,18 @@ import { cn } from "../../lib/cn";
 import { fmtAgo, fmtTime } from "../../lib/format";
 import { useActiveDevice, useNow } from "../../store/devices";
 import { useNav } from "../../store/nav";
+import { WEAK_SIGNAL_DBM } from "../device/health";
 import { t } from "../../i18n";
 
+const PENDING_WARN_MS = 30_000;
+
 export function StatusBanners() {
-  const { status, link, settings, isAdmin, serverNow } = useActiveDevice();
+  const { status, link, settings, settingsApplied, isAdmin, serverNow } = useActiveDevice();
+  // A board applies saved settings within a report or two; only a long wait is a problem.
+  const settingsPendingLong =
+    Boolean(settings) &&
+    !settingsApplied &&
+    serverNow() - Date.parse(settings!.updated_at) > PENDING_WARN_MS;
   const { push } = useNav();
   useNow(5000);
   const tz = settings?.timezone;
@@ -50,6 +58,20 @@ export function StatusBanners() {
       banners.push(
         <Banner key="alarms" tone="warn" icon={CircleAlert} title={t("إنذارات البورد")}>
           {status.alarms.map((a) => ALARM_LABEL[a] ?? a).join(t("، "))}
+        </Banner>,
+      );
+    }
+    if (link === "live" && (status?.rssi ?? 0) < WEAK_SIGNAL_DBM) {
+      banners.push(
+        <Banner key="wifi" tone="warn" icon={Wifi} title={t("إشارة الواي فاي ضعيفة")}>
+          {t("قد تتأخر قراءات البورد أو تنقطع. قرّب الراوتر أو استخدم مقوي إشارة.")}
+        </Banner>,
+      );
+    }
+    if (settingsPendingLong) {
+      banners.push(
+        <Banner key="pending" tone="warn" icon={Settings2} title={t("الإعدادات لم تُطبَّق بعد")}>
+          {t("حفظت تعديلاً على الإعدادات ولم يؤكد البورد تطبيقه حتى الآن.")}
         </Banner>,
       );
     }
